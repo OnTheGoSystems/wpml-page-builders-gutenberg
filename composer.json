@@ -14,12 +14,6 @@
       "src/"
     ]
   },
-  "autoload-dev": {
-    "classmap": [
-      "tests/phpunit/stubs/",
-      "tests/phpunit/util/"
-    ]
-  },
   "require": {
     "roave/security-advisories": "dev-master",
     "wpml/page-builders": "dev-master",
