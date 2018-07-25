@@ -91,6 +91,9 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			);
 		}
 
+		\WP_Mock::expectAction( 'wpml_start_string_package_registration', $package );
+		\WP_Mock::expectAction( 'wpml_delete_unused_package_strings', $package );
+
 		$subject->register_strings( $post, $package );
 
 	}

@@ -20,6 +20,8 @@ class WPML_Gutenberg_Integration {
 
 		if ( self::PACKAGE_ID === $package_data['kind'] ) {
 
+			do_action( 'wpml_start_string_package_registration', $package_data );
+
 			$blocks = gutenberg_parse_blocks( $post->post_content );
 
 			foreach ( $blocks as $block ) {
@@ -38,6 +40,9 @@ class WPML_Gutenberg_Integration {
 
 				}
 			}
+
+			do_action( 'wpml_delete_unused_package_strings', $package_data );
+
 		}
 	}
 
