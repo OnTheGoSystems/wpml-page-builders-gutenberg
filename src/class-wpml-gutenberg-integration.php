@@ -7,6 +7,7 @@ class WPML_Gutenberg_Integration {
 	public function add_hooks() {
 		add_filter( 'wpml_page_builder_support_required', array( $this, 'page_builder_support_required' ), 10, 1 );
 		add_action( 'wpml_page_builder_register_strings', array( $this, 'register_strings' ), 10, 2 );
+		add_action( 'wpml_page_builder_string_translated', array( $this, 'string_translated' ), 10, 5 );
 	}
 
 	function page_builder_support_required( $plugins ) {
@@ -16,7 +17,6 @@ class WPML_Gutenberg_Integration {
 	}
 
 	function register_strings( WP_Post $post, $package_data ) {
-		global $sample_page_builder_json;
 
 		if ( self::PACKAGE_ID === $package_data['kind'] ) {
 
@@ -44,6 +44,40 @@ class WPML_Gutenberg_Integration {
 			do_action( 'wpml_delete_unused_package_strings', $package_data );
 
 		}
+	}
+
+
+	public function string_translated(
+		$package_kind,
+		$translated_post_id,
+		$original_post,
+		$string_translations,
+		$lang
+	) {
+
+		if ( self::PACKAGE_ID === $package_kind ) {
+			$blocks = gutenberg_parse_blocks( $original_post->post_content );
+
+			foreach ( $blocks as &$block ) {
+				$string_id = $this->get_string_id( $block );
+				if (
+					isset( $string_translations[ $string_id ][ $lang ] ) &&
+					ICL_TM_COMPLETE === $string_translations[ $string_id ][ $lang ]['status'] )
+				{
+					$block['innerHTML'] = $string_translations[ $string_id ][ $lang ]['value'];
+				}
+				unset( $block );
+			}
+
+			$content = '';
+			foreach ( $blocks as $block ) {
+				$content .= gutenberg_render_block( $block );
+			}
+
+			wp_update_post( array( 'ID' => $translated_post_id, 'post_content' => $content ) );
+
+		}
+
 	}
 
 	private function get_string_id( $block ) {

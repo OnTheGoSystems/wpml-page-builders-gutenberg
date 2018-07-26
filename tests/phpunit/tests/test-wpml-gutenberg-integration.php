@@ -22,6 +22,10 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			$subject,
 			'register_strings'
 		), 10, 2 );
+		WP_Mock::expectActionAdded( 'wpml_page_builder_string_translated', array(
+			$subject,
+			'string_translated'
+		), 10, 5 );
 
 		$subject->add_hooks();
 	}
@@ -51,15 +55,15 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
 		);
 
-		$blocks   = array();
-		$blocks['normal block'] = array(
+		$blocks                                = array();
+		$blocks['normal block']                = array(
 			'blockName' => 'some name',
 			'innerHTML' => 'some block content',
 		);
-		$blocks['block without name'] = array(
+		$blocks['block without name']          = array(
 			'innerHTML' => 'some content',
 		);
-		$blocks['block with empty content'] = array(
+		$blocks['block with empty content']    = array(
 			'blockName' => 'some name',
 			'innerHTML' => '',
 		);
@@ -95,6 +99,74 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		\WP_Mock::expectAction( 'wpml_delete_unused_package_strings', $package );
 
 		$subject->register_strings( $post, $package );
+
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_updates_translated_page() {
+		$subject = new WPML_Gutenberg_Integration();
+
+		$original_post               = \Mockery::mock( 'WP_Post' );
+		$original_post->post_content = 'Post content';
+
+		$translated_post_id = 22;
+
+		$target_lang = 'de';
+
+		$original_block_inner_HTML   = 'some block content';
+		$translated_block_inner_HTML = 'some block content ( TRANSLATED )';
+
+		$block_name = 'some block name';
+
+		$strings = array(
+			md5( $block_name . $original_block_inner_HTML ) => array(
+				$target_lang => array(
+					'value'  => $translated_block_inner_HTML,
+					'status' => ICL_TM_COMPLETE,
+				)
+			)
+		);
+
+		$blocks   = array();
+		$blocks[] = array(
+			'blockName' => $block_name,
+			'innerHTML' => $original_block_inner_HTML,
+		);
+
+		$translated_block = array(
+			'blockName' => $block_name,
+			'innerHTML' => $translated_block_inner_HTML,
+		);
+
+		\WP_Mock::userFunction( 'gutenberg_parse_blocks',
+			array(
+				'args'   => array( $original_post->post_content ),
+				'return' => $blocks,
+			)
+		);
+
+		\WP_Mock::userFunction( 'gutenberg_render_block',
+			array(
+				'args'   => array( $translated_block ),
+				'return' => 'rendered block',
+			)
+		);
+
+		\WP_Mock::userFunction( 'wp_update_post',
+			array(
+				'times' => 1,
+				'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => 'rendered block' ) ),
+			) );
+
+		$subject->string_translated(
+			WPML_Gutenberg_Integration::PACKAGE_ID,
+			$translated_post_id,
+			$original_post,
+			$strings,
+			$target_lang
+		);
 
 	}
 }
