@@ -12,7 +12,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_adds_hooks() {
-		$subject = new WPML_Gutenberg_Integration();
+		$subject = new WPML_Gutenberg_Integration( new WPML_Gutenberg_Strings_In_Block() );
 
 		WP_Mock::expectFilterAdded( 'wpml_page_builder_support_required', array(
 			$subject,
@@ -32,7 +32,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 	public function it_requires_support() {
 
-		$subject = new WPML_Gutenberg_Integration();
+		$subject = new WPML_Gutenberg_Integration( new WPML_Gutenberg_Strings_In_Block() );
 
 		$plugins = $subject->page_builder_support_required( array() );
 
@@ -46,7 +46,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 */
 	public function it_registers_strings() {
 
-		$subject = new WPML_Gutenberg_Integration();
+		$subject = new WPML_Gutenberg_Integration( new WPML_Gutenberg_Strings_In_Block() );
 
 		$post               = \Mockery::mock( 'WP_Post' );
 		$post->post_content = 'post content';
@@ -130,7 +130,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_updates_translated_page() {
-		$subject = new WPML_Gutenberg_Integration();
+		$subject = new WPML_Gutenberg_Integration( new WPML_Gutenberg_Strings_In_Block() );
 
 		$original_post               = \Mockery::mock( 'WP_Post' );
 		$original_post->post_content = 'Post content';

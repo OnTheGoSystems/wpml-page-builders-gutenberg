@@ -4,6 +4,10 @@ class WPML_Gutenberg_Integration {
 
 	const PACKAGE_ID = 'Gutenberg';
 
+	public function __construct( WPML_Gutenberg_Strings_In_Block  $strings_in_block ) {
+		$this->strings_in_blocks = $strings_in_block;
+	}
+
 	public function add_hooks() {
 		add_filter( 'wpml_page_builder_support_required', array( $this, 'page_builder_support_required' ), 10, 1 );
 		add_action( 'wpml_page_builder_register_strings', array( $this, 'register_strings' ), 10, 2 );
@@ -35,24 +39,25 @@ class WPML_Gutenberg_Integration {
 	private function register_blocks( $blocks, $package_data ) {
 
 		foreach ( $blocks as $block ) {
-			$string_id = $this->get_string_id( $block );
+			$strings = $this->strings_in_blocks->find( $block );
 
-			if ( $string_id ) {
+			foreach ( $strings as $string ) {
 
 				do_action(
 					'wpml_register_string',
-					$block['innerHTML'],
-					$string_id,
+					$string->value,
+					$string->id,
 					$package_data,
-					$block['blockName'],
-					'VISUAL'
+					$string->name,
+					$string->type
 				);
 
-				if ( isset( $block['innerBlocks'] ) ) {
-					$this->register_blocks( $block['innerBlocks'], $package_data );
-				}
-
 			}
+
+			if ( isset( $block['innerBlocks'] ) ) {
+				$this->register_blocks( $block['innerBlocks'], $package_data );
+			}
+
 		}
 	}
 
@@ -82,13 +87,7 @@ class WPML_Gutenberg_Integration {
 
 	private function update_block_translations( $blocks, $string_translations, $lang ) {
 		foreach ( $blocks as &$block ) {
-			$string_id = $this->get_string_id( $block );
-			if (
-				isset( $string_translations[ $string_id ][ $lang ] ) &&
-				ICL_TM_COMPLETE == $string_translations[ $string_id ][ $lang ]['status'] )
-			{
-				$block['innerHTML'] = $string_translations[ $string_id ][ $lang ]['value'];
-			}
+			$block = $this->strings_in_blocks->update( $block, $string_translations, $lang );
 
 			if ( isset( $block['innerBlocks'] ) ) {
 				$block['innerBlocks'] = $this->update_block_translations(
@@ -100,14 +99,6 @@ class WPML_Gutenberg_Integration {
 		}
 
 		return $blocks;
-	}
-
-	private function get_string_id( $block ) {
-		if ( isset( $block['blockName'], $block['innerHTML'] ) && '' !== trim( $block['innerHTML'] ) ) {
-			return md5( $block['blockName'] . $block['innerHTML'] );
-		} else {
-			return null;
-		}
 	}
 
 }
