@@ -12,7 +12,12 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_adds_hooks() {
-		$subject = new WPML_Gutenberg_Integration( new WPML_Gutenberg_Strings_In_Block() );
+		$config_option = new WPML_Gutenberg_Config_Option();
+
+		$subject = new WPML_Gutenberg_Integration(
+			new WPML_Gutenberg_Strings_In_Block( $config_option ),
+			$config_option
+		);
 
 		WP_Mock::expectFilterAdded( 'wpml_page_builder_support_required', array(
 			$subject,
@@ -26,13 +31,17 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			$subject,
 			'string_translated'
 		), 10, 5 );
+		WP_Mock::expectFilterAdded( 'wpml_config_array', array( $subject, 'wpml_config_filter' ) );
 
 		$subject->add_hooks();
 	}
 
 	public function it_requires_support() {
 
-		$subject = new WPML_Gutenberg_Integration( new WPML_Gutenberg_Strings_In_Block() );
+		$subject = new WPML_Gutenberg_Integration(
+			new WPML_Gutenberg_Strings_In_Block(),
+			new WPML_Gutenberg_Config_Option()
+		);
 
 		$plugins = $subject->page_builder_support_required( array() );
 
@@ -46,7 +55,13 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 */
 	public function it_registers_strings() {
 
-		$subject = new WPML_Gutenberg_Integration( new WPML_Gutenberg_Strings_In_Block() );
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )->andReturn( array() );
+
+		$subject = new WPML_Gutenberg_Integration(
+			new WPML_Gutenberg_Strings_In_Block( $config_option ),
+			$config_option
+		);
 
 		$post               = \Mockery::mock( 'WP_Post' );
 		$post->post_content = 'post content';
@@ -130,7 +145,14 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_updates_translated_page() {
-		$subject = new WPML_Gutenberg_Integration( new WPML_Gutenberg_Strings_In_Block() );
+
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )->andReturn( array() );
+
+		$subject = new WPML_Gutenberg_Integration(
+			new WPML_Gutenberg_Strings_In_Block( $config_option ),
+			$config_option
+		);
 
 		$original_post               = \Mockery::mock( 'WP_Post' );
 		$original_post->post_content = 'Post content';

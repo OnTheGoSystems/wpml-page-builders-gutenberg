@@ -6,12 +6,14 @@
 class WPML_Gutenberg_Strings_In_Block {
 
 	/** @var array */
-	private $block_types = array(
-		'core/paragraph' => array( '//p' ),
-		'core/heading'   => array( "//*[name()='h1' or name()='h2' or name()='h3' or name()='h4' or name()='h5' or name()='h6']" ),
-		'core/button'    => array( '//a' ),
-		'core/image'     => array( '//figure/figcaption', '//figure/img/@alt' )
-	);
+	private $block_types;
+
+	/** @var WPML_Gutenberg_Config_Option $config_option */
+	private $config_option;
+
+	public function __construct( WPML_Gutenberg_Config_Option $config_option ) {
+		$this->config_option = $config_option;
+	}
 
 	/**
 	 * @param array $block
@@ -174,6 +176,10 @@ class WPML_Gutenberg_Strings_In_Block {
 	 * @return array|null
 	 */
 	private function get_block_queries( $block ) {
+		if ( null === $this->block_types ) {
+			$this->block_types = $this->config_option->get();
+		}
+
 		if ( isset( $block['blockName'], $block['innerHTML'] ) && array_key_exists( $block['blockName'], $this->block_types ) ) {
 			return $this->block_types[ $block['blockName'] ];
 		} else {

@@ -1,25 +1,58 @@
 <?php
 
+/**
+ * Class WPML_Gutenberg_Integration
+ */
 class WPML_Gutenberg_Integration {
 
 	const PACKAGE_ID = 'Gutenberg';
 
-	public function __construct( WPML_Gutenberg_Strings_In_Block  $strings_in_block ) {
+	/**
+	 * @var WPML_Gutenberg_Strings_In_Block
+	 */
+	private $strings_in_blocks;
+
+	/**
+	 * @var WPML_Gutenberg_Config_Option
+	 */
+	private $config_option;
+
+	/**
+	 * WPML_Gutenberg_Integration constructor.
+	 *
+	 * @param WPML_Gutenberg_Strings_In_Block $strings_in_block
+	 * @param WPML_Gutenberg_Config_Option $config_option
+	 */
+	public function __construct(
+		WPML_Gutenberg_Strings_In_Block $strings_in_block,
+		WPML_Gutenberg_Config_Option $config_option
+	) {
 		$this->strings_in_blocks = $strings_in_block;
+		$this->config_option= $config_option;
 	}
 
 	public function add_hooks() {
 		add_filter( 'wpml_page_builder_support_required', array( $this, 'page_builder_support_required' ), 10, 1 );
 		add_action( 'wpml_page_builder_register_strings', array( $this, 'register_strings' ), 10, 2 );
 		add_action( 'wpml_page_builder_string_translated', array( $this, 'string_translated' ), 10, 5 );
+		add_filter( 'wpml_config_array', array( $this, 'wpml_config_filter' ) );
 	}
 
+	/**
+	 * @param array $plugins
+	 *
+	 * @return array
+	 */
 	function page_builder_support_required( $plugins ) {
 		$plugins[] = self::PACKAGE_ID;
 
 		return $plugins;
 	}
 
+	/**
+	 * @param WP_Post $post
+	 * @param array $package_data
+	 */
 	function register_strings( WP_Post $post, $package_data ) {
 
 		if ( self::PACKAGE_ID === $package_data['kind'] ) {
@@ -36,6 +69,10 @@ class WPML_Gutenberg_Integration {
 		}
 	}
 
+	/**
+	 * @param array $blocks
+	 * @param array $package_data
+	 */
 	private function register_blocks( $blocks, $package_data ) {
 
 		foreach ( $blocks as $block ) {
@@ -61,6 +98,13 @@ class WPML_Gutenberg_Integration {
 		}
 	}
 
+	/**
+	 * @param string $package_kind
+	 * @param int $translated_post_id
+	 * @param WP_Post $original_post
+	 * @param array $string_translations
+	 * @param string $lang
+	 */
 	public function string_translated(
 		$package_kind,
 		$translated_post_id,
@@ -85,6 +129,13 @@ class WPML_Gutenberg_Integration {
 
 	}
 
+	/**
+	 * @param array $blocks
+	 * @param array $string_translations
+	 * @param string $lang
+	 *
+	 * @return array
+	 */
 	private function update_block_translations( $blocks, $string_translations, $lang ) {
 		foreach ( $blocks as &$block ) {
 			$block = $this->strings_in_blocks->update( $block, $string_translations, $lang );
@@ -99,6 +150,17 @@ class WPML_Gutenberg_Integration {
 		}
 
 		return $blocks;
+	}
+
+	/**
+	 * @param array $config_data
+	 *
+	 * @return array
+	 */
+	public function wpml_config_filter( $config_data ) {
+		$this->config_option->update_from_config( $config_data );
+
+		return $config_data;
 	}
 
 }

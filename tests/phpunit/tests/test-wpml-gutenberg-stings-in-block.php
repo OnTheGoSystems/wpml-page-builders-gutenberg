@@ -12,7 +12,12 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_finds_paragraph() {
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block();
+
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( array( 'core/paragraph' => array( '//p' ) ) );
+
+		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
 
 		$paragraph = 'some paragraph';
 
@@ -55,7 +60,11 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_finds_image() {
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block();
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( array( 'core/image' => array( '//figure/figcaption', '//figure/img/@alt' ) ) );
+
+		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
 
 		$alt_text = 'alt text';
 		$caption  = 'caption';
@@ -87,7 +96,12 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_updates_paragraph() {
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block();
+
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( array( 'core/paragraph' => array( '//p' ) ) );
+
+		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
 
 		$block_name = 'core/paragraph';
 
@@ -120,7 +134,12 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_updates_image() {
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block();
+
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( array( 'core/image' => array( '//figure/figcaption', '//figure/img/@alt' ) ) );
+
+		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
 
 		$block_name = 'core/image';
 
