@@ -161,41 +161,28 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 		$target_lang = 'de';
 
-		$block_name = 'some block name';
+		$block_name                  = 'some-block-name';
+		$core_block_name             = 'core/' . $block_name; // Gutenberg prefixes with 'core/'
+		$attributes                  = array( 'att_1' => 'value_1', 'att_2' => 'value_2' );
 		$original_block_inner_HTML   = 'some block content';
 		$translated_block_inner_HTML = 'some block content ( TRANSLATED )';
 
 
 		$strings = array(
-			md5( $block_name . $original_block_inner_HTML ) => array(
+			md5( $core_block_name . $original_block_inner_HTML ) => array(
 				$target_lang => array(
 					'value'  => $translated_block_inner_HTML,
-					'status' => (string)ICL_TM_COMPLETE,
+					'status' => (string) ICL_TM_COMPLETE,
 				)
 			)
 		);
 
 		$blocks   = array();
 		$blocks[] = array(
-			'blockName' => $block_name,
-			'innerHTML' => $original_block_inner_HTML,
-			'innerBlocks' => array(
-				array(
-					'blockName' => $block_name,
-					'innerHTML' => $original_block_inner_HTML,
-				)
-			)
-		);
-
-		$translated_block = array(
-			'blockName' => $block_name,
-			'innerHTML' => $translated_block_inner_HTML,
-			'innerBlocks' => array(
-				array(
-					'blockName' => $block_name,
-					'innerHTML' => $translated_block_inner_HTML,
-				)
-			)
+			'blockName'   => $core_block_name,
+			'attrs'       => $attributes,
+			'innerHTML'   => $original_block_inner_HTML,
+			'innerBlocks' => array()
 		);
 
 		\WP_Mock::userFunction( 'gutenberg_parse_blocks',
@@ -205,17 +192,88 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			)
 		);
 
-		\WP_Mock::userFunction( 'gutenberg_render_block',
-			array(
-				'args'   => array( $translated_block ),
-				'return' => 'rendered block',
-			)
-		);
+		$rendered_block = '<!-- wp:' . $block_name . ' ' . json_encode( $attributes ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
 
 		\WP_Mock::userFunction( 'wp_update_post',
 			array(
 				'times' => 1,
-				'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => 'rendered block' ) ),
+				'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => $rendered_block ) ),
+			) );
+
+		$subject->string_translated(
+			WPML_Gutenberg_Integration::PACKAGE_ID,
+			$translated_post_id,
+			$original_post,
+			$strings,
+			$target_lang
+		);
+
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_updates_inner_blocks() {
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )->andReturn( array() );
+
+		$subject = new WPML_Gutenberg_Integration(
+			new WPML_Gutenberg_Strings_In_Block( $config_option ),
+			$config_option
+		);
+
+		$original_post               = \Mockery::mock( 'WP_Post' );
+		$original_post->post_content = 'Post content';
+
+		$translated_post_id = 22;
+
+		$target_lang = 'de';
+
+		$block_name                  = 'some-block-name';
+		$core_block_name             = 'core/' . $block_name; // Gutenberg prefixes with 'core/'
+		$attributes                  = array( 'att_1' => 'value_1', 'att_2' => 'value_2' );
+		$original_block_inner_HTML   = 'some block content';
+		$translated_block_inner_HTML = 'some block content ( TRANSLATED )';
+
+
+		$strings = array(
+			md5( $core_block_name . $original_block_inner_HTML ) => array(
+				$target_lang => array(
+					'value'  => $translated_block_inner_HTML,
+					'status' => (string) ICL_TM_COMPLETE,
+				)
+			)
+		);
+
+		$blocks   = array();
+		$blocks[] = array(
+			'blockName'   => 'core/column',
+			'innerHTML'   => '<div class="wp-block-column"></div>',
+			'attrs'       => array(),
+			'innerBlocks' => array(
+				array(
+					'blockName' => $core_block_name,
+					'attrs'     => $attributes,
+					'innerHTML' => $original_block_inner_HTML,
+				)
+			),
+		);
+
+		\WP_Mock::userFunction( 'gutenberg_parse_blocks',
+			array(
+				'args'   => array( $original_post->post_content ),
+				'return' => $blocks,
+			)
+		);
+
+		$rendered_block = "<!-- wp:column --><div class=\"wp-block-column\">";
+		$rendered_block .= '<!-- wp:' . $block_name . ' ' . json_encode( $attributes ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
+		$rendered_block .= "</div><!-- /wp:column -->";
+
+		\WP_Mock::userFunction( 'wp_update_post',
+			array(
+				'times' => 1,
+				'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => $rendered_block ) ),
 			) );
 
 		$subject->string_translated(

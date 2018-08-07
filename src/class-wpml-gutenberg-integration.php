@@ -28,7 +28,7 @@ class WPML_Gutenberg_Integration {
 		WPML_Gutenberg_Config_Option $config_option
 	) {
 		$this->strings_in_blocks = $strings_in_block;
-		$this->config_option= $config_option;
+		$this->config_option     = $config_option;
 	}
 
 	public function add_hooks() {
@@ -120,7 +120,7 @@ class WPML_Gutenberg_Integration {
 
 			$content = '';
 			foreach ( $blocks as $block ) {
-				$content .= gutenberg_render_block( $block );
+				$content .= $this->render_block( $block );
 			}
 
 			wp_update_post( array( 'ID' => $translated_post_id, 'post_content' => $content ) );
@@ -140,6 +140,9 @@ class WPML_Gutenberg_Integration {
 		foreach ( $blocks as &$block ) {
 			$block = $this->strings_in_blocks->update( $block, $string_translations, $lang );
 
+			if ( isset( $block['blockName'] ) && 'core/block' === $block['blockName'] ) {
+				$block['attrs']['ref'] = apply_filters( 'wpml_object_id', $block['attrs']['ref'], 'wp_block', true, $lang );
+			}
 			if ( isset( $block['innerBlocks'] ) ) {
 				$block['innerBlocks'] = $this->update_block_translations(
 					$block['innerBlocks'],
@@ -150,6 +153,71 @@ class WPML_Gutenberg_Integration {
 		}
 
 		return $blocks;
+	}
+
+	/**
+	 * @param array $block
+	 *
+	 * @return string
+	 */
+	private function render_block( $block ) {
+		$content = '';
+
+		if ( isset( $block['blockName'] ) ) {
+			$block_type = substr( $block['blockName'], 5 ); // strip core. eg core/paragraph
+
+			$block_attributes = '';
+			if ( $block['attrs'] ) {
+				$block_attributes = ' ' . json_encode( $block['attrs'] );
+			}
+			$content .= '<!-- wp:' . $block_type . $block_attributes . ' -->';
+
+			if ( isset ( $block['innerBlocks'] ) ) {
+				$inner_html_parts = $this->guess_inner_HTML_parts( $block['innerHTML'] );
+
+				$content .= $inner_html_parts[0];
+
+				foreach ( $block['innerBlocks'] as $inner_block ) {
+					$content .= $this->render_block( $inner_block );
+				}
+
+				$content .= $inner_html_parts[1];
+
+			} else {
+				$content .= $block['innerHTML'];
+			}
+			$content .= '<!-- /wp:' . $block_type . ' -->';
+
+		} else {
+			$content .= $block['innerHTML'];
+		}
+
+		return $content;
+
+	}
+
+	/**
+	 * The gutenberg parser doesn't handle inner blocks correctly
+	 * It should really return the HTML before and after the blocks
+	 * We're just guessing what it is here
+	 * The usual innerHTML would be: <div class="xxx"></div>
+	 * So we try to split at ></
+	 *
+	 * @param $inner_HTML
+	 *
+	 * @return array
+	 */
+	private function guess_inner_HTML_parts( $inner_HTML ) {
+		$parts = explode( '></', $inner_HTML );
+		if ( count( $parts ) === 2 ) {
+			$parts[0] .= '>';
+			$parts[1] = '</' . $parts[1];
+		} else {
+			// Can't guess so return innerHTML as first part and empty for second part
+			$parts = array( $inner_HTML, '' );
+		}
+
+		return $parts;
 	}
 
 	/**
