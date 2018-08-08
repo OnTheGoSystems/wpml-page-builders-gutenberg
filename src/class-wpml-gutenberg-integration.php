@@ -164,7 +164,7 @@ class WPML_Gutenberg_Integration {
 		$content = '';
 
 		if ( isset( $block['blockName'] ) ) {
-			$block_type = substr( $block['blockName'], 5 ); // strip core. eg core/paragraph
+			$block_type = preg_replace( '/^core\//', '', $block['blockName'] );
 
 			$block_attributes = '';
 			if ( $block['attrs'] ) {
