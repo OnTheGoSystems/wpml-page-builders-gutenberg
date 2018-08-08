@@ -172,20 +172,8 @@ class WPML_Gutenberg_Integration {
 			}
 			$content .= '<!-- wp:' . $block_type . $block_attributes . ' -->';
 
-			if ( isset ( $block['innerBlocks'] ) ) {
-				$inner_html_parts = $this->guess_inner_HTML_parts( $block['innerHTML'] );
+			$content .= $this->render_inner_HTML( $block );
 
-				$content .= $inner_html_parts[0];
-
-				foreach ( $block['innerBlocks'] as $inner_block ) {
-					$content .= $this->render_block( $inner_block );
-				}
-
-				$content .= $inner_html_parts[1];
-
-			} else {
-				$content .= $block['innerHTML'];
-			}
 			$content .= '<!-- /wp:' . $block_type . ' -->';
 
 		} else {
@@ -197,24 +185,59 @@ class WPML_Gutenberg_Integration {
 	}
 
 	/**
+	 * @param array $block
+	 *
+	 * @return string
+	 */
+	private function render_inner_HTML( $block ) {
+
+		if ( isset ( $block['innerBlocks'] ) && count( $block['innerBlocks'] ) ) {
+			$inner_html_parts = $this->guess_inner_HTML_parts( $block );
+
+			$content = $inner_html_parts[0];
+
+			foreach ( $block['innerBlocks'] as $inner_block ) {
+				$content .= $this->render_block( $inner_block );
+			}
+
+			$content .= $inner_html_parts[1];
+
+		} else {
+			$content = $block['innerHTML'];
+		}
+
+		return $content;
+
+	}
+
+	/**
 	 * The gutenberg parser doesn't handle inner blocks correctly
 	 * It should really return the HTML before and after the blocks
 	 * We're just guessing what it is here
 	 * The usual innerHTML would be: <div class="xxx"></div>
-	 * So we try to split at ></
+	 * The columns block also includes new lines: <div class="xxx">\n\n</div>
+	 * So we try to split at ></ and also include white space and new lines between the tags
 	 *
-	 * @param $inner_HTML
+	 * @param array $block
 	 *
 	 * @return array
 	 */
-	private function guess_inner_HTML_parts( $inner_HTML ) {
-		$parts = explode( '></', $inner_HTML );
-		if ( count( $parts ) === 2 ) {
-			$parts[0] .= '>';
-			$parts[1] = '</' . $parts[1];
-		} else {
-			// Can't guess so return innerHTML as first part and empty for second part
-			$parts = array( $inner_HTML, '' );
+	private function guess_inner_HTML_parts( $block ) {
+		$inner_HTML = $block['innerHTML'];
+
+		$parts = array( $inner_HTML, '' );
+
+		preg_match( '#>\s*</#', $inner_HTML, $matches );
+
+		if ( count( $matches ) === 1 ) {
+			$parts = explode( $matches[0], $inner_HTML );
+			if ( count( $parts ) === 2 ) {
+				$match_mid_point = 1 + ( strlen( $matches[0] ) - 3 ) / 2;
+				// This is the first ">" char plus half the remaining between the tags
+
+				$parts[0]        .= substr( $matches[0], 0, $match_mid_point );
+				$parts[1]        = substr( $matches[0], $match_mid_point ) . $parts[1];
+			}
 		}
 
 		return $parts;

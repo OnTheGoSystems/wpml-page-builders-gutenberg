@@ -212,8 +212,10 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 	/**
 	 * @test
+	 *
+	 * @dataProvider inner_html_provider
 	 */
-	public function it_updates_inner_blocks() {
+	public function it_updates_inner_blocks( $inner_html, $inner_html_before, $inner_html_after ) {
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )->andReturn( array() );
 
@@ -248,7 +250,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$blocks   = array();
 		$blocks[] = array(
 			'blockName'   => 'core/column',
-			'innerHTML'   => '<div class="wp-block-column"></div>',
+			'innerHTML'   => $inner_html,
 			'attrs'       => array(),
 			'innerBlocks' => array(
 				array(
@@ -266,9 +268,11 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			)
 		);
 
-		$rendered_block = "<!-- wp:column --><div class=\"wp-block-column\">";
+		$rendered_block = "<!-- wp:column -->";
+		$rendered_block .= $inner_html_before;
 		$rendered_block .= '<!-- wp:' . $block_name . ' ' . json_encode( $attributes ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
-		$rendered_block .= "</div><!-- /wp:column -->";
+		$rendered_block .= $inner_html_after;
+		$rendered_block .= "<!-- /wp:column -->";
 
 		\WP_Mock::userFunction( 'wp_update_post',
 			array(
@@ -285,4 +289,15 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		);
 
 	}
+
+	public function inner_html_provider() {
+
+		return array(
+			array( '<div class="wp-block-column"></div>', '<div class="wp-block-column">', '</div>' ),
+			array( "<div class=\"wp-block-column\">\n\n</div>", "<div class=\"wp-block-column\">\n", "\n</div>" ),
+			array( "<div class=\"wp-block-column\">\r\n\r\n</div>", "<div class=\"wp-block-column\">\r\n", "\r\n</div>" )
+		);
+	}
+
+
 }
