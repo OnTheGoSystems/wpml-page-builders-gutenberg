@@ -16,7 +16,7 @@ class WPML_Gutenberg_Config_Option {
 		if ( isset( $config_data['wpml-config']['gutenberg-blocks']['gutenberg-block'] ) ) {
 			foreach ( $config_data['wpml-config']['gutenberg-blocks']['gutenberg-block'] as $block_config ) {
 				$blocks[ $block_config['attr']['type'] ] = array();
-				if( 'true' === $block_config['attr']['has-strings'] && isset( $block_config['xpath'] ) ) {
+				if( '1' === $block_config['attr']['translate'] && isset( $block_config['xpath'] ) ) {
 					foreach ( $block_config['xpath'] as $xpaths ) {
 						if ( is_array( $xpaths ) ) {
 							$blocks[ $block_config['attr']['type'] ] = array_merge( $blocks[ $block_config['attr']['type'] ], array_values( $xpaths ) );

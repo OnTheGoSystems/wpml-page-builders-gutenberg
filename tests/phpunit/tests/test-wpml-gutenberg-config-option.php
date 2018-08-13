@@ -19,7 +19,7 @@ class Test_WPML_Gutenberg_Integration_Config_Option extends OTGS_TestCase {
 		$expected_block_path = array( 'xpath1', 'xpath2' );
 
 		$block_data = array(
-			'attr' => array( 'type' => $block_type, 'has-strings' => 'true' ),
+			'attr' => array( 'type' => $block_type, 'translate' => '1' ),
 			'xpath' => $block_xpath,
 		);
 
