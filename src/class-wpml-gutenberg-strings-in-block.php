@@ -25,7 +25,7 @@ class WPML_Gutenberg_Strings_In_Block {
 
 		$block_queries = $this->get_block_queries( $block );
 
-		if ( $block_queries ) {
+		if ( is_array( $block_queries ) ) {
 
 			$xpath = $this->get_domxpath( $block );
 

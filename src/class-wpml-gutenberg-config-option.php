@@ -16,11 +16,13 @@ class WPML_Gutenberg_Config_Option {
 		if ( isset( $config_data['wpml-config']['gutenberg-blocks']['gutenberg-block'] ) ) {
 			foreach ( $config_data['wpml-config']['gutenberg-blocks']['gutenberg-block'] as $block_config ) {
 				$blocks[ $block_config['attr']['type'] ] = array();
-				foreach ( $block_config['xpath'] as $xpaths ) {
-					if ( is_array( $xpaths ) ) {
-						$blocks[ $block_config['attr']['type'] ] = array_merge( $blocks[ $block_config['attr']['type'] ], array_values( $xpaths ) );
-					} else {
-						$blocks[ $block_config['attr']['type'] ][] = $xpaths;
+				if( 'true' === $block_config['attr']['has-strings'] && isset( $block_config['xpath'] ) ) {
+					foreach ( $block_config['xpath'] as $xpaths ) {
+						if ( is_array( $xpaths ) ) {
+							$blocks[ $block_config['attr']['type'] ] = array_merge( $blocks[ $block_config['attr']['type'] ], array_values( $xpaths ) );
+						} else {
+							$blocks[ $block_config['attr']['type'] ][] = $xpaths;
+						}
 					}
 				}
 			}

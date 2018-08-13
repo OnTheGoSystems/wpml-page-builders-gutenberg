@@ -59,6 +59,27 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 	/**
 	 * @test
 	 */
+	public function it_does_not_find_column_if_there_is_no_xpath() {
+
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( array( 'core/column' => array() ) );
+
+		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+
+		$block = array(
+			'blockName' => 'core/column',
+			'innerHTML' => 'any data',
+		);
+
+		$strings = $strings_in_block->find( $block );
+
+		$this->assertCount( 0, $strings );
+	}
+
+	/**
+	 * @test
+	 */
 	public function it_finds_image() {
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )
