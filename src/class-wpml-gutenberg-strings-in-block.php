@@ -16,11 +16,11 @@ class WPML_Gutenberg_Strings_In_Block {
 	}
 
 	/**
-	 * @param array $block
+	 * @param WP_Block_Parser_Block $block
 	 *
 	 * @return array
 	 */
-	public function find( $block ) {
+	public function find( WP_Block_Parser_Block $block ) {
 		$strings = array();
 
 		$block_queries = $this->get_block_queries( $block );
@@ -35,8 +35,8 @@ class WPML_Gutenberg_Strings_In_Block {
 					list( $text, $type ) = $this->get_inner_HTML( $element );
 					if ( $text ) {
 						$strings[] = (object) array(
-							'id'    => $this->get_string_id( $block['blockName'], $text ),
-							'name'  => $block['blockName'],
+							'id'    => $this->get_string_id( $block->blockName, $text ),
+							'name'  => $block->blockName,
 							'value' => $text,
 							'type'  => $type,
 						);
@@ -50,8 +50,8 @@ class WPML_Gutenberg_Strings_In_Block {
 			if ( $string_id ) {
 				$strings[] = (object) array(
 					'id'    => $string_id,
-					'name'  => $block['blockName'],
-					'value' => $block['innerHTML'],
+					'name'  => $block->blockName,
+					'value' => $block->innerHTML,
 					'type'  => 'VISUAL',
 				);
 			}
@@ -62,13 +62,13 @@ class WPML_Gutenberg_Strings_In_Block {
 	}
 
 	/**
-	 * @param array $block
-	 * @param array $string_translations
-	 * @param string $lang
+	 * @param WP_Block_Parser_Block $block
+	 * @param array                 $string_translations
+	 * @param string                $lang
 	 *
 	 * @return array
 	 */
-	public function update( $block, $string_translations, $lang ) {
+	public function update( WP_Block_Parser_Block $block, $string_translations, $lang ) {
 
 		$block_queries = $this->get_block_queries( $block );
 
@@ -80,7 +80,7 @@ class WPML_Gutenberg_Strings_In_Block {
 				$elements = $xpath->query( $query );
 				foreach ( $elements as $element ) {
 					list( $text, ) = $this->get_inner_HTML( $element );
-					$string_id = $this->get_string_id( $block['blockName'], $text );
+					$string_id = $this->get_string_id( $block->blockName, $text );
 					if (
 						isset( $string_translations[ $string_id ][ $lang ] ) &&
 						ICL_TM_COMPLETE == $string_translations[ $string_id ][ $lang ]['status']
@@ -89,7 +89,7 @@ class WPML_Gutenberg_Strings_In_Block {
 					}
 				}
 			}
-			list( $block['innerHTML'], ) = $this->get_inner_HTML( $dom->documentElement );
+			list( $block->innerHTML, ) = $this->get_inner_HTML( $dom->documentElement );
 
 		} else {
 
@@ -98,7 +98,7 @@ class WPML_Gutenberg_Strings_In_Block {
 				isset( $string_translations[ $string_id ][ $lang ] ) &&
 				ICL_TM_COMPLETE == $string_translations[ $string_id ][ $lang ]['status']
 			) {
-				$block['innerHTML'] = $string_translations[ $string_id ][ $lang ]['value'];
+				$block->innerHTML = $string_translations[ $string_id ][ $lang ]['value'];
 			}
 
 		}
@@ -108,13 +108,13 @@ class WPML_Gutenberg_Strings_In_Block {
 	}
 
 	/**
-	 * @param array $block
+	 * @param WP_Block_Parser_Block $block
 	 *
 	 * @return null|string
 	 */
-	private function get_block_string_id( $block ) {
-		if ( isset( $block['blockName'], $block['innerHTML'] ) && '' !== trim( $block['innerHTML'] ) ) {
-			return $this->get_string_id( $block['blockName'], $block['innerHTML'] );
+	private function get_block_string_id( WP_Block_Parser_Block $block ) {
+		if ( isset( $block->blockName, $block->innerHTML ) && '' !== trim( $block->innerHTML ) ) {
+			return $this->get_string_id( $block->blockName, $block->innerHTML );
 		} else {
 			return null;
 		}
@@ -156,7 +156,7 @@ class WPML_Gutenberg_Strings_In_Block {
 
 	/**
 	 * @param DOMNode $element
-	 * @param string $value
+	 * @param string  $value
 	 */
 	private function set_element_value( DOMNode $element, $value ) {
 		if ( $element instanceof DOMAttr ) {
@@ -171,31 +171,31 @@ class WPML_Gutenberg_Strings_In_Block {
 	}
 
 	/**
-	 * @param array $block
+	 * @param WP_Block_Parser_Block $block
 	 *
 	 * @return array|null
 	 */
-	private function get_block_queries( $block ) {
+	private function get_block_queries( WP_Block_Parser_Block $block ) {
 		if ( null === $this->block_types ) {
 			$this->block_types = $this->config_option->get();
 		}
 
-		if ( isset( $block['blockName'], $block['innerHTML'] ) && array_key_exists( $block['blockName'], $this->block_types ) ) {
-			return $this->block_types[ $block['blockName'] ];
+		if ( isset( $block->blockName, $block->innerHTML ) && array_key_exists( $block->blockName, $this->block_types ) ) {
+			return $this->block_types[ $block->blockName ];
 		} else {
 			return null;
 		}
 	}
 
 	/**
-	 * @param array $block
+	 * @param WP_Block_Parser_Block $block
 	 *
 	 * @return DOMDocument
 	 */
-	private function get_dom( $block ) {
+	private function get_dom( WP_Block_Parser_Block $block ) {
 		$dom = new DOMDocument();
 		libxml_use_internal_errors( true );
-		$dom->loadHTML( '<div>' . $block['innerHTML'] . '</div>');
+		$dom->loadHTML( '<div>' . $block->innerHTML . '</div>' );
 		libxml_clear_errors();
 
 		// Remove doc type and <html> <body> wrappers
@@ -206,11 +206,11 @@ class WPML_Gutenberg_Strings_In_Block {
 	}
 
 	/**
-	 * @param array $block
+	 * @param WP_Block_Parser_Block $block
 	 *
 	 * @return DOMXPath
 	 */
-	private function get_domxpath( $block ) {
+	private function get_domxpath( WP_Block_Parser_Block $block ) {
 		$dom = $this->get_dom( $block );
 
 		return new DOMXPath( $dom );
