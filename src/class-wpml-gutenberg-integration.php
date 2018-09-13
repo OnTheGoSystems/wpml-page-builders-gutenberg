@@ -91,8 +91,8 @@ class WPML_Gutenberg_Integration {
 
 			}
 
-			if ( isset( $block['innerBlocks'] ) ) {
-				$this->register_blocks( $block['innerBlocks'], $package_data );
+			if ( isset( $block->innerBlocks ) ) {
+				$this->register_blocks( $block->innerBlocks, $package_data );
 			}
 
 		}
@@ -140,12 +140,12 @@ class WPML_Gutenberg_Integration {
 		foreach ( $blocks as &$block ) {
 			$block = $this->strings_in_blocks->update( $block, $string_translations, $lang );
 
-			if ( isset( $block['blockName'] ) && 'core/block' === $block['blockName'] ) {
-				$block['attrs']['ref'] = apply_filters( 'wpml_object_id', $block['attrs']['ref'], 'wp_block', true, $lang );
+			if ( isset( $block->blockName ) && 'core/block' === $block->blockName ) {
+				$block->attrs['ref'] = apply_filters( 'wpml_object_id', $block->attrs['ref'], 'wp_block', true, $lang );
 			}
-			if ( isset( $block['innerBlocks'] ) ) {
-				$block['innerBlocks'] = $this->update_block_translations(
-					$block['innerBlocks'],
+			if ( isset( $block->innerBlocks ) ) {
+				$block->innerBlocks = $this->update_block_translations(
+					$block->innerBlocks,
 					$string_translations,
 					$lang
 				);
@@ -156,19 +156,19 @@ class WPML_Gutenberg_Integration {
 	}
 
 	/**
-	 * @param array $block
+	 * @param WP_Block_Parser_Block $block
 	 *
 	 * @return string
 	 */
-	private function render_block( $block ) {
+	private function render_block( WP_Block_Parser_Block $block ) {
 		$content = '';
 
-		if ( isset( $block['blockName'] ) ) {
-			$block_type = preg_replace( '/^core\//', '', $block['blockName'] );
+		if ( isset( $block->blockName ) ) {
+			$block_type = preg_replace( '/^core\//', '', $block->blockName );
 
 			$block_attributes = '';
-			if ( $block['attrs'] ) {
-				$block_attributes = ' ' . json_encode( $block['attrs'] );
+			if ( $block->attrs ) {
+				$block_attributes = ' ' . json_encode( $block->attrs );
 			}
 			$content .= '<!-- wp:' . $block_type . $block_attributes . ' -->';
 
@@ -177,7 +177,7 @@ class WPML_Gutenberg_Integration {
 			$content .= '<!-- /wp:' . $block_type . ' -->';
 
 		} else {
-			$content .= $block['innerHTML'];
+			$content .= $block->innerHTML;
 		}
 
 		return $content;
@@ -191,19 +191,19 @@ class WPML_Gutenberg_Integration {
 	 */
 	private function render_inner_HTML( $block ) {
 
-		if ( isset ( $block['innerBlocks'] ) && count( $block['innerBlocks'] ) ) {
+		if ( isset ( $block->innerBlocks ) && count( $block->innerBlocks ) ) {
 			$inner_html_parts = $this->guess_inner_HTML_parts( $block );
 
 			$content = $inner_html_parts[0];
 
-			foreach ( $block['innerBlocks'] as $inner_block ) {
+			foreach ( $block->innerBlocks as $inner_block ) {
 				$content .= $this->render_block( $inner_block );
 			}
 
 			$content .= $inner_html_parts[1];
 
 		} else {
-			$content = $block['innerHTML'];
+			$content = $block->innerHTML;
 		}
 
 		return $content;
@@ -223,7 +223,7 @@ class WPML_Gutenberg_Integration {
 	 * @return array
 	 */
 	private function guess_inner_HTML_parts( $block ) {
-		$inner_HTML = $block['innerHTML'];
+		$inner_HTML = $block->innerHTML;
 
 		$parts = array( $inner_HTML, '' );
 
