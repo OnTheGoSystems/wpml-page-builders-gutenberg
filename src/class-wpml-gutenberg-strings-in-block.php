@@ -63,8 +63,8 @@ class WPML_Gutenberg_Strings_In_Block {
 
 	/**
 	 * @param WP_Block_Parser_Block $block
-	 * @param array $string_translations
-	 * @param string $lang
+	 * @param array                 $string_translations
+	 * @param string                $lang
 	 *
 	 * @return array
 	 */
@@ -156,7 +156,7 @@ class WPML_Gutenberg_Strings_In_Block {
 
 	/**
 	 * @param DOMNode $element
-	 * @param string $value
+	 * @param string  $value
 	 */
 	private function set_element_value( DOMNode $element, $value ) {
 		if ( $element instanceof DOMAttr ) {
@@ -195,7 +195,7 @@ class WPML_Gutenberg_Strings_In_Block {
 	private function get_dom( WP_Block_Parser_Block $block ) {
 		$dom = new DOMDocument();
 		libxml_use_internal_errors( true );
-		$dom->loadHTML( '<div>' . $block->innerHTML . '</div>');
+		$dom->loadHTML( '<div>' . $block->innerHTML . '</div>' );
 		libxml_clear_errors();
 
 		// Remove doc type and <html> <body> wrappers
