@@ -181,7 +181,7 @@ class WPML_Gutenberg_Integration {
 			$content .= '<!-- /wp:' . $block_type . ' -->';
 
 		} else {
-			$content .= $block->innerHTML;
+			$content .= $block['innerHTML'];
 		}
 
 		return $content;
