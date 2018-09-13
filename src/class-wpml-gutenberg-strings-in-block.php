@@ -74,7 +74,7 @@ class WPML_Gutenberg_Strings_In_Block {
 
 		if ( $block_queries ) {
 
-			$dom   = $this->get_dom( $block );
+			$dom   = $this->get_dom( $block->innerHTML );
 			$xpath = new DOMXPath( $dom );
 			foreach ( $block_queries as $query ) {
 				$elements = $xpath->query( $query );
@@ -162,12 +162,24 @@ class WPML_Gutenberg_Strings_In_Block {
 		if ( $element instanceof DOMAttr ) {
 			$element->parentNode->setAttribute( $element->name, $value );
 		} else {
-			$fragment = $element->ownerDocument->createDocumentFragment();
-			$fragment->appendXML( $value );
-			$clone = $element->cloneNode(); // Get element copy without children
-			$clone->appendChild( $fragment );
+			$clone = $this->clone_node_without_children( $element );
+
+			$fragment = $this->get_dom( $value )->firstChild; // Skip the wrapping div
+			foreach ( $fragment->childNodes as $child ) {
+				$clone->appendChild( $element->ownerDocument->importNode( $child, true ) );
+			}
+
 			$element->parentNode->replaceChild( $clone, $element );
 		}
+	}
+
+	/**
+	 * @param DOMNode $element
+	 *
+	 * @return DOMNode
+	 */
+	private function clone_node_without_children( DOMNode $element ) {
+		return $element->cloneNode( false );
 	}
 
 	/**
@@ -188,14 +200,14 @@ class WPML_Gutenberg_Strings_In_Block {
 	}
 
 	/**
-	 * @param WP_Block_Parser_Block $block
+	 * @param string $html
 	 *
 	 * @return DOMDocument
 	 */
-	private function get_dom( WP_Block_Parser_Block $block ) {
+	private function get_dom( $html ) {
 		$dom = new DOMDocument();
 		libxml_use_internal_errors( true );
-		$dom->loadHTML( '<div>' . $block->innerHTML . '</div>' );
+		$dom->loadHTML( '<div>' . $html . '</div>' );
 		libxml_clear_errors();
 
 		// Remove doc type and <html> <body> wrappers
@@ -211,7 +223,7 @@ class WPML_Gutenberg_Strings_In_Block {
 	 * @return DOMXPath
 	 */
 	private function get_domxpath( WP_Block_Parser_Block $block ) {
-		$dom = $this->get_dom( $block );
+		$dom = $this->get_dom( $block->innerHTML );
 
 		return new DOMXPath( $dom );
 	}
