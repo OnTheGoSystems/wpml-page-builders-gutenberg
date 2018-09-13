@@ -123,8 +123,8 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$block_name = 'core/paragraph';
 
 		$target_lang                 = 'de';
-		$original_block_inner_HTML   = 'some block content';
-		$translated_block_inner_HTML = 'some block content ( TRANSLATED )';
+		$original_block_inner_HTML   = 'some block content<br>';
+		$translated_block_inner_HTML = 'some block content ( TRANSLATED )<br>';
 
 
 		$strings = array(
@@ -194,5 +194,6 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		);
 
 	}
+
 
 }
