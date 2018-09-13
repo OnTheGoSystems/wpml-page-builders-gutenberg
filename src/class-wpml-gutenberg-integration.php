@@ -73,7 +73,7 @@ class WPML_Gutenberg_Integration {
 	 * @param array $blocks
 	 * @param array $package_data
 	 */
-	private function register_blocks( $blocks, $package_data ) {
+	private function register_blocks( array $blocks, array $package_data ) {
 
 		foreach ( $blocks as $block ) {
 
