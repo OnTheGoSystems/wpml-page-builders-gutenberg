@@ -5,7 +5,9 @@
  */
 class WPML_Gutenberg_Integration {
 
-	const PACKAGE_ID = 'Gutenberg';
+	const PACKAGE_ID              = 'Gutenberg';
+	const GUTENBERG_OPENING_START = '<!-- wp:';
+	const GUTENBERG_CLOSING_START = '<!-- /wp:';
 
 	/**
 	 * @var WPML_Gutenberg_Strings_In_Block
@@ -36,6 +38,7 @@ class WPML_Gutenberg_Integration {
 		add_action( 'wpml_page_builder_register_strings', array( $this, 'register_strings' ), 10, 2 );
 		add_action( 'wpml_page_builder_string_translated', array( $this, 'string_translated' ), 10, 5 );
 		add_filter( 'wpml_config_array', array( $this, 'wpml_config_filter' ) );
+		add_filter( 'wpml_pb_should_body_be_translated', array( $this, 'should_body_be_translated_filter' ), PHP_INT_MAX, 3 );
 	}
 
 	/**
@@ -174,11 +177,11 @@ class WPML_Gutenberg_Integration {
 			if ( $block->attrs ) {
 				$block_attributes = ' ' . json_encode( $block->attrs );
 			}
-			$content .= '<!-- wp:' . $block_type . $block_attributes . ' -->';
+			$content .= self::GUTENBERG_OPENING_START . $block_type . $block_attributes . ' -->';
 
 			$content .= $this->render_inner_HTML( $block );
 
-			$content .= '<!-- /wp:' . $block_type . ' -->';
+			$content .= self::GUTENBERG_CLOSING_START . $block_type . ' -->';
 
 		} else {
 			$content .= $block['innerHTML'];
@@ -258,4 +261,27 @@ class WPML_Gutenberg_Integration {
 		return $config_data;
 	}
 
+	/**
+	 * @param bool    $translate
+	 * @param WP_Post $post
+	 * @param string  $context
+	 *
+	 * @return bool
+	 */
+	public function should_body_be_translated_filter( $translate, WP_Post $post, $context = '' ) {
+		if ( 'translate_images_in_post_content' === $context && $this->is_gutenberg_post( $post ) ) {
+			$translate = true;
+		}
+
+		return $translate;
+	}
+
+	/**
+	 * @param WP_Post $post
+	 *
+	 * @return bool
+	 */
+	private function is_gutenberg_post( WP_Post $post ) {
+		return (bool) preg_match( '/' . self::GUTENBERG_OPENING_START . '/', $post->post_content );
+	}
 }

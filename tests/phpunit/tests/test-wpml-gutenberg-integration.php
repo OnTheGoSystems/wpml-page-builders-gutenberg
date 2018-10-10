@@ -32,6 +32,10 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			'string_translated'
 		), 10, 5 );
 		WP_Mock::expectFilterAdded( 'wpml_config_array', array( $subject, 'wpml_config_filter' ) );
+		WP_Mock::expectFilterAdded( 'wpml_pb_should_body_be_translated', array(
+			$subject,
+			'should_body_be_translated_filter'
+		), PHP_INT_MAX, 3 );
 
 		$subject->add_hooks();
 	}
@@ -54,14 +58,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_registers_strings() {
-
-		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
-		$config_option->shouldReceive( 'get' )->andReturn( array() );
-
-		$subject = new WPML_Gutenberg_Integration(
-			new WPML_Gutenberg_Strings_In_Block( $config_option ),
-			$config_option
-		);
+		$subject = $this->get_subject();
 
 		$post               = \Mockery::mock( 'WP_Post' );
 		$post->post_content = 'post content';
@@ -143,14 +140,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_updates_translated_page() {
-
-		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
-		$config_option->shouldReceive( 'get' )->andReturn( array() );
-
-		$subject = new WPML_Gutenberg_Integration(
-			new WPML_Gutenberg_Strings_In_Block( $config_option ),
-			$config_option
-		);
+		$subject = $this->get_subject();
 
 		$original_post               = \Mockery::mock( 'WP_Post' );
 		$original_post->post_content = 'Post content';
@@ -214,13 +204,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 * @dataProvider inner_html_provider
 	 */
 	public function it_updates_inner_blocks( $inner_html, $inner_html_before, $inner_html_after ) {
-		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
-		$config_option->shouldReceive( 'get' )->andReturn( array() );
-
-		$subject = new WPML_Gutenberg_Integration(
-			new WPML_Gutenberg_Strings_In_Block( $config_option ),
-			$config_option
-		);
+		$subject = $this->get_subject();
 
 		$original_post               = \Mockery::mock( 'WP_Post' );
 		$original_post->post_content = 'Post content';
@@ -302,5 +286,65 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		);
 	}
 
+	/**
+	 * @test
+	 * @group wpmlcore-5923
+	 */
+	public function it_should_not_alter_body_be_translated_if_context_is_translate_images_in_post_content() {
+		$post = $this->get_post( '<!-- wp:core -->Some content<! /wp:core -->' );
 
+		$subject = $this->get_subject();
+
+		$this->assertFalse( $subject->should_body_be_translated_filter( false, $post, 'some_context' ) );
+		$this->assertTrue( $subject->should_body_be_translated_filter( true, $post, 'some_context' ) );
+	}
+
+	/**
+	 * @test
+	 * @group wpmlcore-5923
+	 */
+	public function it_should_not_alter_body_be_translated_if_not_a_gutenberg_post() {
+		$post = $this->get_post( 'Hello [shortcode]there![/shortcode]' );
+
+		$subject = $this->get_subject();
+
+		$this->assertFalse( $subject->should_body_be_translated_filter( false, $post, 'translate_images_in_post_content' ) );
+		$this->assertTrue( $subject->should_body_be_translated_filter( true, $post, 'translate_images_in_post_content' ) );
+	}
+
+	/**
+	 * @test
+	 * @group wpmlcore-5923
+	 */
+	public function it_should_return_true_for_body_be_translated() {
+		$post = $this->get_post( '<!-- wp:core -->Some content<! /wp:core -->' );
+
+		$subject = $this->get_subject();
+
+		$this->assertTrue( $subject->should_body_be_translated_filter( false, $post, 'translate_images_in_post_content' ) );
+		$this->assertTrue( $subject->should_body_be_translated_filter( true, $post, 'translate_images_in_post_content' ) );
+	}
+
+	public function get_subject( $config_option = null ) {
+		if ( ! $config_option ) {
+			$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+			$config_option->shouldReceive( 'get' )->andReturn( array() );
+		}
+
+		return new WPML_Gutenberg_Integration(
+			new WPML_Gutenberg_Strings_In_Block( $config_option ),
+			$config_option
+		);
+	}
+
+	/**
+	 * @param string content
+	 *
+	 * @return WP_Post|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private function get_post( $content ) {
+		$post = $this->getMockBuilder( 'WP_Post' )->getMock();
+		$post->post_content = $content;
+		return $post;
+	}
 }
