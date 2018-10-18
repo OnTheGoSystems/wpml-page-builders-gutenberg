@@ -80,7 +80,12 @@ class WPML_Gutenberg_Integration {
 
 		foreach ( $blocks as $block ) {
 
+			if ( ! $block instanceof WP_Block_Parser_Block && $block['blockName'] ) {
+				$block = new WP_Block_Parser_Block( $block['blockName'], $block['attrs'], $block['innerBlocks'], $block['innerHTML'] );
+			}
+
 			if ( $block instanceof WP_Block_Parser_Block ) {
+
 				$strings = $this->strings_in_blocks->find( $block );
 
 				foreach ( $strings as $string ) {
@@ -143,6 +148,11 @@ class WPML_Gutenberg_Integration {
 	 */
 	private function update_block_translations( $blocks, $string_translations, $lang ) {
 		foreach ( $blocks as &$block ) {
+
+			if ( ! $block instanceof WP_Block_Parser_Block && $block['blockName'] ) {
+				$block = new WP_Block_Parser_Block( $block['blockName'], $block['attrs'], $block['innerBlocks'], $block['innerHTML'] );
+			}
+
 			if ( $block instanceof WP_Block_Parser_Block ) {
 				$block = $this->strings_in_blocks->update( $block, $string_translations, $lang );
 
@@ -169,6 +179,10 @@ class WPML_Gutenberg_Integration {
 	 */
 	private function render_block( $block ) {
 		$content = '';
+
+		if ( ! $block instanceof WP_Block_Parser_Block && $block['blockName'] ) {
+			$block = new WP_Block_Parser_Block( $block['blockName'], $block['attrs'], $block['innerBlocks'], $block['innerHTML'] );
+		}
 
 		if ( $block instanceof WP_Block_Parser_Block ) {
 			$block_type = preg_replace( '/^core\//', '', $block->blockName );
