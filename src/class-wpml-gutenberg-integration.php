@@ -63,7 +63,7 @@ class WPML_Gutenberg_Integration {
 			do_action( 'wpml_start_string_package_registration', $package_data );
 
 			$this->register_blocks(
-				gutenberg_parse_blocks( $post->post_content ),
+				$this->parse_blocks( $post->post_content ),
 				$package_data
 			);
 
@@ -124,7 +124,7 @@ class WPML_Gutenberg_Integration {
 	) {
 
 		if ( self::PACKAGE_ID === $package_kind ) {
-			$blocks = gutenberg_parse_blocks( $original_post->post_content );
+			$blocks = $this->parse_blocks( $original_post->post_content );
 
 			$blocks = $this->update_block_translations( $blocks, $string_translations, $lang );
 
@@ -297,5 +297,16 @@ class WPML_Gutenberg_Integration {
 	 */
 	private function is_gutenberg_post( WP_Post $post ) {
 		return (bool) preg_match( '/' . self::GUTENBERG_OPENING_START . '/', $post->post_content );
+	}
+
+	private function parse_blocks( $content ) {
+		global $wp_version;
+		if ( version_compare( $wp_version, '5.0-beta1', '>=' ) ) {
+			return parse_blocks( $content );
+		} else {
+			return gutenberg_parse_blocks( $content );
+		}
+
+
 	}
 }
