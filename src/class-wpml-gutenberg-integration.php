@@ -188,7 +188,7 @@ class WPML_Gutenberg_Integration {
 			$block_type = preg_replace( '/^core\//', '', $block->blockName );
 
 			$block_attributes = '';
-			if ( $block->attrs ) {
+			if ( $this->has_non_empty_attributes( $block ) ) {
 				$block_attributes = ' ' . json_encode( $block->attrs );
 			}
 			$content .= self::GUTENBERG_OPENING_START . $block_type . $block_attributes . ' -->';
@@ -203,6 +203,10 @@ class WPML_Gutenberg_Integration {
 
 		return $content;
 
+	}
+
+	private function has_non_empty_attributes( WP_Block_Parser_Block $block ) {
+		return (bool) ( (array) $block->attrs );
 	}
 
 	/**
