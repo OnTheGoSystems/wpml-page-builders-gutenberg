@@ -81,7 +81,7 @@ class WPML_Gutenberg_Integration {
 		foreach ( $blocks as $block ) {
 
 			if ( ! $block instanceof WP_Block_Parser_Block && $block['blockName'] ) {
-				$block = new WP_Block_Parser_Block( $block['blockName'], $block['attrs'], $block['innerBlocks'], $block['innerHTML'] );
+				$block = new WP_Block_Parser_Block( $block['blockName'], $block['attrs'], $block['innerBlocks'], $block['innerHTML'], $block['innerContent'] );
 			}
 
 			if ( $block instanceof WP_Block_Parser_Block ) {
@@ -150,7 +150,7 @@ class WPML_Gutenberg_Integration {
 		foreach ( $blocks as &$block ) {
 
 			if ( ! $block instanceof WP_Block_Parser_Block && $block['blockName'] ) {
-				$block = new WP_Block_Parser_Block( $block['blockName'], $block['attrs'], $block['innerBlocks'], $block['innerHTML'] );
+				$block = new WP_Block_Parser_Block( $block['blockName'], $block['attrs'], $block['innerBlocks'], $block['innerHTML'], $block['innerContent'] );
 			}
 
 			if ( $block instanceof WP_Block_Parser_Block ) {
@@ -181,7 +181,7 @@ class WPML_Gutenberg_Integration {
 		$content = '';
 
 		if ( ! $block instanceof WP_Block_Parser_Block && $block['blockName'] ) {
-			$block = new WP_Block_Parser_Block( $block['blockName'], $block['attrs'], $block['innerBlocks'], $block['innerHTML'] );
+			$block = new WP_Block_Parser_Block( $block['blockName'], $block['attrs'], $block['innerBlocks'], $block['innerHTML'], $block['innerContent'] );
 		}
 
 		if ( $block instanceof WP_Block_Parser_Block ) {
