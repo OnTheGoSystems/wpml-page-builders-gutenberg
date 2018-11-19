@@ -10,6 +10,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmlcore-6066
 	 */
 	public function it_finds_paragraph() {
 
@@ -19,7 +20,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 
 		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
 
-		$paragraph = 'some paragraph';
+		$paragraph = 'some paragraph &amp; special chars';
 
 		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
 		$block->blockName = 'core/paragraph';
@@ -32,7 +33,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$string = $strings[0];
 
 		$this->assertEquals( $block->blockName, $string->name );
-		$this->assertEquals( $paragraph, $string->value );
+		$this->assertEquals( html_entity_decode( $paragraph ), $string->value );
 		$this->assertEquals( 'LINE', $string->type );
 
 		$paragraph = '<strong>some</strong> paragraph';
@@ -123,8 +124,8 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$block_name = 'core/paragraph';
 
 		$target_lang                 = 'de';
-		$original_block_inner_HTML   = 'some block content<br>';
-		$translated_block_inner_HTML = 'some block content ( TRANSLATED )<br>';
+		$original_block_inner_HTML   = 'some block content &amp; special chars<br>';
+		$translated_block_inner_HTML = 'some block content &amp; special chars ( TRANSLATED )<br>';
 
 
 		$strings = array(
@@ -143,6 +144,83 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$updated_block = $strings_in_block->update( $block, $strings, $target_lang );
 
 		$this->assertEquals( '<p>' . $translated_block_inner_HTML . '</p>', $updated_block->innerHTML );
+
+	}
+
+	/**
+	 * @test
+	 * @group wpmlcore-6066
+	 */
+	public function it_updates_paragraph_with_html_entities() {
+
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( array( 'core/paragraph' => array( '//p' ) ) );
+
+		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+
+		$block_name = 'core/paragraph';
+
+		$target_lang                 = 'de';
+		$original_block_inner_HTML   = 'some block content &amp; special chars';
+		$decoded_inner_HTML          = html_entity_decode( $original_block_inner_HTML );
+		$translated_block_inner_HTML = 'some block content &amp; special chars ( TRANSLATED )';
+
+
+		$strings = array(
+			md5( $block_name . $decoded_inner_HTML ) => array(
+				$target_lang => array(
+					'value'  => html_entity_decode( $translated_block_inner_HTML ),
+					'status' => (string) ICL_TM_COMPLETE,
+				)
+			)
+		);
+
+		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName = $block_name;
+		$block->innerHTML = '<p>' . $original_block_inner_HTML . '</p>';
+
+		$updated_block = $strings_in_block->update( $block, $strings, $target_lang );
+
+		$this->assertEquals( '<p>' . $translated_block_inner_HTML . '</p>', $updated_block->innerHTML );
+
+	}
+
+	/**
+	 * @test
+	 * @group wpmlcore-6066
+	 */
+	public function it_updates_a_visual_block_with_html_entities() {
+
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( array( 'core/visual_block' => array( '//div' ) ) );
+
+		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+
+		$block_name = 'core/visual_block';
+
+		$target_lang                 = 'de';
+		$original_block_inner_HTML   = '<div>some block content &amp; special chars</div>';
+		$translated_block_inner_HTML = '<div>some block content &amp; special chars ( TRANSLATED )</div>';
+
+
+		$strings = array(
+			md5( $block_name . $original_block_inner_HTML ) => array(
+				$target_lang => array(
+					'value'  => $translated_block_inner_HTML,
+					'status' => (string) ICL_TM_COMPLETE,
+				)
+			)
+		);
+
+		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName = $block_name;
+		$block->innerHTML = '<div>' . $original_block_inner_HTML . '</div>';
+
+		$updated_block = $strings_in_block->update( $block, $strings, $target_lang );
+
+		$this->assertEquals( '<div>' . $translated_block_inner_HTML . '</div>', $updated_block->innerHTML );
 
 	}
 

@@ -151,6 +151,10 @@ class WPML_Gutenberg_Strings_In_Block {
 			$type = 'VISUAL';
 		}
 
+		if ( 'VISUAL' !== $type ) {
+			$innerHTML = html_entity_decode( $innerHTML );
+		}
+
 		return array( $innerHTML, $type );
 	}
 
