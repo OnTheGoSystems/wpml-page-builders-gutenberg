@@ -211,6 +211,7 @@ class WPML_Gutenberg_Strings_In_Block {
 	private function get_dom( $html ) {
 		$dom = new DOMDocument();
 		libxml_use_internal_errors( true );
+		$html = mb_convert_encoding( $html, 'HTML-ENTITIES', 'UTF-8' );
 		$dom->loadHTML( '<div>' . $html . '</div>' );
 		libxml_clear_errors();
 
@@ -231,5 +232,4 @@ class WPML_Gutenberg_Strings_In_Block {
 
 		return new DOMXPath( $dom );
 	}
-
 }

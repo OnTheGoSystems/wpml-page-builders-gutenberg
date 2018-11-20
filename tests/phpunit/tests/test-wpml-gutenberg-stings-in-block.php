@@ -20,7 +20,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 
 		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
 
-		$paragraph = 'some paragraph &amp; special chars';
+		$paragraph = 'some paragraph &amp; special chars &amp; emoji ❤ 😀 👍️';
 
 		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
 		$block->blockName = 'core/paragraph';
@@ -162,9 +162,9 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$block_name = 'core/paragraph';
 
 		$target_lang                 = 'de';
-		$original_block_inner_HTML   = 'some block content &amp; special chars';
+		$original_block_inner_HTML   = 'some block content &amp; special chars &amp; emoji ❤ 😀 👍';
 		$decoded_inner_HTML          = html_entity_decode( $original_block_inner_HTML );
-		$translated_block_inner_HTML = 'some block content &amp; special chars ( TRANSLATED )';
+		$translated_block_inner_HTML = 'some block content &amp; special chars &amp; emoji ❤ 😀 👍 ( TRANSLATED )';
 
 
 		$strings = array(
@@ -201,8 +201,8 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$block_name = 'core/visual_block';
 
 		$target_lang                 = 'de';
-		$original_block_inner_HTML   = '<div>some block content &amp; special chars</div>';
-		$translated_block_inner_HTML = '<div>some block content &amp; special chars ( TRANSLATED )</div>';
+		$original_block_inner_HTML   = '<div>some block content &amp; special chars &amp; emoji ❤ 😀 👍</div>';
+		$translated_block_inner_HTML = '<div>some block content &amp; special chars &amp; emoji ❤ 😀 👍 ( TRANSLATED )</div>';
 
 
 		$strings = array(
