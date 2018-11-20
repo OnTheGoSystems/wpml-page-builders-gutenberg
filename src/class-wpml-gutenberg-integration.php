@@ -8,6 +8,7 @@ class WPML_Gutenberg_Integration {
 	const PACKAGE_ID              = 'Gutenberg';
 	const GUTENBERG_OPENING_START = '<!-- wp:';
 	const GUTENBERG_CLOSING_START = '<!-- /wp:';
+	const CLASSIC_BLOCK_NAME      = 'core/classic-block';
 
 	/**
 	 * @var WPML_Gutenberg_Strings_In_Block
@@ -80,32 +81,44 @@ class WPML_Gutenberg_Integration {
 
 		foreach ( $blocks as $block ) {
 
-			if ( ! $block instanceof WP_Block_Parser_Block && $block['blockName'] ) {
-				$block = new WP_Block_Parser_Block( $block['blockName'], $block['attrs'], $block['innerBlocks'], $block['innerHTML'], $block['innerContent'] );
+			$block   = $this->sanitize_block( $block );
+			$strings = $this->strings_in_blocks->find( $block );
+
+			foreach ( $strings as $string ) {
+
+				do_action(
+					'wpml_register_string',
+					$string->value,
+					$string->id,
+					$package_data,
+					$string->name,
+					$string->type
+				);
+
 			}
 
-			if ( $block instanceof WP_Block_Parser_Block ) {
-
-				$strings = $this->strings_in_blocks->find( $block );
-
-				foreach ( $strings as $string ) {
-
-					do_action(
-						'wpml_register_string',
-						$string->value,
-						$string->id,
-						$package_data,
-						$string->name,
-						$string->type
-					);
-
-				}
-
-				if ( isset( $block->innerBlocks ) ) {
-					$this->register_blocks( $block->innerBlocks, $package_data );
-				}
+			if ( isset( $block->innerBlocks ) ) {
+				$this->register_blocks( $block->innerBlocks, $package_data );
 			}
 		}
+	}
+
+	/**
+	 * @param WP_Block_Parser_Block|array $block
+	 *
+	 * @return WP_Block_Parser_Block
+	 */
+	private function sanitize_block( $block ) {
+		if ( ! $block instanceof WP_Block_Parser_Block ) {
+
+			if ( empty( $block['blockName'] ) ) {
+				$block['blockName'] = self::CLASSIC_BLOCK_NAME;
+			}
+
+			$block = new WP_Block_Parser_Block( $block['blockName'], $block['attrs'], $block['innerBlocks'], $block['innerHTML'], $block['innerContent'] );
+		}
+
+		return $block;
 	}
 
 	/**
@@ -149,23 +162,18 @@ class WPML_Gutenberg_Integration {
 	private function update_block_translations( $blocks, $string_translations, $lang ) {
 		foreach ( $blocks as &$block ) {
 
-			if ( ! $block instanceof WP_Block_Parser_Block && $block['blockName'] ) {
-				$block = new WP_Block_Parser_Block( $block['blockName'], $block['attrs'], $block['innerBlocks'], $block['innerHTML'], $block['innerContent'] );
+			$block = $this->sanitize_block( $block );
+			$block = $this->strings_in_blocks->update( $block, $string_translations, $lang );
+
+			if ( isset( $block->blockName ) && 'core/block' === $block->blockName ) {
+				$block->attrs['ref'] = apply_filters( 'wpml_object_id', $block->attrs['ref'], 'wp_block', true, $lang );
 			}
-
-			if ( $block instanceof WP_Block_Parser_Block ) {
-				$block = $this->strings_in_blocks->update( $block, $string_translations, $lang );
-
-				if ( isset( $block->blockName ) && 'core/block' === $block->blockName ) {
-					$block->attrs['ref'] = apply_filters( 'wpml_object_id', $block->attrs['ref'], 'wp_block', true, $lang );
-				}
-				if ( isset( $block->innerBlocks ) ) {
-					$block->innerBlocks = $this->update_block_translations(
-						$block->innerBlocks,
-						$string_translations,
-						$lang
-					);
-				}
+			if ( isset( $block->innerBlocks ) ) {
+				$block->innerBlocks = $this->update_block_translations(
+					$block->innerBlocks,
+					$string_translations,
+					$lang
+				);
 			}
 		}
 
@@ -180,11 +188,9 @@ class WPML_Gutenberg_Integration {
 	private function render_block( $block ) {
 		$content = '';
 
-		if ( ! $block instanceof WP_Block_Parser_Block && $block['blockName'] ) {
-			$block = new WP_Block_Parser_Block( $block['blockName'], $block['attrs'], $block['innerBlocks'], $block['innerHTML'], $block['innerContent'] );
-		}
+		$block = $this->sanitize_block( $block );
 
-		if ( $block instanceof WP_Block_Parser_Block ) {
+		if ( self::CLASSIC_BLOCK_NAME !== $block->blockName ) {
 			$block_type = preg_replace( '/^core\//', '', $block->blockName );
 
 			$block_attributes = '';
@@ -196,9 +202,8 @@ class WPML_Gutenberg_Integration {
 			$content .= $this->render_inner_HTML( $block );
 
 			$content .= self::GUTENBERG_CLOSING_START . $block_type . ' -->';
-
 		} else {
-			$content .= $block['innerHTML'];
+			$content = wpautop( $block->innerHTML );
 		}
 
 		return $content;
@@ -210,7 +215,7 @@ class WPML_Gutenberg_Integration {
 	}
 
 	/**
-	 * @param array $block
+	 * @param WP_Block_Parser_Block $block
 	 *
 	 * @return string
 	 */
@@ -243,7 +248,7 @@ class WPML_Gutenberg_Integration {
 	 * The columns block also includes new lines: <div class="xxx">\n\n</div>
 	 * So we try to split at ></ and also include white space and new lines between the tags
 	 *
-	 * @param array $block
+	 * @param WP_Block_Parser_Block $block
 	 *
 	 * @return array
 	 */
