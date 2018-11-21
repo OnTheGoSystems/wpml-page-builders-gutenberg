@@ -59,6 +59,10 @@ class WPML_Gutenberg_Integration {
 	 */
 	function register_strings( WP_Post $post, $package_data ) {
 
+		if ( ! $this->is_gutenberg_post( $post ) ) {
+			return;
+		}
+
 		if ( self::PACKAGE_ID === $package_data['kind'] ) {
 
 			do_action( 'wpml_start_string_package_registration', $package_data );
