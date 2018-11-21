@@ -336,6 +336,84 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 	}
 
+	/**
+	 * @test
+	 * @group wpmlcore-6074
+	 */
+	public function it_updates_media_text_inner_blocks() {
+		$inner_html = '<div class="wp-block-media-text__content"></div>';
+		$inner_html_before = '<div class="wp-block-media-text__content">';
+		$inner_html_after = '</div>';
+
+		$subject = $this->get_subject();
+
+		$original_post               = \Mockery::mock( 'WP_Post' );
+		$original_post->post_content = 'Post content';
+
+		$translated_post_id = 22;
+
+		$target_lang = 'de';
+
+		$block_name                  = 'media-text';
+		$core_block_name             = 'core/' . $block_name; // Gutenberg prefixes with 'core/'
+		$attributes                  = array( 'att_1' => 'value_1', 'att_2' => 'value_2' );
+		$original_block_inner_HTML   = 'some block content';
+		$translated_block_inner_HTML = 'some block content ( TRANSLATED )';
+
+
+		$strings = array(
+			md5( $core_block_name . $original_block_inner_HTML ) => array(
+				$target_lang => array(
+					'value'  => $translated_block_inner_HTML,
+					'status' => (string) ICL_TM_COMPLETE,
+				)
+			)
+		);
+
+		$blocks = array();
+
+		$inner_block            = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$inner_block->blockName = $core_block_name;
+		$inner_block->attrs     = $attributes;
+		$inner_block->innerHTML = $original_block_inner_HTML;
+
+		$column_block = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$column_block->blockName  = 'core/' . $block_name;
+		$column_block->innerHTML   = $inner_html;
+		$column_block->attrs       = array();
+		$column_block->innerBlocks = array( $inner_block );
+
+		$blocks[] = $column_block;
+
+		\WP_Mock::userFunction( 'gutenberg_parse_blocks',
+			array(
+				'args'   => array( $original_post->post_content ),
+				'return' => $blocks,
+			)
+		);
+
+		$rendered_block = "<!-- wp:media-text -->";
+		$rendered_block .= $inner_html_before;
+		$rendered_block .= '<!-- wp:' . $block_name . ' ' . json_encode( $attributes ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
+		$rendered_block .= $inner_html_after;
+		$rendered_block .= "<!-- /wp:media-text -->";
+
+		\WP_Mock::userFunction( 'wp_update_post',
+			array(
+				'times' => 1,
+				'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => $rendered_block ) ),
+			) );
+
+		$subject->string_translated(
+			WPML_Gutenberg_Integration::PACKAGE_ID,
+			$translated_post_id,
+			$original_post,
+			$strings,
+			$target_lang
+		);
+
+	}
+
 	public function inner_html_provider() {
 
 		return array(
