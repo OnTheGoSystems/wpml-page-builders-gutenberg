@@ -257,17 +257,30 @@ class WPML_Gutenberg_Integration {
 
 		$parts = array( $inner_HTML, '' );
 
-		preg_match( '#>\s*</#', $inner_HTML, $matches );
+		switch( $block->blockName ) {
+			case 'core/media-text':
+				$html_to_find = '<div class="wp-block-media-text__content">';
+				$pos          = mb_strpos( $inner_HTML, $html_to_find ) + mb_strlen( $html_to_find );
+				$parts        = array(
+					mb_substr( $inner_HTML, 0, $pos ),
+					mb_substr( $inner_HTML, $pos )
+				);
+				break;
 
-		if ( count( $matches ) === 1 ) {
-			$parts = explode( $matches[0], $inner_HTML );
-			if ( count( $parts ) === 2 ) {
-				$match_mid_point = 1 + ( strlen( $matches[0] ) - 3 ) / 2;
-				// This is the first ">" char plus half the remaining between the tags
+			default:
+				preg_match( '#>\s*</#', $inner_HTML, $matches );
 
-				$parts[0]        .= substr( $matches[0], 0, $match_mid_point );
-				$parts[1]        = substr( $matches[0], $match_mid_point ) . $parts[1];
-			}
+				if ( count( $matches ) === 1 ) {
+					$parts = explode( $matches[0], $inner_HTML );
+					if ( count( $parts ) === 2 ) {
+						$match_mid_point = 1 + ( mb_strlen( $matches[0] ) - 3 ) / 2;
+						// This is the first ">" char plus half the remaining between the tags
+
+						$parts[0] .= mb_substr( $matches[0], 0, $match_mid_point );
+						$parts[1] = mb_substr( $matches[0], $match_mid_point ) . $parts[1];
+					}
+				}
+				break;
 		}
 
 		return $parts;
