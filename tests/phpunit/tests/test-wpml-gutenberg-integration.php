@@ -57,11 +57,40 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	/**
 	 * @test
 	 */
+	public function it_should_not_register_strings_if_not_a_post_built_with_the_block_editor() {
+		$subject = $this->get_subject();
+
+		$post               = \Mockery::mock( 'WP_Post' );
+		$post->post_content = 'post content with no block meta comment';
+
+		$package = array(
+			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
+		);
+
+		\WP_Mock::userFunction( 'gutenberg_parse_blocks',
+			array(
+				'times'  => 0,
+			)
+		);
+
+		\WP_Mock::userFunction( 'parse_blocks',
+			array(
+				'times'  => 0,
+			)
+		);
+
+		$subject->register_strings( $post, $package );
+
+	}
+
+	/**
+	 * @test
+	 */
 	public function it_registers_strings() {
 		$subject = $this->get_subject();
 
 		$post               = \Mockery::mock( 'WP_Post' );
-		$post->post_content = 'post content';
+		$post->post_content = '<!-- wp:something -->post content<!-- /wp:something -->';
 
 		$package = array(
 			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
