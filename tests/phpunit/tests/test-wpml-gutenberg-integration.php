@@ -37,6 +37,8 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			'should_body_be_translated_filter'
 		), PHP_INT_MAX, 3 );
 
+		WP_Mock::expectFilterAdded( 'wpml_get_translatable_types', array( $subject, 'remove_package_strings_type_filter' ), 11 );
+
 		$subject->add_hooks();
 	}
 
@@ -493,6 +495,28 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 		$this->assertTrue( $subject->should_body_be_translated_filter( false, $post, 'translate_images_in_post_content' ) );
 		$this->assertTrue( $subject->should_body_be_translated_filter( true, $post, 'translate_images_in_post_content' ) );
+	}
+
+	/**
+	 * @test
+	 * @group wpmlcore-6102
+	 */
+	public function it_should_remove_gutenberg_string_package_from_tm_filters() {
+		$types = array(
+			'post'      => array(),
+			'gutenberg' => array(),
+			'page'      => array(),
+		);
+
+		$expected_types = $types;
+		unset( $expected_types['gutenberg'] );
+
+		$subject = $this->get_subject();
+
+		$this->assertEquals(
+			$expected_types,
+			$subject->remove_package_strings_type_filter( $types )
+		);
 	}
 
 	public function get_subject( $config_option = null ) {
