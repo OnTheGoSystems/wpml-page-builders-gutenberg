@@ -40,6 +40,7 @@ class WPML_Gutenberg_Integration {
 		add_action( 'wpml_page_builder_string_translated', array( $this, 'string_translated' ), 10, 5 );
 		add_filter( 'wpml_config_array', array( $this, 'wpml_config_filter' ) );
 		add_filter( 'wpml_pb_should_body_be_translated', array( $this, 'should_body_be_translated_filter' ), PHP_INT_MAX, 3 );
+		add_filter( 'wpml_get_translatable_types', array( $this, 'remove_package_strings_type_filter' ), 11 );
 	}
 
 	/**
@@ -332,7 +333,21 @@ class WPML_Gutenberg_Integration {
 		} else {
 			return gutenberg_parse_blocks( $content );
 		}
+	}
 
+	/**
+	 * Remove Gutenberg (string package) from translation dashboard filters
+	 *
+	 * @param array $types
+	 *
+	 * @return mixed
+	 */
+	public function remove_package_strings_type_filter( $types ) {
 
+		if ( array_key_exists( 'gutenberg', $types ) ) {
+			unset( $types['gutenberg'] );
+		}
+
+		return $types;
 	}
 }
