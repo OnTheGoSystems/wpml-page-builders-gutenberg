@@ -21,17 +21,18 @@ class WPML_Gutenberg_Integration {
 	private $config_option;
 
 	/**
-	 * WPML_Gutenberg_Integration constructor.
-	 *
-	 * @param WPML_Gutenberg_Strings_In_Block $strings_in_block
-	 * @param WPML_Gutenberg_Config_Option $config_option
+	 * @var SitePress
 	 */
+	private $sitepress;
+
 	public function __construct(
 		WPML_Gutenberg_Strings_In_Block $strings_in_block,
-		WPML_Gutenberg_Config_Option $config_option
+		WPML_Gutenberg_Config_Option $config_option,
+		SitePress $sitepress
 	) {
 		$this->strings_in_blocks = $strings_in_block;
 		$this->config_option     = $config_option;
+		$this->sitepress         = $sitepress;
 	}
 
 	public function add_hooks() {
@@ -151,8 +152,9 @@ class WPML_Gutenberg_Integration {
 				$content .= $this->render_block( $block );
 			}
 
+			$this->sitepress->switch_lang( $lang );
 			wp_update_post( array( 'ID' => $translated_post_id, 'post_content' => $content ) );
-
+			$this->sitepress->switch_lang( null );
 		}
 
 	}
