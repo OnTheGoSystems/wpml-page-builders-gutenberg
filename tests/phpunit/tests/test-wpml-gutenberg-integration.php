@@ -16,7 +16,8 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 		$subject = new WPML_Gutenberg_Integration(
 			new WPML_Gutenberg_Strings_In_Block( $config_option ),
-			$config_option
+			$config_option,
+			$this->get_sitepress()
 		);
 
 		WP_Mock::expectFilterAdded( 'wpml_page_builder_support_required', array(
@@ -42,11 +43,16 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$subject->add_hooks();
 	}
 
+	/**
+	 * @test
+	 */
 	public function it_requires_support() {
+		$config_option = new WPML_Gutenberg_Config_Option();
 
 		$subject = new WPML_Gutenberg_Integration(
-			new WPML_Gutenberg_Strings_In_Block(),
-			new WPML_Gutenberg_Config_Option()
+			new WPML_Gutenberg_Strings_In_Block( $config_option ),
+			$config_option,
+			$this->get_sitepress()
 		);
 
 		$plugins = $subject->page_builder_support_required( array() );
@@ -169,10 +175,9 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmlcore-6221
 	 */
 	public function it_updates_translated_page() {
-		$subject = $this->get_subject();
-
 		$original_post               = \Mockery::mock( 'WP_Post' );
 		$original_post->post_content = 'Post content';
 
@@ -219,6 +224,10 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 				'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => $rendered_block ) ),
 			) );
 
+		$sitepress = $this->get_sitepress_for_update_in_lang( $target_lang );
+
+		$subject = $this->get_subject( null, $sitepress );
+
 		$subject->string_translated(
 			WPML_Gutenberg_Integration::PACKAGE_ID,
 			$translated_post_id,
@@ -232,10 +241,9 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	/**
 	 * @test
 	 * @group wpmlcore-5996
+	 * @group wpmlcore-6221
 	 */
 	public function it_updates_translated_page_with_empty_attributes_in_block() {
-		$subject = $this->get_subject();
-
 		$original_post               = \Mockery::mock( 'WP_Post' );
 		$original_post->post_content = 'Post content';
 
@@ -282,6 +290,10 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 				'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => $rendered_block ) ),
 			) );
 
+		$sitepress = $this->get_sitepress_for_update_in_lang( $target_lang );
+
+		$subject = $this->get_subject( null, $sitepress );
+
 		$subject->string_translated(
 			WPML_Gutenberg_Integration::PACKAGE_ID,
 			$translated_post_id,
@@ -294,12 +306,11 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmlcore-6221
 	 *
 	 * @dataProvider inner_html_provider
 	 */
 	public function it_updates_inner_blocks( $inner_html, $inner_html_before, $inner_html_after ) {
-		$subject = $this->get_subject();
-
 		$original_post               = \Mockery::mock( 'WP_Post' );
 		$original_post->post_content = 'Post content';
 
@@ -357,6 +368,10 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 				'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => $rendered_block ) ),
 			) );
 
+		$sitepress = $this->get_sitepress_for_update_in_lang( $target_lang );
+
+		$subject = $this->get_subject( null, $sitepress );
+
 		$subject->string_translated(
 			WPML_Gutenberg_Integration::PACKAGE_ID,
 			$translated_post_id,
@@ -370,6 +385,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	/**
 	 * @test
 	 * @group wpmlcore-6074
+	 * @group wpmlcore-6221
 	 */
 	public function it_updates_media_text_inner_blocks() {
 		$inner_html = '<div class="wp-block-media-text__content"></div>';
@@ -434,6 +450,10 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 				'times' => 1,
 				'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => $rendered_block ) ),
 			) );
+
+		$sitepress = $this->get_sitepress_for_update_in_lang( $target_lang );
+
+		$subject = $this->get_subject( null, $sitepress );
 
 		$subject->string_translated(
 			WPML_Gutenberg_Integration::PACKAGE_ID,
@@ -519,15 +539,18 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		);
 	}
 
-	public function get_subject( $config_option = null ) {
+	public function get_subject( $config_option = null, $sitepress = null ) {
 		if ( ! $config_option ) {
 			$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 			$config_option->shouldReceive( 'get' )->andReturn( array() );
 		}
 
+		$sitepress = $sitepress ? $sitepress : $this->get_sitepress();
+
 		return new WPML_Gutenberg_Integration(
 			new WPML_Gutenberg_Strings_In_Block( $config_option ),
-			$config_option
+			$config_option,
+			$sitepress
 		);
 	}
 
@@ -540,5 +563,18 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$post = $this->getMockBuilder( 'WP_Post' )->getMock();
 		$post->post_content = $content;
 		return $post;
+	}
+
+	private function get_sitepress() {
+		return $this->getMockBuilder( 'SitePress' )
+			->setMethods( array( 'switch_lang' ) )
+			->disableOriginalConstructor()->getMock();
+	}
+
+	private function get_sitepress_for_update_in_lang( $lang ) {
+		$sitepress = $this->get_sitepress();
+		$sitepress->expects( $this->exactly( 2 ) )->method( 'switch_lang' )
+			->withConsecutive( array( $lang ), array( null ) );
+		return $sitepress;
 	}
 }
