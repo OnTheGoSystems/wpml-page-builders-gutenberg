@@ -12,12 +12,15 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_adds_hooks() {
+		\Mockery::mock( 'WP_Post' );
+
 		$config_option = new WPML_Gutenberg_Config_Option();
 
 		$subject = new WPML_Gutenberg_Integration(
 			new WPML_Gutenberg_Strings_In_Block( $config_option ),
 			$config_option,
-			$this->get_sitepress()
+			$this->get_sitepress(),
+			$this->get_strings_registration()
 		);
 
 		WP_Mock::expectFilterAdded( 'wpml_page_builder_support_required', array(
@@ -47,12 +50,15 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_requires_support() {
+		\Mockery::mock( 'WP_Post' );
+
 		$config_option = new WPML_Gutenberg_Config_Option();
 
 		$subject = new WPML_Gutenberg_Integration(
 			new WPML_Gutenberg_Strings_In_Block( $config_option ),
 			$config_option,
-			$this->get_sitepress()
+			$this->get_sitepress(),
+			$this->get_strings_registration()
 		);
 
 		$plugins = $subject->page_builder_support_required( array() );
@@ -66,25 +72,18 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_should_not_register_strings_if_not_a_post_built_with_the_block_editor() {
-		$subject = $this->get_subject();
+		\Mockery::mock( 'WP_Post' );
+
+		$string_registration = $this->get_strings_registration();
+		$string_registration->expects( $this->never() )->method( 'register_strings' );
+
+		$subject = $this->get_subject( null, null, $string_registration );
 
 		$post               = \Mockery::mock( 'WP_Post' );
 		$post->post_content = 'post content with no block meta comment';
 
 		$package = array(
 			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
-		);
-
-		\WP_Mock::userFunction( 'gutenberg_parse_blocks',
-			array(
-				'times'  => 0,
-			)
-		);
-
-		\WP_Mock::userFunction( 'parse_blocks',
-			array(
-				'times'  => 0,
-			)
 		);
 
 		$subject->register_strings( $post, $package );
@@ -95,8 +94,6 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_registers_strings() {
-		$subject = $this->get_subject();
-
 		$post               = \Mockery::mock( 'WP_Post' );
 		$post->post_content = '<!-- wp:something -->post content<!-- /wp:something -->';
 
@@ -104,46 +101,12 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
 		);
 
-		$blocks = array();
+		$strings_registration = $this->get_strings_registration();
+		$strings_registration->expects( $this->once() )
+		                    ->method( 'register_strings' )
+		                    ->with( $post, $package );
 
-		$blocks['normal block']            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['normal block']->blockName = 'some name';
-		$blocks['normal block']->innerHTML = 'some block content';
-
-		$blocks['block without name']            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['block without name']->innerHTML = 'some content';
-
-		$blocks['block with empty content']            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['block with empty content']->blockName = 'some name';
-		$blocks['block with empty content']->innerHTML = '';
-
-		$blocks['block with only white space']            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['block with only white space']->blockName = 'some name';
-		$blocks['block with only white space']->innerHTML = "\n\r\t";
-
-		$inner_block            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$inner_block->blockName = 'inner block';
-		$inner_block->innerHTML = 'inner block html';
-
-		$blocks['columns block']              = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['columns block']->blockName   = 'columns';
-		$blocks['columns block']->innerBlocks = array( $inner_block );
-		$blocks['columns block']->innerHTML   = 'some block content';
-
-		\WP_Mock::userFunction( 'gutenberg_parse_blocks',
-			array(
-				'times'  => 1,
-				'args'   => array( $post->post_content ),
-				'return' => $blocks,
-			)
-		);
-
-		foreach ( $blocks as $type => $block ) {
-			$this->check_block_is_registered( $block, $type, $package );
-		}
-
-		\WP_Mock::expectAction( 'wpml_start_string_package_registration', $package );
-		\WP_Mock::expectAction( 'wpml_delete_unused_package_strings', $package );
+		$subject = $this->get_subject( null, null, $strings_registration );
 
 		$subject->register_strings( $post, $package );
 
@@ -539,18 +502,20 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		);
 	}
 
-	public function get_subject( $config_option = null, $sitepress = null ) {
+	public function get_subject( $config_option = null, $sitepress = null, $strings_registration = null ) {
 		if ( ! $config_option ) {
 			$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 			$config_option->shouldReceive( 'get' )->andReturn( array() );
 		}
 
-		$sitepress = $sitepress ? $sitepress : $this->get_sitepress();
+		$sitepress            = $sitepress ? $sitepress : $this->get_sitepress();
+		$strings_registration = $strings_registration ? $strings_registration : $this->get_strings_registration();
 
 		return new WPML_Gutenberg_Integration(
 			new WPML_Gutenberg_Strings_In_Block( $config_option ),
 			$config_option,
-			$sitepress
+			$sitepress,
+			$strings_registration
 		);
 	}
 
@@ -576,5 +541,11 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$sitepress->expects( $this->exactly( 2 ) )->method( 'switch_lang' )
 			->withConsecutive( array( $lang ), array( null ) );
 		return $sitepress;
+	}
+
+	private function get_strings_registration() {
+		return $this->getMockBuilder( 'WPML_Gutenberg_Strings_Registration' )
+			->setMethods( array( 'register_strings' ) )
+			->disableOriginalConstructor()->getMock();
 	}
 }

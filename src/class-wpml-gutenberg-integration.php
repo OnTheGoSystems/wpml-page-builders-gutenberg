@@ -25,14 +25,21 @@ class WPML_Gutenberg_Integration {
 	 */
 	private $sitepress;
 
+	/**
+	 * @var WPML_Gutenberg_Strings_Registration $strings_registration
+	 */
+	private $strings_registration;
+
 	public function __construct(
 		WPML_Gutenberg_Strings_In_Block $strings_in_block,
 		WPML_Gutenberg_Config_Option $config_option,
-		SitePress $sitepress
+		SitePress $sitepress,
+		WPML_Gutenberg_Strings_Registration $strings_registration
 	) {
-		$this->strings_in_blocks = $strings_in_block;
-		$this->config_option     = $config_option;
-		$this->sitepress         = $sitepress;
+		$this->strings_in_blocks    = $strings_in_block;
+		$this->config_option        = $config_option;
+		$this->sitepress            = $sitepress;
+		$this->strings_registration = $strings_registration;
 	}
 
 	public function add_hooks() {
@@ -66,46 +73,7 @@ class WPML_Gutenberg_Integration {
 		}
 
 		if ( self::PACKAGE_ID === $package_data['kind'] ) {
-
-			do_action( 'wpml_start_string_package_registration', $package_data );
-
-			$this->register_blocks(
-				$this->parse_blocks( $post->post_content ),
-				$package_data
-			);
-
-			do_action( 'wpml_delete_unused_package_strings', $package_data );
-
-		}
-	}
-
-	/**
-	 * @param array $blocks
-	 * @param array $package_data
-	 */
-	private function register_blocks( array $blocks, array $package_data ) {
-
-		foreach ( $blocks as $block ) {
-
-			$block   = $this->sanitize_block( $block );
-			$strings = $this->strings_in_blocks->find( $block );
-
-			foreach ( $strings as $string ) {
-
-				do_action(
-					'wpml_register_string',
-					$string->value,
-					$string->id,
-					$package_data,
-					$string->name,
-					$string->type
-				);
-
-			}
-
-			if ( isset( $block->innerBlocks ) ) {
-				$this->register_blocks( $block->innerBlocks, $package_data );
-			}
+			$this->strings_registration->register_strings( $post, $package_data );
 		}
 	}
 
@@ -114,7 +82,7 @@ class WPML_Gutenberg_Integration {
 	 *
 	 * @return WP_Block_Parser_Block
 	 */
-	private function sanitize_block( $block ) {
+	public static function sanitize_block( $block ) {
 		if ( ! $block instanceof WP_Block_Parser_Block ) {
 
 			if ( empty( $block['blockName'] ) ) {
@@ -143,7 +111,7 @@ class WPML_Gutenberg_Integration {
 	) {
 
 		if ( self::PACKAGE_ID === $package_kind ) {
-			$blocks = $this->parse_blocks( $original_post->post_content );
+			$blocks = self::parse_blocks( $original_post->post_content );
 
 			$blocks = $this->update_block_translations( $blocks, $string_translations, $lang );
 
@@ -169,7 +137,7 @@ class WPML_Gutenberg_Integration {
 	private function update_block_translations( $blocks, $string_translations, $lang ) {
 		foreach ( $blocks as &$block ) {
 
-			$block = $this->sanitize_block( $block );
+			$block = self::sanitize_block( $block );
 			$block = $this->strings_in_blocks->update( $block, $string_translations, $lang );
 
 			if ( isset( $block->blockName ) && 'core/block' === $block->blockName ) {
@@ -195,7 +163,7 @@ class WPML_Gutenberg_Integration {
 	private function render_block( $block ) {
 		$content = '';
 
-		$block = $this->sanitize_block( $block );
+		$block = self::sanitize_block( $block );
 
 		if ( self::CLASSIC_BLOCK_NAME !== $block->blockName ) {
 			$block_type = preg_replace( '/^core\//', '', $block->blockName );
@@ -328,7 +296,7 @@ class WPML_Gutenberg_Integration {
 		return (bool) preg_match( '/' . self::GUTENBERG_OPENING_START . '/', $post->post_content );
 	}
 
-	private function parse_blocks( $content ) {
+	public static function parse_blocks( $content ) {
 		global $wp_version;
 		if ( version_compare( $wp_version, '5.0-beta1', '>=' ) ) {
 			return parse_blocks( $content );
