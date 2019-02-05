@@ -3,15 +3,21 @@
 class WPML_Gutenberg_Integration_Factory {
 
 	public function create() {
-		/** @var SitePress $sitepress */
-		global $sitepress;
+		/**
+		 * @var SitePress $sitepress
+		 * @var wpdb      $wpdb
+		 */
+		global $sitepress, $wpdb;
 
-		$config_option = new WPML_Gutenberg_Config_Option();
+		$config_option        = new WPML_Gutenberg_Config_Option();
+		$strings_in_block     = new WPML_Gutenberg_Strings_In_Block( $config_option );
+		$strings_registration = new WPML_Gutenberg_Strings_Registration( $strings_in_block, new WPML_ST_String_Factory( $wpdb ) );
 
 		return new WPML_Gutenberg_Integration(
-			new WPML_Gutenberg_Strings_In_Block( $config_option ),
+			$strings_in_block,
 			$config_option,
-			$sitepress
+			$sitepress,
+			$strings_registration
 		);
 	}
 }
