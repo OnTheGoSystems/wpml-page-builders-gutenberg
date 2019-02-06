@@ -16,6 +16,8 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 
 		$sitepress = \Mockery::mock( 'SitePress' );
 		\Mockery::mock( 'WPML_ST_String_Factory' );
+		\Mockery::mock( 'WPML_PB_Reuse_Translations' );
+		\Mockery::mock( 'WPML_PB_String_Translation' );
 
 		$factory = new WPML_Gutenberg_Integration_Factory();
 

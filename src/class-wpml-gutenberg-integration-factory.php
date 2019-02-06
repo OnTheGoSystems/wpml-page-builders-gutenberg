@@ -11,7 +11,13 @@ class WPML_Gutenberg_Integration_Factory {
 
 		$config_option        = new WPML_Gutenberg_Config_Option();
 		$strings_in_block     = new WPML_Gutenberg_Strings_In_Block( $config_option );
-		$strings_registration = new WPML_Gutenberg_Strings_Registration( $strings_in_block, new WPML_ST_String_Factory( $wpdb ) );
+		$string_factory       = new WPML_ST_String_Factory( $wpdb );
+		$strings_registration = new WPML_Gutenberg_Strings_Registration(
+			$strings_in_block,
+			$string_factory,
+			new WPML_PB_Reuse_Translations( $string_factory ),
+			new WPML_PB_String_Translation( $wpdb )
+		);
 
 		return new WPML_Gutenberg_Integration(
 			$strings_in_block,
