@@ -143,13 +143,75 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 		$subject->register_strings( $post, $package );
 	}
 
-	private function get_subject( $string_factory = null ) {
+	/**
+	 * @test
+	 */
+	public function it_register_strings_and_reuse_translations() {
+		$post               = \Mockery::mock( 'WP_Post' );
+		$post->post_content = '<!-- wp:something -->post content<!-- /wp:something -->';
+
+		$package = array(
+			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
+		);
+
+		$blocks = array();
+
+		$string_value_1               = 'some block content 1';
+		$blocks['block 1']            = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$blocks['block 1']->blockName = 'some name 1';
+		$blocks['block 1']->innerHTML = $string_value_1;
+
+		$new_string_value               = 'some NEW block content';
+		$blocks['block new']            = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$blocks['block new']->blockName = 'some name NEW';
+		$blocks['block new']->innerHTML = $new_string_value;
+
+		$old_string_value = 'some OLD block';
+
+		\WP_Mock::userFunction( 'gutenberg_parse_blocks',
+		                        array(
+			                        'times'  => 1,
+			                        'args'   => array( $post->post_content ),
+			                        'return' => $blocks,
+		                        )
+		);
+
+		$original_strings = array(
+			$this->get_string_hash( $old_string_value ) => array( 'value' => $old_string_value ),
+			$this->get_string_hash( $string_value_1 ) => array( 'value' => $string_value_1 ),
+		);
+
+		$current_strings = $original_strings;
+		$current_strings[ $this->get_string_hash( $new_string_value ) ] = array( 'value' => $new_string_value );
+
+		$leftover_strings = array(
+			$this->get_string_hash( $old_string_value ) => array( 'value' => $old_string_value ),
+		);
+
+		$string_translation = $this->get_string_translation();
+		$string_translation->method( 'get_package_strings' )
+			->with( $package )
+			->willReturnOnConsecutiveCalls( $original_strings, $current_strings );
+
+		$reuse_translations = $this->get_reuse_translation();
+		$reuse_translations->expects( $this->once() )
+		                   ->method( 'find_and_reuse_translations' )
+		                   ->with( $original_strings, $current_strings, $leftover_strings );
+
+		$subject = $this->get_subject( null, $reuse_translations, $string_translation );
+
+		$subject->register_strings( $post, $package );
+	}
+
+	private function get_subject( $string_factory = null, $reuse_translations = null, $string_translation = null ) {
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )->andReturn( array() );
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
-		$string_factory   = $string_factory ? $string_factory : $this->get_string_factory();
+		$strings_in_block   = new WPML_Gutenberg_Strings_In_Block( $config_option );
+		$string_factory     = $string_factory ? $string_factory : $this->get_string_factory();
+		$reuse_translations = $reuse_translations ? $reuse_translations : $this->get_reuse_translation();
+		$string_translation = $string_translation ? $string_translation : $this->get_string_translation();
 
-		return new WPML_Gutenberg_Strings_Registration( $strings_in_block, $string_factory );
+		return new WPML_Gutenberg_Strings_Registration( $strings_in_block, $string_factory, $reuse_translations, $string_translation );
 	}
 
 	private function get_string_factory() {
@@ -170,5 +232,24 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 		$string->expects( $this->once() )->method( 'set_location' )->with( $expected_location );
 
 		return $string;
+	}
+
+	private function get_reuse_translation() {
+		return $this->getMockBuilder( 'WPML_PB_Reuse_Translations' )
+			->setMethods( array( 'find_and_reuse_translations' ) )
+			->disableOriginalConstructor()->getMock();
+	}
+
+	private function get_string_translation() {
+		$string_translation = $this->getMockBuilder( 'WPML_PB_String_Translation' )
+            ->setMethods( array( 'get_package_strings', 'get_string_hash' ) )
+            ->disableOriginalConstructor()->getMock();
+		$string_translation->method( 'get_string_hash' )->willReturnCallback( array( $this, 'get_string_hash' ) );
+
+		return $string_translation;
+	}
+
+	public function get_string_hash( $string_value ) {
+		return md5( $string_value );
 	}
 }
