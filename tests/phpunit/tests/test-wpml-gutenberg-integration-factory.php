@@ -12,9 +12,10 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_creates() {
-		global $sitepress;
+		global $sitepress, $wpdb;
 
 		$sitepress = \Mockery::mock( 'SitePress' );
+		$wpdb      = \Mockery::mock( 'wpdb' );
 		\Mockery::mock( 'WPML_ST_String_Factory' );
 		\Mockery::mock( 'WPML_PB_Reuse_Translations' );
 		\Mockery::mock( 'WPML_PB_String_Translation' );
