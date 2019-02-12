@@ -197,15 +197,12 @@ class WPML_Gutenberg_Integration {
 	private function render_inner_HTML( $block ) {
 
 		if ( isset ( $block->innerBlocks ) && count( $block->innerBlocks ) ) {
-			$inner_html_parts = $this->guess_inner_HTML_parts( $block );
 
-			$content = $inner_html_parts[0];
-
-			foreach ( $block->innerBlocks as $inner_block ) {
-				$content .= $this->render_block( $inner_block );
+			if ( isset( $block->innerContent ) ) {
+				$content = $this->render_inner_HTML_with_innerContent( $block );
+			} else {
+				$content = $this->render_inner_HTML_with_guess_parts( $block );
 			}
-
-			$content .= $inner_html_parts[1];
 
 		} else {
 			$content = $block->innerHTML;
@@ -216,7 +213,55 @@ class WPML_Gutenberg_Integration {
 	}
 
 	/**
-	 * The gutenberg parser doesn't handle inner blocks correctly
+	 * Since Gutenberg 4.2.0 and WP 5.0.0 we have a new
+	 * property WP_Block_Parser_Block::$innerContent which
+	 * provides the sequence of inner elements:
+	 * strings or null if it's an inner block.
+	 *
+	 * @see WP_Block_Parser_Block::$innerContent
+	 * 
+	 * @param WP_Block_Parser_Block $block
+	 *
+	 * @return string
+	 */
+	private function render_inner_HTML_with_innerContent( $block ) {
+		$content           = '';
+		$inner_block_index = 0;
+
+		foreach ( $block->innerContent as $inner_content ) {
+			if ( is_string( $inner_content ) ) {
+				$content .= $inner_content;
+			} else {
+				$content .= $this->render_block( $block->innerBlocks[ $inner_block_index ] );
+				$inner_block_index++;
+			}
+		}
+
+		return $content;
+	}
+
+	/**
+	 * @param WP_Block_Parser_Block $block
+	 *
+	 * @return string
+	 */
+	private function render_inner_HTML_with_guess_parts( $block ) {
+		$inner_html_parts = $this->guess_inner_HTML_parts( $block );
+
+		$content = $inner_html_parts[0];
+
+		foreach ( $block->innerBlocks as $inner_block ) {
+			$content .= $this->render_block( $inner_block );
+		}
+
+		$content .= $inner_html_parts[1];
+
+		return $content;
+	}
+
+	/**
+	 * The gutenberg parser prior to version 4.2.0 (Gutenberg) and 5.0.0 (WP)
+	 * doesn't handle inner blocks correctly.
 	 * It should really return the HTML before and after the blocks
 	 * We're just guessing what it is here
 	 * The usual innerHTML would be: <div class="xxx"></div>

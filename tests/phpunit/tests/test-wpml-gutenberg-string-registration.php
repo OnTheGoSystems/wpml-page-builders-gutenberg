@@ -209,7 +209,7 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 		$strings_in_block   = new WPML_Gutenberg_Strings_In_Block( $config_option );
 		$string_factory     = $string_factory ? $string_factory : $this->get_string_factory();
 		$reuse_translations = $reuse_translations ? $reuse_translations : $this->get_reuse_translation();
-		$string_translation = $string_translation ? $string_translation : $this->get_string_translation();
+		$string_translation = $string_translation ? $string_translation : $this->get_string_translation( true );
 
 		return new WPML_Gutenberg_Strings_Registration( $strings_in_block, $string_factory, $reuse_translations, $string_translation );
 	}
@@ -240,11 +240,15 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 			->disableOriginalConstructor()->getMock();
 	}
 
-	private function get_string_translation() {
+	private function get_string_translation( $passthru = false ) {
 		$string_translation = $this->getMockBuilder( 'WPML_PB_String_Translation' )
             ->setMethods( array( 'get_package_strings', 'get_string_hash' ) )
             ->disableOriginalConstructor()->getMock();
 		$string_translation->method( 'get_string_hash' )->willReturnCallback( array( $this, 'get_string_hash' ) );
+
+		if ( $passthru ) {
+			$string_translation->method( 'get_package_strings' )->willReturn( array() );
+		}
 
 		return $string_translation;
 	}
