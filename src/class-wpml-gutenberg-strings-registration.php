@@ -77,6 +77,15 @@ class WPML_Gutenberg_Strings_Registration {
 				);
 
 				$this->update_string_location( $package_data, $string );
+
+				// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				if ( 'core/heading' === $block->blockName ) {
+					// phpcs:enable
+					$wrap_tag = (string) isset( $block->attrs['level'] ) ? $block->attrs['level'] : 2;
+					$wrap_tag = 'h' . $wrap_tag;
+					$this->update_wrap_tag( $package_data, $string, $wrap_tag );
+				}
+
 				$this->remove_string_from_leftovers( $string->value );
 			}
 
@@ -90,9 +99,26 @@ class WPML_Gutenberg_Strings_Registration {
 		$string_id = apply_filters( 'wpml_string_id_from_package', 0, $package_data, $string_data->id, $string_data->value );
 		$string    = $this->string_factory->find_by_id( $string_id );
 
-		if ( $string_id && $string ) {
+		if ( $string_id ) {
 			$string->set_location( $this->string_location );
 			$this->string_location++;
+		}
+	}
+
+	/**
+	 * Update string wrap tag.
+	 * Used for SEO, can contain (h1...h6, etc.)
+	 *
+	 * @param array    $package_data Package.
+	 * @param stdClass $string_data  String in the package.
+	 * @param string   $wrap_tag     String wrap.
+	 */
+	private function update_wrap_tag( $package_data, stdClass $string_data, $wrap_tag ) {
+		$string_id = apply_filters( 'wpml_string_id_from_package', 0, $package_data, $string_data->id, $string_data->value );
+		$string    = $this->string_factory->find_by_id( $string_id );
+
+		if ( $string_id ) {
+			$string->set_wrap_tag( $wrap_tag );
 		}
 	}
 
