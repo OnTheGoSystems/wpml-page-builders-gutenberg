@@ -10,37 +10,23 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 	 */
 	public function it_registers_strings() {
 		$post               = \Mockery::mock( 'WP_Post' );
-		$post->post_content = '<!-- wp:something -->post content<!-- /wp:something -->';
+		$post->post_content = 'post content is not relevant in this test';
 
 		$package = array(
 			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
 		);
 
-		$blocks = array();
+		$blocks = array(
+			'normal block'                => $this->get_block( 'some name', 'some block content' ),
+			'block without name'          => $this->get_block( '', 'some content' ),
+			'block with empty content'    => $this->get_block( 'some name' ),
+			'block with only white space' => $this->get_block( 'some name', "\n\r\t" ),
+		);
 
-		$blocks['normal block']            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['normal block']->blockName = 'some name';
-		$blocks['normal block']->innerHTML = 'some block content';
+		$inner_block = $this->get_block( 'inner block', 'inner block html' );
 
-		$blocks['block without name']            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['block without name']->innerHTML = 'some content';
-
-		$blocks['block with empty content']            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['block with empty content']->blockName = 'some name';
-		$blocks['block with empty content']->innerHTML = '';
-
-		$blocks['block with only white space']            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['block with only white space']->blockName = 'some name';
-		$blocks['block with only white space']->innerHTML = "\n\r\t";
-
-		$inner_block            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$inner_block->blockName = 'inner block';
-		$inner_block->innerHTML = 'inner block html';
-
-		$blocks['columns block']              = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['columns block']->blockName   = 'columns';
+		$blocks['columns block']              = $this->get_block( 'columns', 'some block content' );
 		$blocks['columns block']->innerBlocks = array( $inner_block );
-		$blocks['columns block']->innerHTML   = 'some block content';
 
 		\WP_Mock::userFunction( 'gutenberg_parse_blocks',
 		                        array(
@@ -93,25 +79,22 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 	 */
 	public function it_registers_strings_and_set_location() {
 		$post               = \Mockery::mock( 'WP_Post' );
-		$post->post_content = '<!-- wp:something -->post content<!-- /wp:something -->';
+		$post->post_content = 'post content is not relevant in this test';
 
 		$package = array(
 			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
 		);
 
-		$blocks = array();
+		$blocks = array(
+			'block 1' => $this->get_block( 'some name 1', 'some block content 1' ),
+			'block 2' => $this->get_block( 'some name 2', 'some block content 2' ),
+		);
 
-		$blocks['block 1']            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['block 1']->blockName = 'some name 1';
-		$blocks['block 1']->innerHTML = 'some block content 1';
-		$string_name_1                = md5( $blocks['block 1']->blockName . $blocks['block 1']->innerHTML );
-		$string_id_1                  = 123;
+		$string_name_1 = md5( $blocks['block 1']->blockName . $blocks['block 1']->innerHTML );
+		$string_id_1   = 123;
 
-		$blocks['block 2']            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['block 2']->blockName = 'some name 2';
-		$blocks['block 2']->innerHTML = 'some block content 2';
-		$string_name_2                = md5( $blocks['block 2']->blockName . $blocks['block 2']->innerHTML );
-		$string_id_2                  = 456;
+		$string_name_2 = md5( $blocks['block 2']->blockName . $blocks['block 2']->innerHTML );
+		$string_id_2   = 456;
 
 		\WP_Mock::userFunction( 'gutenberg_parse_blocks',
 		                        array(
@@ -145,26 +128,75 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmltm-3081
 	 */
-	public function it_register_strings_and_reuse_translations() {
+	public function it_registers_strings_and_set_wrap_tag() {
 		$post               = \Mockery::mock( 'WP_Post' );
-		$post->post_content = '<!-- wp:something -->post content<!-- /wp:something -->';
+		$post->post_content = 'post content is not relevant in this test';
 
 		$package = array(
 			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
 		);
 
-		$blocks = array();
+		$blocks = array(
+			'block 1' => $this->get_block( 'core/heading', 'some block content 1', 1 ),
+			'block 2' => $this->get_block( 'core/heading', 'some block content 2', 2 ),
+		);
 
-		$string_value_1               = 'some block content 1';
-		$blocks['block 1']            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['block 1']->blockName = 'some name 1';
-		$blocks['block 1']->innerHTML = $string_value_1;
+		$string_name_1 = md5( $blocks['block 1']->blockName . $blocks['block 1']->innerHTML );
+		$string_id_1   = 123;
 
-		$new_string_value               = 'some NEW block content';
-		$blocks['block new']            = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$blocks['block new']->blockName = 'some name NEW';
-		$blocks['block new']->innerHTML = $new_string_value;
+		$string_name_2 = md5( $blocks['block 2']->blockName . $blocks['block 2']->innerHTML );
+		$string_id_2   = 456;
+
+		\WP_Mock::userFunction( 'gutenberg_parse_blocks',
+		                        array(
+			                        'times'  => 1,
+			                        'args'   => array( $post->post_content ),
+			                        'return' => $blocks,
+		                        )
+		);
+
+		\WP_Mock::onFilter( 'wpml_string_id_from_package' )
+			->with( 0, $package, $string_name_1, $blocks['block 1']->innerHTML )
+			->reply( $string_id_1 );
+
+		\WP_Mock::onFilter( 'wpml_string_id_from_package' )
+			->with( 0, $package, $string_name_2, $blocks['block 2']->innerHTML )
+			->reply( $string_id_2 );
+
+		$strings_map = array(
+			array( $string_id_1, $this->get_string_with_wrap_tag( 'h1' ) ),
+			array( $string_id_2, $this->get_string_with_wrap_tag( 'h2' ) ),
+		);
+
+		$string_factory = $this->get_string_factory();
+		$string_factory->method( 'find_by_id' )->willReturnMap( $strings_map );
+
+
+		$subject = $this->get_subject( $string_factory );
+
+		$subject->register_strings( $post, $package );
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_register_strings_and_reuse_translations() {
+		$post               = \Mockery::mock( 'WP_Post' );
+		$post->post_content = 'post content is not relevant in this test';
+
+		$package = array(
+			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
+		);
+
+		$string_value_1   = 'some block content 1';
+		$new_string_value = 'some NEW block content';
+
+		$blocks = array(
+			'block 1' => $this->get_block( 'some name 1', $string_value_1 ),
+			'block 2' => $this->get_block( 'some name NEW', $new_string_value ),
+		);
 
 		$old_string_value = 'some OLD block';
 
@@ -234,6 +266,21 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 		return $string;
 	}
 
+	/**
+	 * @param string $expected_wrap_tag
+	 *
+	 * @return PHPUnit_Framework_MockObject_MockObject|WPML_ST_String
+	 */
+	private function get_string_with_wrap_tag( $expected_wrap_tag ) {
+		$string = $this->getMockBuilder( 'WPML_ST_String' )
+		               ->setMethods( array( 'set_location', 'set_wrap_tag' ) )
+		               ->disableOriginalConstructor()->getMock();
+		$string->expects( $this->once() )->method( 'set_location' );
+		$string->expects( $this->once() )->method( 'set_wrap_tag' )->with( $expected_wrap_tag );
+
+		return $string;
+	}
+
 	private function get_reuse_translation() {
 		return $this->getMockBuilder( 'WPML_PB_Reuse_Translations' )
 			->setMethods( array( 'find_and_reuse_translations' ) )
@@ -255,5 +302,31 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 
 	public function get_string_hash( $string_value ) {
 		return md5( $string_value );
+	}
+
+	/**
+	 * Helper function to create a block.
+	 *
+	 * @param string $name  Block name.
+	 * @param string $html  Block html.
+	 * @param int    $level Block heading level.
+	 *
+	 * @return \WP_Block_Parser_Block
+	 */
+	private function get_block( $name = '', $html = '', $level = 0 ) {
+		/** @var \WP_Block_Parser_Block $block |\Mockery\MockInterface */
+		$block = \Mockery::mock( 'WP_Block_Parser_Block' );
+
+		if ( $name ) {
+			$block->blockName = $name;
+		}
+
+		$block->innerHTML = $html; // Must present in block object.
+
+		if ( $level ) {
+			$block->attrs['level'] = $level;
+		}
+
+		return $block;
 	}
 }
