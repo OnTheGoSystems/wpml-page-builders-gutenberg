@@ -2,6 +2,7 @@
 
 class WPML_Gutenberg_Integration_Factory {
 
+	/** @return \WPML\PB\Gutenberg\Integration */
 	public function create() {
 		/**
 		 * @var SitePress $sitepress
@@ -16,7 +17,10 @@ class WPML_Gutenberg_Integration_Factory {
 			new WPML\PB\Gutenberg\StringsInBlock\Attributes( $config_option ),
 		];
 
-		$strings_in_block     = new WPML\PB\Gutenberg\StringsInBlock\Collection( $string_parsers );
+		$strings_in_block = new WPML\PB\Gutenberg\StringsInBlock\Collection( $string_parsers );
+
+		$integrations = new WPML\PB\Gutenberg\Integration_Composite();
+
 		$string_factory       = new WPML_ST_String_Factory( $wpdb );
 		$strings_registration = new WPML_Gutenberg_Strings_Registration(
 			$strings_in_block,
@@ -25,11 +29,21 @@ class WPML_Gutenberg_Integration_Factory {
 			new WPML_PB_String_Translation( $wpdb )
 		);
 
-		return new WPML_Gutenberg_Integration(
-			$strings_in_block,
-			$config_option,
-			$sitepress,
-			$strings_registration
+		$integrations->add(
+			new WPML_Gutenberg_Integration(
+				$strings_in_block,
+				$config_option,
+				$sitepress,
+				$strings_registration
+			)
 		);
+
+		$integrations->add(
+			new WPML\PB\Gutenberg\Reusable_Blocks_Integration(
+				new WPML\PB\Gutenberg\Reusable_Blocks_Translation( $sitepress )
+			)
+		);
+
+		return $integrations;
 	}
 }
