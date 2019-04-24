@@ -3,7 +3,7 @@
 /**
  * Class WPML_Gutenberg_Integration
  */
-class WPML_Gutenberg_Integration {
+class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 
 	const PACKAGE_ID              = 'Gutenberg';
 	const GUTENBERG_OPENING_START = '<!-- wp:';
@@ -140,9 +140,6 @@ class WPML_Gutenberg_Integration {
 			$block = self::sanitize_block( $block );
 			$block = $this->strings_in_blocks->update( $block, $string_translations, $lang );
 
-			if ( isset( $block->blockName ) && 'core/block' === $block->blockName ) {
-				$block->attrs['ref'] = apply_filters( 'wpml_object_id', $block->attrs['ref'], 'wp_block', true, $lang );
-			}
 			if ( isset( $block->innerBlocks ) ) {
 				$block->innerBlocks = $this->update_block_translations(
 					$block->innerBlocks,

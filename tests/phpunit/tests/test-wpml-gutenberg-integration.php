@@ -11,6 +11,13 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	/**
 	 * @test
 	 */
+	public function it_should_implement_integration_interface() {
+		$this->assertInstanceOf( \WPML\PB\Gutenberg\Integration::class, $this->get_subject() );
+	}
+
+	/**
+	 * @test
+	 */
 	public function it_adds_hooks() {
 		\Mockery::mock( 'WP_Post' );
 

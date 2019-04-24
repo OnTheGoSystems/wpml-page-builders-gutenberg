@@ -22,7 +22,7 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 
 		$factory = new WPML_Gutenberg_Integration_Factory();
 
-		$this->assertInstanceOf( 'WPML_Gutenberg_Integration', $factory->create() );
+		$this->assertInstanceOf( \WPML\PB\Gutenberg\Integration::class, $factory->create() );
 
 		unset( $sitepress );
 	}
