@@ -3,7 +3,7 @@
 /**
  * Class WPML_Gutenberg_Integration
  */
-class WPML_Gutenberg_Integration {
+class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 
 	const PACKAGE_ID              = 'Gutenberg';
 	const GUTENBERG_OPENING_START = '<!-- wp:';
