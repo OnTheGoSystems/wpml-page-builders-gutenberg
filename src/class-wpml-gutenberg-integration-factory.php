@@ -30,7 +30,11 @@ class WPML_Gutenberg_Integration_Factory {
 		);
 
 		$integrations[] = new WPML\PB\Gutenberg\Reusable_Blocks_Integration(
-			new WPML\PB\Gutenberg\Reusable_Blocks()
+			new WPML\PB\Gutenberg\Reusable_Blocks(),
+			new WPML\PB\Gutenberg\Reusable_Blocks_Translation(
+				$sitepress,
+				new WPML_Translation_Element_Factory( $sitepress )
+			)
 		);
 
 		return new WPML\PB\Gutenberg\Integration_Composite( $integrations );
