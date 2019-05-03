@@ -24,14 +24,20 @@ class Reusable_Blocks_Translation {
 	 */
 	public function convert_block( array $block, $lang = null ) {
 		if ( Reusable_Blocks::is_reusable( $block ) ) {
-			$block['attrs']['ref'] = $this->sitepress->get_object_id(
-				$block['attrs']['ref'],
-				self::POST_TYPE,
-				true,
-				$lang
-			);
+			$block['attrs']['ref'] = $this->convert_block_id( $block['attrs']['ref'], true, $lang );
 		}
 
 		return $block;
+	}
+
+	/**
+	 * @param int         $block_id
+	 * @param bool        $original_if_missing
+	 * @param string|null $lang
+	 *
+	 * @return
+	 */
+	public function convert_block_id( $block_id, $original_if_missing, $lang = null ) {
+		return $this->sitepress->get_object_id( $block_id, self::POST_TYPE, $original_if_missing, $lang );
 	}
 }
