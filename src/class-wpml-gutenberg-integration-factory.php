@@ -38,11 +38,22 @@ class WPML_Gutenberg_Integration_Factory {
 			)
 		);
 
+		$reusable_blocks_translation = new WPML\PB\Gutenberg\Reusable_Blocks_Translation( $sitepress );
+
 		$integrations->add(
-			new WPML\PB\Gutenberg\Reusable_Blocks_Integration(
-				new WPML\PB\Gutenberg\Reusable_Blocks_Translation( $sitepress )
-			)
+			new WPML\PB\Gutenberg\Reusable_Blocks_Integration( $reusable_blocks_translation )
 		);
+
+		if ( is_admin() ) {
+			$integrations->add(
+				new WPML\PB\Gutenberg\Reusable_Blocks_Admin_Integration(
+					new WPML\PB\Gutenberg\Reusable_Blocks_Batch_Handler(
+						new WPML\PB\Gutenberg\Reusable_Blocks(),
+						$reusable_blocks_translation
+					)
+				)
+			);
+		}
 
 		return $integrations;
 	}
