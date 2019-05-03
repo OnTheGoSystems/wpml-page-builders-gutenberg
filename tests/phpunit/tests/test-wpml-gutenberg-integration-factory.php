@@ -10,9 +10,16 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @dataProvider dp_is_admin
+	 *
+	 * @param bool $is_admin
 	 */
-	public function it_creates() {
+	public function it_creates( $is_admin ) {
 		global $sitepress, $wpdb;
+
+		\WP_Mock::userFunction( 'is_admin', [
+			'return' => $is_admin,
+		] );
 
 		$sitepress = \Mockery::mock( 'SitePress' );
 		$wpdb      = \Mockery::mock( 'wpdb' );
@@ -25,5 +32,12 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 		$this->assertInstanceOf( \WPML\PB\Gutenberg\Integration::class, $factory->create() );
 
 		unset( $sitepress );
+	}
+
+	public function dp_is_admin() {
+		return [
+			[ true ],
+			[ false ],
+		];
 	}
 }
