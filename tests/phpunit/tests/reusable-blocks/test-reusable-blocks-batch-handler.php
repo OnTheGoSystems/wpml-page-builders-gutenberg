@@ -21,7 +21,7 @@ class Test_Reusable_Blocks_Batch_Handler extends \OTGS_TestCase {
 		$reusable_block_2            = 1002;
 		$reusable_block_1_fr         = 1101; // needs update
 		$reusable_block_1_de         = 1102; // does not need update
-		$reusable_block_2_fr         = null; // not translated
+		$reusable_block_2_fr         = $reusable_block_2; // not translated
 
 		$elements = [
 			$this->get_batch_element( 999, 'not-a-post', $source_lang, $target_langs ),
@@ -47,9 +47,9 @@ class Test_Reusable_Blocks_Batch_Handler extends \OTGS_TestCase {
 		$blocks_mock->method( 'get_ids_from_post' )->willReturnMap( $post_to_reusable_blocks );
 
 		$convert_block_id = [
-			[ $reusable_block_1, false, 'fr', $reusable_block_1_fr ],
-			[ $reusable_block_1, false, 'de', $reusable_block_1_de ],
-			[ $reusable_block_2, false, 'fr', $reusable_block_2_fr ],
+			[ $reusable_block_1, 'fr', $reusable_block_1_fr ],
+			[ $reusable_block_1, 'de', $reusable_block_1_de ],
+			[ $reusable_block_2, 'fr', $reusable_block_2_fr ],
 		];
 
 		$translation_mock = $this->get_reusable_blocks_translation();
@@ -70,6 +70,8 @@ class Test_Reusable_Blocks_Batch_Handler extends \OTGS_TestCase {
 		$subject = $this->get_subject( $blocks_mock, $translation_mock );
 
 		$new_batch = $subject->add_blocks( $batch );
+
+		$this->assertSame( $batch, $new_batch );
 	}
 
 	public function get_subject( $blocks, $translation ) {
