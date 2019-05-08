@@ -86,11 +86,11 @@ class Reusable_Blocks_Batch_Handler {
 	 * @return array
 	 */
 	public function select_target_langs( array $block ) {
-		foreach ( array_keys( $block['target_langs'] ) as $target_lang ) {
-			if ( ! $this->requires_translation( $block['block_id'], $target_lang ) ) {
-				unset( $block['target_langs'][ $target_lang ] );
-			}
-		}
+		$block['target_langs'] = collect( $block['target_langs'] )
+			->filter( function ( $unused, $target_lang )  use ( $block ) {
+				return $this->requires_translation( $block['block_id'], $target_lang );
+			} )
+			->toArray();
 
 		return $block;
 	}
