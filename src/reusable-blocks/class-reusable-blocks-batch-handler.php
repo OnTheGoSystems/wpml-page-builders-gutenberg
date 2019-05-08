@@ -103,9 +103,9 @@ class Reusable_Blocks_Batch_Handler {
 	 */
 	private function requires_translation( $block_id, $target_lang ) {
 		$needs_job     = true;
-		$translated_id = $this->reusable_blocks_translation->convert_block_id( $block_id, false, $target_lang );
+		$translated_id = $this->reusable_blocks_translation->convert_block_id( $block_id, $target_lang );
 
-		if ( $translated_id ) {
+		if ( $translated_id !== $block_id ) {
 			$needs_job = (bool) wpml_get_post_status_helper()->needs_update( $translated_id );
 		}
 

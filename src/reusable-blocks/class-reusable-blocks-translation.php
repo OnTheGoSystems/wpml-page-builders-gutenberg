@@ -24,7 +24,7 @@ class Reusable_Blocks_Translation {
 	 */
 	public function convert_block( array $block, $lang = null ) {
 		if ( Reusable_Blocks::is_reusable( $block ) ) {
-			$block['attrs']['ref'] = $this->convert_block_id( $block['attrs']['ref'], true, $lang );
+			$block['attrs']['ref'] = $this->convert_block_id( $block['attrs']['ref'], $lang );
 		}
 
 		return $block;
@@ -37,7 +37,7 @@ class Reusable_Blocks_Translation {
 	 *
 	 * @return
 	 */
-	public function convert_block_id( $block_id, $original_if_missing, $lang = null ) {
-		return $this->sitepress->get_object_id( $block_id, self::POST_TYPE, $original_if_missing, $lang );
+	public function convert_block_id( $block_id, $lang = null ) {
+		return $this->sitepress->get_object_id( $block_id, self::POST_TYPE, true, $lang );
 	}
 }
