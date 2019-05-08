@@ -150,7 +150,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 		$block_name                  = 'some-block-name';
 		$core_block_name             = 'core/' . $block_name; // Gutenberg prefixes with 'core/'
-		$attributes                  = array( 'att_1' => 'value_1', 'att_2' => 'value_2' );
+		$attributes                  = array( 'att_1' => 'value_1', 'att_2' => 'value_2', 'att_3' => 'polish żółć' );
 		$original_block_inner_HTML   = 'some block content';
 		$translated_block_inner_HTML = 'some block content ( TRANSLATED )';
 
@@ -179,7 +179,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			)
 		);
 
-		$rendered_block = '<!-- wp:' . $block_name . ' ' . json_encode( $attributes ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
+		$rendered_block = '<!-- wp:' . $block_name . ' ' . json_encode( $attributes, JSON_UNESCAPED_UNICODE ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
 
 		\WP_Mock::userFunction( 'wp_update_post',
 			array(

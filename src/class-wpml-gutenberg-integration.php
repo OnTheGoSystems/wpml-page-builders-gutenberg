@@ -170,7 +170,7 @@ class WPML_Gutenberg_Integration {
 
 			$block_attributes = '';
 			if ( $this->has_non_empty_attributes( $block ) ) {
-				$block_attributes = ' ' . json_encode( $block->attrs );
+				$block_attributes = ' ' . json_encode( $block->attrs, JSON_UNESCAPED_UNICODE );
 			}
 			$content .= self::GUTENBERG_OPENING_START . $block_type . $block_attributes . ' -->';
 
