@@ -58,7 +58,18 @@ class WPML_Gutenberg_Strings_In_Block {
 
 		}
 
-		return $strings;
+		/**
+		 * String in block filter.
+		 *
+		 * When post with Gutenberg blocks is being send for translation
+		 * WPML parses blocks to find translatable strings. With this filter
+		 * you can register additional strings to be added to Translation
+		 * Package and then translated
+		 *
+		 * @param array                 $strings already found strings.
+		 * @param WP_Block_Parser_Block $block block being parsed.
+		 */
+		return apply_filters( 'wpml_found_strings_in_block', $strings, $block );
 	}
 
 	/**
@@ -103,7 +114,14 @@ class WPML_Gutenberg_Strings_In_Block {
 
 		}
 
-		return $block;
+		/**
+		* Filter to allow replacing Block attributes when translated post with block is saved.
+		* 
+		* @param WP_Block_Parser_Block $block               block being saved.
+		* @param array                 $string_translations array with string translations for current String Package.
+		* @param string                $lang                language of translated post/block.
+		*/
+		return apply_filters( 'wpml_update_strings_in_block', $block, $string_translations, $lang );
 
 	}
 
