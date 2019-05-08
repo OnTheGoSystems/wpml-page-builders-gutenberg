@@ -87,7 +87,7 @@ class Reusable_Blocks_Batch_Handler {
 	 */
 	public function select_target_langs( array $block ) {
 		foreach ( array_keys( $block['target_langs'] ) as $target_lang ) {
-			if ( ! $this->needs_job( $block['block_id'], $target_lang ) ) {
+			if ( ! $this->requires_translation( $block['block_id'], $target_lang ) ) {
 				unset( $block['target_langs'][ $target_lang ] );
 			}
 		}
@@ -101,7 +101,7 @@ class Reusable_Blocks_Batch_Handler {
 	 *
 	 * @return bool
 	 */
-	private function needs_job( $block_id, $target_lang ) {
+	private function requires_translation( $block_id, $target_lang ) {
 		$needs_job     = true;
 		$translated_id = $this->reusable_blocks_translation->convert_block_id( $block_id, false, $target_lang );
 
