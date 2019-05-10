@@ -1,8 +1,8 @@
 <?php
 
-namespace WPML\PB\Gutenberg;
+namespace WPML\PB\Gutenberg\ReusableBlocks;
 
-class Reusable_Blocks_Basket_Element {
+class BasketElement {
 
 	/** @var int */
 	private $element_id;
