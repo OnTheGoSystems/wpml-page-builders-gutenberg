@@ -1,33 +1,33 @@
 <?php
 
-namespace WPML\PB\Gutenberg;
+namespace WPML\PB\Gutenberg\ReusableBlocks;
 
-abstract class Reusable_Blocks_Handler {
+abstract class Manage {
 
-	/** @var Reusable_Blocks */
-	protected $reusable_blocks;
+	/** @var Blocks */
+	protected $blocks;
 
-	/** @var Reusable_Blocks_Translation */
-	protected $reusable_blocks_translation;
+	/** @var Translation */
+	protected $translation;
 
 	public function __construct(
-		Reusable_Blocks $reusable_blocks,
-		Reusable_Blocks_Translation $reusable_blocks_translation
+		Blocks $blocks,
+		Translation $translation
 	) {
-		$this->reusable_blocks             = $reusable_blocks;
-		$this->reusable_blocks_translation = $reusable_blocks_translation;
+		$this->blocks      = $blocks;
+		$this->translation = $translation;
 	}
 
 	/**
 	 * @param \Illuminate\Support\Collection $blocks
 	 *
 	 * [
-	 *  [
+	 *  (object) [
 	 *      'block_id'     => 1,
 	 *      'target_langs' => ['fr' => 1, 'de' => 1],
 	 *      'source_lang'  => 'en',
 	 *  ],
-	 *  [
+	 *  (object) [
 	 *      'block_id'     => 2,
 	 *      'target_langs' => ['de' => 1],
 	 *      'source_lang'  => 'en',
@@ -36,8 +36,8 @@ abstract class Reusable_Blocks_Handler {
 	 *
 	 * @return \Illuminate\Support\Collection
 	 */
-	protected function get_block_elements_to_add( $blocks ) {
-		return $blocks->map( [ $this, 'select_target_langs' ] )
+	protected function getBlockElementsToAdd( $blocks ) {
+		return $blocks->map( [ $this, 'selectTargetLangs' ] )
 			->reject( function( $block ) { return empty( $block->target_langs ); } );
 	}
 
@@ -46,21 +46,21 @@ abstract class Reusable_Blocks_Handler {
 	 *
 	 * @return \Illuminate\Support\Collection
 	 */
-	protected function get_blocks_from_post_elements( \Illuminate\Support\Collection $post_elements ) {
-		return $post_elements->map( [ $this, 'find_blocks_in_element' ] )
+	protected function getBlocksFromPostElements( \Illuminate\Support\Collection $post_elements ) {
+		return $post_elements->map( [ $this, 'findBlocksInElement' ] )
 		                     ->flatten( 1 )
 		                     ->unique( 'block_id' );
 	}
 
 	/**
-	 * @param \WPML_TM_Translation_Batch_Element|Reusable_Blocks_Basket_Element $element
+	 * @param \WPML_TM_Translation_Batch_Element|BasketElement $element
 	 *
 	 * @return array
 	 */
-	public function find_blocks_in_element( $element ) {
+	public function findBlocksInElement( $element ) {
 		if (
 			! $element instanceof \WPML_TM_Translation_Batch_Element
-			&& ! $element instanceof Reusable_Blocks_Basket_Element
+			&& ! $element instanceof BasketElement
 		) {
 			throw new \RuntimeException( '$element must be an instance of \WPML_TM_Translation_Batch_Element or Reusable_Blocks_Basket_Element.' );
 		}
@@ -69,7 +69,7 @@ abstract class Reusable_Blocks_Handler {
 			return [];
 		}
 
-		return \collect( $this->reusable_blocks->get_ids_from_post( $element->get_element_id() ) )
+		return \collect( $this->blocks->getIdsFromPost( $element->get_element_id() ) )
 			->map( function( $block_id ) use ( $element ) {
 				return (object) [
 					'block_id'      => $block_id,
@@ -85,9 +85,9 @@ abstract class Reusable_Blocks_Handler {
 	 *
 	 * @return bool
 	 */
-	protected function requires_translation( $block_id, $target_lang ) {
+	protected function requiresTranslation( $block_id, $target_lang ) {
 		$needs_job     = true;
-		$translated_id = $this->reusable_blocks_translation->convert_block_id( $block_id, $target_lang );
+		$translated_id = $this->translation->convertBlockId( $block_id, $target_lang );
 
 		if ( $translated_id !== $block_id ) {
 			$needs_job = (bool) wpml_get_post_status_helper()->needs_update( $translated_id );
@@ -104,10 +104,10 @@ abstract class Reusable_Blocks_Handler {
 	 *
 	 * @return \stdClass
 	 */
-	public function select_target_langs( \stdClass $block ) {
+	public function selectTargetLangs( \stdClass $block ) {
 		$block->target_langs = collect( $block->target_langs )
 			->filter( function ( $unused, $target_lang )  use ( $block ) {
-				return $this->requires_translation( $block->block_id, $target_lang );
+				return $this->requiresTranslation( $block->block_id, $target_lang );
 			} )
 			->toArray();
 

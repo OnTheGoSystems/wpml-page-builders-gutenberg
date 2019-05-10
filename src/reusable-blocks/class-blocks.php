@@ -1,15 +1,15 @@
 <?php
 
-namespace WPML\PB\Gutenberg;
+namespace WPML\PB\Gutenberg\ReusableBlocks;
 
-class Reusable_Blocks {
+class Blocks {
 
 	/**
 	 * @param array $block
 	 *
 	 * @return bool
 	 */
-	public static function is_reusable( array $block ) {
+	public static function isReusable( array $block ) {
 		return 'core/block' === $block['blockName']
 		       && isset( $block['attrs']['ref'] )
 		       && is_numeric( $block['attrs']['ref'] );
@@ -20,7 +20,7 @@ class Reusable_Blocks {
 	 *
 	 * @return array
 	 */
-	public function get_ids_from_post( $post_id ) {
+	public function getIdsFromPost( $post_id ) {
 		$post = get_post( $post_id );
 
 		if ( $post ) {

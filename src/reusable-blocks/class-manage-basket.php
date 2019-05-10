@@ -1,32 +1,32 @@
 <?php
 
-namespace WPML\PB\Gutenberg;
+namespace WPML\PB\Gutenberg\ReusableBlocks;
 
-class Reusable_Blocks_Basket_Handler extends Reusable_Blocks_Handler {
+class ManageBasket extends Manage {
 
 	/** @var \WPML_Translation_Basket $translation_basket */
 	private $translation_basket;
 
 	public function __construct(
-		Reusable_Blocks $reusable_blocks,
-		Reusable_Blocks_Translation $reusable_blocks_translation,
+		Blocks $blocks,
+		Translation $translation,
 		\WPML_Translation_Basket $translation_basket
 	) {
-		parent::__construct( $reusable_blocks, $reusable_blocks_translation );
+		parent::__construct( $blocks, $translation );
 		$this->translation_basket = $translation_basket;
 	}
 
 	/**
 	 * @param array $data
 	 */
-	public function add_blocks( array $data ) {
+	public function addBlocks( array $data ) {
 		if ( ! isset( $data['post'], $data['translate_from'], $data['tr_action'] ) ) {
 			return;
 		}
 
-		$post_elements = $this->extract_added_post_elements( $data );
-		$blocks        = $this->get_blocks_from_post_elements( $post_elements );
-		$blocks        = $this->get_block_elements_to_add( $blocks )->toArray();
+		$post_elements = $this->extractAddedPostElements( $data );
+		$blocks        = $this->getBlocksFromPostElements( $post_elements );
+		$blocks        = $this->getBlockElementsToAdd( $blocks )->toArray();
 
 		if ( $blocks ) {
 			$basket_portion = [
@@ -52,7 +52,7 @@ class Reusable_Blocks_Basket_Handler extends Reusable_Blocks_Handler {
 	 *
 	 * @return \Illuminate\Support\Collection
 	 */
-	private function extract_added_post_elements( array $data ) {
+	private function extractAddedPostElements( array $data ) {
 		$source_lang  = $data['translate_from'];
 		$target_langs = \collect( $data['tr_action'] )
 			->filter( function( $translate ) { return $translate; } )
@@ -65,7 +65,7 @@ class Reusable_Blocks_Basket_Handler extends Reusable_Blocks_Handler {
 					isset( $item['checked'], $item['type'] )
 					&& 'post' === $item['type']
 				) {
-					return new Reusable_Blocks_Basket_Element(
+					return new BasketElement(
 						(int) $item['checked'],
 						$source_lang,
 						$target_langs

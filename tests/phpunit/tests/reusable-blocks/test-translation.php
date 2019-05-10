@@ -1,11 +1,11 @@
 <?php
 
-namespace WPML\PB\Gutenberg;
+namespace WPML\PB\Gutenberg\ReusableBlocks;
 
 /**
  * @group reusable-blocks
  */
-class Test_Reusable_Blocks_Translation extends \OTGS_TestCase {
+class TestTranslation extends \OTGS_TestCase {
 
 	/**
 	 * @test
@@ -15,14 +15,14 @@ class Test_Reusable_Blocks_Translation extends \OTGS_TestCase {
 	 * @param array $block
 	 */
 	public function it_should_not_convert_block_if_not_a_reusable( $block ) {
-		$sitepress = $this->get_sitepress();
+		$sitepress = $this->getSitepress();
 		$sitepress->expects( $this->never() )->method( 'get_object_id' );
 
-		$subject = $this->get_subject( $sitepress );
+		$subject = $this->getSubject( $sitepress );
 
 		$this->assertEquals(
 			$block,
-			$subject->convert_block( $block )
+			$subject->convertBlock( $block )
 		);
 	}
 
@@ -77,25 +77,25 @@ class Test_Reusable_Blocks_Translation extends \OTGS_TestCase {
 			],
 		];
 
-		$sitepress = $this->get_sitepress();
+		$sitepress = $this->getSitepress();
 		$sitepress->method( 'get_object_id' )
-				->with( $original_block_id, Reusable_Blocks_Translation::POST_TYPE, true, $lang )
+				->with( $original_block_id, Translation::POST_TYPE, true, $lang )
 				->willReturn( $translated_block_id );
 
-		$subject = $this->get_subject( $sitepress );
+		$subject = $this->getSubject( $sitepress );
 
 		$this->assertEquals(
 			$converted_block,
-			$subject->convert_block( $block, $lang )
+			$subject->convertBlock( $block, $lang )
 		);
 	}
 	
-	private function get_subject( $sitepress = null ) {
-		$sitepress = $sitepress ? $sitepress : $this->get_sitepress();
-		return new Reusable_Blocks_Translation( $sitepress );
+	private function getSubject( $sitepress = null ) {
+		$sitepress = $sitepress ? $sitepress : $this->getSitepress();
+		return new Translation( $sitepress );
 	}
 
-	private function get_sitepress() {
+	private function getSitepress() {
 		return $this->getMockBuilder( \SitePress::class )
 			->setMethods( [ 'set_element_language_details', 'get_object_id' ] )
 			->disableOriginalConstructor()->getMock();

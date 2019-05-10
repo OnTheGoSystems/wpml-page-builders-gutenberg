@@ -1,11 +1,11 @@
 <?php
 
-namespace WPML\PB\Gutenberg;
+namespace WPML\PB\Gutenberg\ReusableBlocks;
 
 /**
  * @group reusable-blocks
  */
-class Test_Reusable_Blocks_Basket_Handler extends \OTGS_TestCase {
+class TestManageBasket extends \OTGS_TestCase {
 
 	/**
 	 * @test
@@ -13,8 +13,8 @@ class Test_Reusable_Blocks_Basket_Handler extends \OTGS_TestCase {
 	 * @group wpmlcore-6590
 	 */
 	public function it_should_NOT_add_blocks_if_missing_array_keys( $data ) {
-		$subject = $this->get_subject();
-		$subject->add_blocks( $data );
+		$subject = $this->getSubject();
+		$subject->addBlocks( $data );
 	}
 
 	public function dp_invalid_basket_data() {
@@ -80,8 +80,8 @@ class Test_Reusable_Blocks_Basket_Handler extends \OTGS_TestCase {
 			[ $post_with_reusable_blocks_2, [ $reusable_block_2, $reusable_block_1 ] ],
 		];
 
-		$blocks_mock = $this->get_reusable_blocks();
-		$blocks_mock->method( 'get_ids_from_post' )->willReturnMap( $post_to_reusable_blocks );
+		$blocks_mock = $this->getBlocks();
+		$blocks_mock->method( 'getIdsFromPost' )->willReturnMap( $post_to_reusable_blocks );
 
 		$convert_block_id = [
 			[ $reusable_block_1, 'fr', $reusable_block_1_fr ],
@@ -89,15 +89,15 @@ class Test_Reusable_Blocks_Basket_Handler extends \OTGS_TestCase {
 			[ $reusable_block_3, 'fr', $reusable_block_3_fr ],
 		];
 
-		$translation_mock = $this->get_reusable_blocks_translation();
-		$translation_mock->method( 'convert_block_id' )->willReturnMap( $convert_block_id );
+		$translation_mock = $this->getTranslation();
+		$translation_mock->method( 'convertBlockId' )->willReturnMap( $convert_block_id );
 
 		$needs_update = [
 			[ $reusable_block_1_fr, 1 ],
 			[ $reusable_block_3_fr, false ],
 		];
 
-		$status_helper = $this->get_post_status_helper();
+		$status_helper = $this->getPostStatusHelper();
 		$status_helper->method( 'needs_update' )->willReturnMap( $needs_update );
 
 		\WP_Mock::userFunction( 'wpml_get_post_status_helper', [
@@ -121,14 +121,14 @@ class Test_Reusable_Blocks_Basket_Handler extends \OTGS_TestCase {
 			'target_languages'	=> array_keys( $data['tr_action'] ),
 		];
 
-		$basket_mock = $this->get_translation_basket();
+		$basket_mock = $this->getTranslationBasket();
 		$basket_mock->expects( $this->once() )
 		            ->method( 'update_basket' )
 					->with( $basket_portion );
 
-		$subject = $this->get_subject( $blocks_mock, $translation_mock, $basket_mock );
+		$subject = $this->getSubject( $blocks_mock, $translation_mock, $basket_mock );
 
-		$subject->add_blocks( $data );
+		$subject->addBlocks( $data );
 	}
 
 	/**
@@ -139,36 +139,36 @@ class Test_Reusable_Blocks_Basket_Handler extends \OTGS_TestCase {
 	public function it_should_throw_an_exception_if_not_an_element_object() {
 		$not_an_element = $this->createMock( 'Not_An_Element' );
 
-		$subject = $this->get_subject();
-		$subject->find_blocks_in_element( $not_an_element );
+		$subject = $this->getSubject();
+		$subject->findBlocksInElement( $not_an_element );
 	}
 
-	public function get_subject( $blocks = null, $translation = null, $translation_basket = null ) {
-		$blocks             = $blocks ? $blocks : $this->get_reusable_blocks();
-		$translation        = $translation ? $translation : $this->get_reusable_blocks_translation();
-		$translation_basket = $translation_basket ? $translation_basket : $this->get_translation_basket();
-		return new Reusable_Blocks_Basket_Handler( $blocks, $translation, $translation_basket );
+	public function getSubject( $blocks = null, $translation = null, $translation_basket = null ) {
+		$blocks             = $blocks ? $blocks : $this->getBlocks();
+		$translation        = $translation ? $translation : $this->getTranslation();
+		$translation_basket = $translation_basket ? $translation_basket : $this->getTranslationBasket();
+		return new ManageBasket( $blocks, $translation, $translation_basket );
 	}
 
-	private function get_reusable_blocks() {
-		return $this->getMockBuilder( Reusable_Blocks::class )
-		            ->setMethods( [ 'get_ids_from_post' ] )
+	private function getBlocks() {
+		return $this->getMockBuilder( Blocks::class )
+		            ->setMethods( [ 'getIdsFromPost' ] )
 		            ->disableOriginalConstructor()->getMock();
 	}
 
-	private function get_reusable_blocks_translation() {
-		return $this->getMockBuilder( Reusable_Blocks_Translation::class )
-		            ->setMethods( [ 'convert_block_id' ] )
+	private function getTranslation() {
+		return $this->getMockBuilder( Translation::class )
+		            ->setMethods( [ 'convertBlockId' ] )
 		            ->disableOriginalConstructor()->getMock();
 	}
 
-	private function get_translation_basket() {
+	private function getTranslationBasket() {
 		return $this->getMockBuilder( '\WPML_Translation_Basket' )
 		            ->setMethods( [ 'update_basket' ] )
 		            ->disableOriginalConstructor()->getMock();
 	}
 
-	private function get_post_status_helper() {
+	private function getPostStatusHelper() {
 		return $this->getMockBuilder( '\WPML_Post_Status' )
 		            ->setMethods( [ 'needs_update' ] )
 		            ->disableOriginalConstructor()->getMock();
