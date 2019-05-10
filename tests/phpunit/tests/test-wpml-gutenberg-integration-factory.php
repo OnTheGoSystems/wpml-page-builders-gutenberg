@@ -27,6 +27,11 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 		\Mockery::mock( 'WPML_PB_Reuse_Translations' );
 		\Mockery::mock( 'WPML_PB_String_Translation' );
 
+		\WP_Mock::userFunction( 'WPML\Container\make', [
+			'args'   => [ '\WPML_Translation_Basket' ],
+			'return' => $this->getMockBuilder( '\WPML_Translation_Basket' )->getMock(),
+		] );
+
 		$factory = new WPML_Gutenberg_Integration_Factory();
 
 		$this->assertInstanceOf( \WPML\PB\Gutenberg\Integration::class, $factory->create() );
