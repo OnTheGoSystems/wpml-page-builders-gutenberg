@@ -1,11 +1,11 @@
 <?php
 
-namespace WPML\PB\Gutenberg;
+namespace WPML\PB\Gutenberg\ReusableBlocks;
 
 /**
  * @group reusable-blocks
  */
-class Test_Reusable_Blocks_Batch_Handler extends \OTGS_TestCase {
+class TestManageBatch extends \OTGS_TestCase {
 
 	/**
 	 * @test
@@ -24,16 +24,16 @@ class Test_Reusable_Blocks_Batch_Handler extends \OTGS_TestCase {
 		$reusable_block_2_fr         = $reusable_block_2; // not translated
 
 		$elements = [
-			$this->get_batch_element( 999, 'not-a-post', $source_lang, $target_langs ),
-			$this->get_batch_element( $post_with_reusable_blocks_1, 'post', $source_lang, $target_langs ),
-			$this->get_batch_element( $post_with_no_blocks, 'post', $source_lang, $target_langs ),
-			$this->get_batch_element( $post_with_reusable_blocks_2, 'post', $source_lang, [ 'fr' => 1 ] ),
+			$this->getBatchElement( 999, 'not-a-post', $source_lang, $target_langs ),
+			$this->getBatchElement( $post_with_reusable_blocks_1, 'post', $source_lang, $target_langs ),
+			$this->getBatchElement( $post_with_no_blocks, 'post', $source_lang, $target_langs ),
+			$this->getBatchElement( $post_with_reusable_blocks_2, 'post', $source_lang, [ 'fr' => 1 ] ),
 		];
 
-		$new_element_1 = $this->get_batch_element( $reusable_block_1_fr, 'post', $source_lang, [ 'fr' => 1 ] );
-		$new_element_2 = $this->get_batch_element( $reusable_block_2_fr, 'post', $source_lang, [ 'fr' => 1 ] );
+		$new_element_1 = $this->getBatchElement( $reusable_block_1_fr, 'post', $source_lang, [ 'fr' => 1 ] );
+		$new_element_2 = $this->getBatchElement( $reusable_block_2_fr, 'post', $source_lang, [ 'fr' => 1 ] );
 
-		$batch = $this->get_batch( $elements );
+		$batch = $this->getBatch( $elements );
 		$batch->expects( $this->exactly( 2 ) )
 		      ->method( 'add_element' )
 		      ->withConsecutive( $new_element_1, $new_element_2 );
@@ -43,8 +43,8 @@ class Test_Reusable_Blocks_Batch_Handler extends \OTGS_TestCase {
 			[ $post_with_reusable_blocks_2, [ $reusable_block_2, $reusable_block_1 ] ],
 		];
 
-		$blocks_mock = $this->get_reusable_blocks();
-		$blocks_mock->method( 'get_ids_from_post' )->willReturnMap( $post_to_reusable_blocks );
+		$blocks_mock = $this->getBlocks();
+		$blocks_mock->method( 'getIdsFromPost' )->willReturnMap( $post_to_reusable_blocks );
 
 		$convert_block_id = [
 			[ $reusable_block_1, 'fr', $reusable_block_1_fr ],
@@ -52,45 +52,45 @@ class Test_Reusable_Blocks_Batch_Handler extends \OTGS_TestCase {
 			[ $reusable_block_2, 'fr', $reusable_block_2_fr ],
 		];
 
-		$translation_mock = $this->get_reusable_blocks_translation();
-		$translation_mock->method( 'convert_block_id' )->willReturnMap( $convert_block_id );
+		$translation_mock = $this->getTranslation();
+		$translation_mock->method( 'convertBlockId' )->willReturnMap( $convert_block_id );
 
 		$needs_update = [
 			[ $reusable_block_1_fr, 1 ],
 			[ $reusable_block_1_de, false ],
 		];
 
-		$status_helper = $this->get_post_status_helper();
+		$status_helper = $this->getPostStatusHelper();
 		$status_helper->method( 'needs_update' )->willReturnMap( $needs_update );
 
 		\WP_Mock::userFunction( 'wpml_get_post_status_helper', [
 			'return' => $status_helper,
 		] );
 
-		$subject = $this->get_subject( $blocks_mock, $translation_mock );
+		$subject = $this->getSubject( $blocks_mock, $translation_mock );
 
-		$new_batch = $subject->add_blocks( $batch );
+		$new_batch = $subject->addBlocks( $batch );
 
 		$this->assertSame( $batch, $new_batch );
 	}
 
-	public function get_subject( $blocks, $translation ) {
-		return new Reusable_Blocks_Batch_Handler( $blocks, $translation );
+	public function getSubject( $blocks, $translation ) {
+		return new ManageBatch( $blocks, $translation );
 	}
 
-	private function get_reusable_blocks() {
-		return $this->getMockBuilder( Reusable_Blocks::class )
-			->setMethods( [ 'get_ids_from_post' ] )
+	private function getBlocks() {
+		return $this->getMockBuilder( Blocks::class )
+			->setMethods( [ 'getIdsFromPost' ] )
 			->disableOriginalConstructor()->getMock();
 	}
 
-	private function get_reusable_blocks_translation() {
-		return $this->getMockBuilder( Reusable_Blocks_Translation::class )
-			->setMethods( [ 'convert_block_id' ] )
+	private function getTranslation() {
+		return $this->getMockBuilder( Translation::class )
+			->setMethods( [ 'convertBlockId' ] )
 			->disableOriginalConstructor()->getMock();
 	}
 
-	private function get_batch( array $elements ) {
+	private function getBatch( array $elements ) {
 		$batch = $this->getMockBuilder( '\WPML_TM_Translation_Batch' )
 			->setMethods( [ 'get_elements', 'add_element' ] )
 			->disableOriginalConstructor()->getMock();
@@ -99,7 +99,7 @@ class Test_Reusable_Blocks_Batch_Handler extends \OTGS_TestCase {
 		return $batch;
 	}
 
-	private function get_batch_element( $id, $type, $source_lang, array $target_langs ) {
+	private function getBatchElement( $id, $type, $source_lang, array $target_langs ) {
 		$element = $this->getMockBuilder( '\WPML_TM_Translation_Batch_Element' )
 			->setMethods(
 				[
@@ -118,7 +118,7 @@ class Test_Reusable_Blocks_Batch_Handler extends \OTGS_TestCase {
 		return $element;
 	}
 
-	private function get_post_status_helper() {
+	private function getPostStatusHelper() {
 		return $this->getMockBuilder( '\WPML_Post_Status' )
 			->setMethods( [ 'needs_update' ] )
 			->disableOriginalConstructor()->getMock();

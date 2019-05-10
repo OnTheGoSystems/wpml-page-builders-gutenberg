@@ -1,8 +1,8 @@
 <?php
 
-namespace WPML\PB\Gutenberg;
+namespace WPML\PB\Gutenberg\ReusableBlocks;
 
-class Reusable_Blocks_Translation {
+class Translation {
 
 	const POST_TYPE = 'wp_block';
 
@@ -22,9 +22,9 @@ class Reusable_Blocks_Translation {
 	 *
 	 * @return array
 	 */
-	public function convert_block( array $block, $lang = null ) {
-		if ( Reusable_Blocks::is_reusable( $block ) ) {
-			$block['attrs']['ref'] = $this->convert_block_id( $block['attrs']['ref'], $lang );
+	public function convertBlock( array $block, $lang = null ) {
+		if ( Blocks::isReusable( $block ) ) {
+			$block['attrs']['ref'] = $this->convertBlockId( $block['attrs']['ref'], $lang );
 		}
 
 		return $block;
@@ -32,12 +32,11 @@ class Reusable_Blocks_Translation {
 
 	/**
 	 * @param int         $block_id
-	 * @param bool        $original_if_missing
 	 * @param string|null $lang
 	 *
 	 * @return
 	 */
-	public function convert_block_id( $block_id, $lang = null ) {
+	public function convertBlockId( $block_id, $lang = null ) {
 		return $this->sitepress->get_object_id( $block_id, self::POST_TYPE, true, $lang );
 	}
 }
