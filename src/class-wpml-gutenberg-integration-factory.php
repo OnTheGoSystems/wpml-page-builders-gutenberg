@@ -55,7 +55,7 @@ class WPML_Gutenberg_Integration_Factory {
 					new WPML\PB\Gutenberg\ReusableBlocks\ManageBasket(
 						$reusable_blocks,
 						$reusable_blocks_translation,
-						new \WPML_Translation_Basket( $wpdb )
+						\WPML\Container\make( '\WPML_Translation_Basket' )
 					)
 				)
 			);
