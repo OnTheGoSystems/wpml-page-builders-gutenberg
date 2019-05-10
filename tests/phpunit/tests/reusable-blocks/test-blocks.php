@@ -1,11 +1,11 @@
 <?php
 
-namespace WPML\PB\Gutenberg;
+namespace WPML\PB\Gutenberg\ReusableBlocks;
 
 /**
  * @group reusable-blocks
  */
-class Test_Reusable_Blocks extends \OTGS_TestCase {
+class TestBlocks extends \OTGS_TestCase {
 
 	/**
 	 * @test
@@ -15,7 +15,7 @@ class Test_Reusable_Blocks extends \OTGS_TestCase {
 	 * @param array $block
 	 */
 	public function it_should_return_false_if_NOT_reusable_block( $block ) {
-		$this->assertFalse( Reusable_Blocks::is_reusable( $block ) );
+		$this->assertFalse( Blocks::isReusable( $block ) );
 
 	}
 
@@ -57,7 +57,7 @@ class Test_Reusable_Blocks extends \OTGS_TestCase {
 			'attrs'     => [ 'ref' => 987 ],
 		];
 
-		$this->assertTrue( Reusable_Blocks::is_reusable( $block ) );
+		$this->assertTrue( Blocks::isReusable( $block ) );
 	}
 
 	/**
@@ -105,10 +105,10 @@ class Test_Reusable_Blocks extends \OTGS_TestCase {
 			'args'   => [ $post->post_content ],
 			'return' => $blocks,
 		]);
-		$subject = new Reusable_Blocks();
+		$subject = new Blocks();
 		$this->assertEquals(
 			[ $block_id ],
-			$subject->get_ids_from_post( $post_id )
+			$subject->getIdsFromPost( $post_id )
 		);
 		unset( $GLOBALS['wp_version'] );
 	}
@@ -125,8 +125,8 @@ class Test_Reusable_Blocks extends \OTGS_TestCase {
 			'return' => null,
 		]);
 
-		$subject = new Reusable_Blocks();
+		$subject = new Blocks();
 
-		$this->assertEmpty( $subject->get_ids_from_post( $post_id ) );
+		$this->assertEmpty( $subject->getIdsFromPost( $post_id ) );
 	}
 }

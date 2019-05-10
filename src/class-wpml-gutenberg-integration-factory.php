@@ -38,21 +38,21 @@ class WPML_Gutenberg_Integration_Factory {
 			)
 		);
 
-		$reusable_blocks             = new WPML\PB\Gutenberg\Reusable_Blocks();
-		$reusable_blocks_translation = new WPML\PB\Gutenberg\Reusable_Blocks_Translation( $sitepress );
+		$reusable_blocks             = new WPML\PB\Gutenberg\ReusableBlocks\Blocks();
+		$reusable_blocks_translation = new WPML\PB\Gutenberg\ReusableBlocks\Translation( $sitepress );
 
 		$integrations->add(
-			new WPML\PB\Gutenberg\Reusable_Blocks_Integration( $reusable_blocks_translation )
+			new WPML\PB\Gutenberg\ReusableBlocks\Integration( $reusable_blocks_translation )
 		);
 
 		if ( is_admin() ) {
 			$integrations->add(
-				new WPML\PB\Gutenberg\Reusable_Blocks_Admin_Integration(
-					new WPML\PB\Gutenberg\Reusable_Blocks_Batch_Handler(
+				new WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration(
+					new WPML\PB\Gutenberg\ReusableBlocks\ManageBatch(
 						$reusable_blocks,
 						$reusable_blocks_translation
 					),
-					new WPML\PB\Gutenberg\Reusable_Blocks_Basket_Handler(
+					new WPML\PB\Gutenberg\ReusableBlocks\ManageBasket(
 						$reusable_blocks,
 						$reusable_blocks_translation,
 						new \WPML_Translation_Basket( $wpdb )
