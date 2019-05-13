@@ -31,27 +31,33 @@ class WPML_Gutenberg_Integration_Factory {
 			)
 		);
 
-		$reusable_blocks             = new WPML\PB\Gutenberg\ReusableBlocks\Blocks();
-		$reusable_blocks_translation = new WPML\PB\Gutenberg\ReusableBlocks\Translation( $sitepress );
-
-		$integrations->add(
-			new WPML\PB\Gutenberg\ReusableBlocks\Integration( $reusable_blocks_translation )
+		$is_reusable_block_translatable = $sitepress->is_translated_post_type(
+			WPML\PB\Gutenberg\ReusableBlocks\Translation::POST_TYPE
 		);
 
-		if ( is_admin() ) {
+		if ( $is_reusable_block_translatable ) {
+			$reusable_blocks             = new WPML\PB\Gutenberg\ReusableBlocks\Blocks();
+			$reusable_blocks_translation = new WPML\PB\Gutenberg\ReusableBlocks\Translation( $sitepress );
+
 			$integrations->add(
-				new WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration(
-					new WPML\PB\Gutenberg\ReusableBlocks\ManageBatch(
-						$reusable_blocks,
-						$reusable_blocks_translation
-					),
-					new WPML\PB\Gutenberg\ReusableBlocks\ManageBasket(
-						$reusable_blocks,
-						$reusable_blocks_translation,
-						\WPML\Container\make( '\WPML_Translation_Basket' )
-					)
-				)
+				new WPML\PB\Gutenberg\ReusableBlocks\Integration( $reusable_blocks_translation )
 			);
+
+			if ( is_admin() ) {
+				$integrations->add(
+					new WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration(
+						new WPML\PB\Gutenberg\ReusableBlocks\ManageBatch(
+							$reusable_blocks,
+							$reusable_blocks_translation
+						),
+						new WPML\PB\Gutenberg\ReusableBlocks\ManageBasket(
+							$reusable_blocks,
+							$reusable_blocks_translation,
+							\WPML\Container\make( '\WPML_Translation_Basket' )
+						)
+					)
+				);
+			}
 		}
 
 		return $integrations;
