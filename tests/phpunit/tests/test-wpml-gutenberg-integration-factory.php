@@ -31,10 +31,8 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 		\Mockery::mock( 'WPML_PB_Reuse_Translations' );
 		\Mockery::mock( 'WPML_PB_String_Translation' );
 
-		\WP_Mock::userFunction( 'WPML\Container\make', [
-			'args'   => [ '\WPML_Translation_Basket' ],
-			'return' => $this->getMockBuilder( '\WPML_Translation_Basket' )->getMock(),
-		] );
+		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\Integration', '\WPML\PB\Gutenberg\Integration' );
+		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration', '\WPML\PB\Gutenberg\Integration' );
 
 		$factory = new WPML_Gutenberg_Integration_Factory();
 
@@ -66,10 +64,18 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 		\Mockery::mock( 'WPML_PB_Reuse_Translations' );
 		\Mockery::mock( 'WPML\PB\Gutenberg\StringsInBlock\StringsInBlock' );
 
-		\WP_Mock::userFunction( 'WPML\Container\make', [
-			'args'   => [ '\WPML_Translation_Basket' ],
-			'return' => $this->getMockBuilder( '\WPML_Translation_Basket' )->getMock(),
+		\WP_Mock::userFunction( 'WPML\Container\share', [
+			'times'  => 1,
+			'args'   => [
+				[
+					'\WPML\PB\Gutenberg\ReusableBlocks\Blocks',
+					'\WPML\PB\Gutenberg\ReusableBlocks\Translation',
+				],
+			],
 		] );
+
+		$this->expect_container_make( 1, '\WPML\PB\Gutenberg\ReusableBlocks\Integration', 'WPML\PB\Gutenberg\Integration' );
+		$this->expect_container_make( (int) $is_admin, '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration', '\WPML\PB\Gutenberg\Integration' );
 
 		$factory = new WPML_Gutenberg_Integration_Factory();
 
@@ -83,5 +89,19 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 			[ true ],
 			[ false ],
 		];
+	}
+
+	private function expect_container_make( $times, $class, $interface = null ) {
+		if ( $interface ) {
+			$mock = \Mockery::mock( $interface );
+		} else {
+			$mock = \Mockery::mock( $class );
+		}
+
+		\WP_Mock::userFunction( 'WPML\Container\make', [
+			'times'  => $times,
+			'args'   => [ $class ],
+			'return' => $mock,
+		] );
 	}
 }
