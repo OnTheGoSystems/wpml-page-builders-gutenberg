@@ -16,7 +16,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )
-		              ->andReturn( array( 'core/paragraph' => array( '//p' ) ) );
+		              ->andReturn( array( 'core/paragraph' => array( 'xpath' => array( '//p' ) ) ) );
 
 		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
 
@@ -62,7 +62,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )
-		              ->andReturn( array( 'core/column' => array() ) );
+		              ->andReturn( array( 'core/column' => array( 'xpath' => array() ) ) );
 
 		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
 
@@ -77,11 +77,31 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmlcore-6606
+	 */
+	public function it_does_not_find_string_if_innerHTML_is_not_set() {
+
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( array( 'core/column' => array( 'xpath' => array( '//p' ) ) ) );
+
+		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+
+		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName = 'core/column';
+
+		$strings = $strings_in_block->find( $block );
+
+		$this->assertCount( 0, $strings );
+	}
+
+	/**
+	 * @test
 	 */
 	public function it_finds_image() {
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )
-		              ->andReturn( array( 'core/image' => array( '//figure/figcaption', '//figure/img/@alt' ) ) );
+		              ->andReturn( array( 'core/image' => array( 'xpath' => array( '//figure/figcaption', '//figure/img/@alt' ) ) ) );
 
 		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
 
@@ -117,7 +137,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )
-		              ->andReturn( array( 'core/paragraph' => array( '//p' ) ) );
+		              ->andReturn( array( 'core/paragraph' => array( 'xpath' => array( '//p' ) ) ) );
 
 		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
 
@@ -149,13 +169,34 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmlcore-6606
+	 */
+	public function it_does_not_update_if_missing_innerHTML() {
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( array( 'core/paragraph' => array( 'xpath' => array( '//p' ) ) ) );
+
+		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+
+		$block_name = 'core/paragraph';
+
+		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName = $block_name;
+
+		$updated_block = $strings_in_block->update( $block, array(), 'de' );
+
+		$this->assertEquals( $block, $updated_block );
+	}
+
+	/**
+	 * @test
 	 * @group wpmlcore-6066
 	 */
 	public function it_updates_paragraph_with_html_entities() {
 
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )
-		              ->andReturn( array( 'core/paragraph' => array( '//p' ) ) );
+		              ->andReturn( array( 'core/paragraph' => array( 'xpath' => array( '//p' ) ) ) );
 
 		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
 
@@ -194,7 +235,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )
-		              ->andReturn( array( 'core/visual_block' => array( '//div' ) ) );
+		              ->andReturn( array( 'core/visual_block' => array( 'xpath' => array( '//div' ) ) ) );
 
 		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
 
@@ -231,7 +272,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )
-		              ->andReturn( array( 'core/image' => array( '//figure/figcaption', '//figure/img/@alt' ) ) );
+		              ->andReturn( array( 'core/image' => array( 'xpath' => array( '//figure/figcaption', '//figure/img/@alt' ) ) ) );
 
 		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
 
