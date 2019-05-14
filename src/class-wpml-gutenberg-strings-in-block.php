@@ -25,9 +25,9 @@ class WPML_Gutenberg_Strings_In_Block {
 
 		$block_queries = $this->get_block_queries( $block );
 
-		if ( is_array( $block_queries ) ) {
+		if ( is_array( $block_queries ) && isset( $block->innerHTML ) ) {
 
-			$xpath = $this->get_domxpath( $block );
+			$xpath = $this->get_domxpath( $block->innerHTML );
 
 			foreach ( $block_queries as $query ) {
 				$elements = $xpath->query( $query );
@@ -83,7 +83,7 @@ class WPML_Gutenberg_Strings_In_Block {
 
 		$block_queries = $this->get_block_queries( $block );
 
-		if ( $block_queries ) {
+		if ( $block_queries && isset( $block->innerHTML ) ) {
 
 			$dom   = $this->get_dom( $block->innerHTML );
 			$xpath = new DOMXPath( $dom );
@@ -214,8 +214,8 @@ class WPML_Gutenberg_Strings_In_Block {
 			$this->block_types = $this->config_option->get();
 		}
 
-		if ( isset( $block->blockName, $block->innerHTML ) && array_key_exists( $block->blockName, $this->block_types ) ) {
-			return $this->block_types[ $block->blockName ];
+		if ( isset( $block->blockName, $this->block_types[ $block->blockName ]['xpath'] ) ) {
+			return $this->block_types[ $block->blockName ]['xpath'];
 		} else {
 			return null;
 		}
@@ -241,12 +241,12 @@ class WPML_Gutenberg_Strings_In_Block {
 	}
 
 	/**
-	 * @param WP_Block_Parser_Block $block
+	 * @param string $html
 	 *
 	 * @return DOMXPath
 	 */
-	private function get_domxpath( WP_Block_Parser_Block $block ) {
-		$dom = $this->get_dom( $block->innerHTML );
+	private function get_domxpath( $html ) {
+		$dom = $this->get_dom( $html );
 
 		return new DOMXPath( $dom );
 	}
