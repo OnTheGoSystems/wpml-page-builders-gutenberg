@@ -2,7 +2,7 @@
 
 class WPML_Gutenberg_Strings_Registration {
 
-	/** @var WPML_Gutenberg_Strings_In_Block $strings_in_blocks */
+	/** @var WPML\PB\Gutenberg\StringsInBlock\StringsInBlock $strings_in_blocks */
 	private $strings_in_blocks;
 
 	/** @var WPML_ST_String_Factory $string_factory */
@@ -21,7 +21,7 @@ class WPML_Gutenberg_Strings_Registration {
 	private $leftover_strings;
 
 	public function __construct(
-		WPML_Gutenberg_Strings_In_Block $strings_in_blocks,
+		WPML\PB\Gutenberg\StringsInBlock\StringsInBlock $strings_in_blocks,
 		WPML_ST_String_Factory $string_factory,
 		WPML_PB_Reuse_Translations $reuse_translations,
 		WPML_PB_String_Translation $string_translation
