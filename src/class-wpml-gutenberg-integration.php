@@ -11,7 +11,7 @@ class WPML_Gutenberg_Integration {
 	const CLASSIC_BLOCK_NAME      = 'core/classic-block';
 
 	/**
-	 * @var WPML_Gutenberg_Strings_In_Block
+	 * @var WPML\PB\Gutenberg\StringsInBlock\StringsInBlock
 	 */
 	private $strings_in_blocks;
 
@@ -31,7 +31,7 @@ class WPML_Gutenberg_Integration {
 	private $strings_registration;
 
 	public function __construct(
-		WPML_Gutenberg_Strings_In_Block $strings_in_block,
+		WPML\PB\Gutenberg\StringsInBlock\StringsInBlock $strings_in_block,
 		WPML_Gutenberg_Config_Option $config_option,
 		SitePress $sitepress,
 		WPML_Gutenberg_Strings_Registration $strings_registration

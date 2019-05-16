@@ -1,12 +1,13 @@
 <?php
 
+namespace WPML\PB\Gutenberg\StringsInBlock;
+
 /**
- * Class Test_WPML_Gutenberg_Strings_In_Block
- *
  * @group page-builders
  * @group gutenberg
+ * @group strings-in-block
  */
-class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
+class TestHTML extends \OTGS_TestCase {
 
 	/**
 	 * @test
@@ -18,7 +19,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$config_option->shouldReceive( 'get' )
 		              ->andReturn( array( 'core/paragraph' => array( 'xpath' => array( '//p' ) ) ) );
 
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+		$strings_in_block = new HTML( $config_option );
 
 		$paragraph = 'some paragraph &amp; special chars &amp; emoji ❤ 😀 👍️';
 
@@ -64,7 +65,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$config_option->shouldReceive( 'get' )
 		              ->andReturn( array( 'core/column' => array( 'xpath' => array() ) ) );
 
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+		$strings_in_block = new HTML( $config_option );
 
 		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
 		$block->blockName = 'core/column';
@@ -85,7 +86,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$config_option->shouldReceive( 'get' )
 		              ->andReturn( array( 'core/column' => array( 'xpath' => array( '//p' ) ) ) );
 
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+		$strings_in_block = new HTML( $config_option );
 
 		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
 		$block->blockName = 'core/column';
@@ -103,7 +104,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$config_option->shouldReceive( 'get' )
 		              ->andReturn( array( 'core/image' => array( 'xpath' => array( '//figure/figcaption', '//figure/img/@alt' ) ) ) );
 
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+		$strings_in_block = new HTML( $config_option );
 
 		$alt_text = 'alt text';
 		$caption  = 'caption';
@@ -139,7 +140,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$config_option->shouldReceive( 'get' )
 		              ->andReturn( array( 'core/paragraph' => array( 'xpath' => array( '//p' ) ) ) );
 
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+		$strings_in_block = new HTML( $config_option );
 
 		$block_name = 'core/paragraph';
 
@@ -176,7 +177,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$config_option->shouldReceive( 'get' )
 		              ->andReturn( array( 'core/paragraph' => array( 'xpath' => array( '//p' ) ) ) );
 
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+		$strings_in_block = new HTML( $config_option );
 
 		$block_name = 'core/paragraph';
 
@@ -198,7 +199,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$config_option->shouldReceive( 'get' )
 		              ->andReturn( array( 'core/paragraph' => array( 'xpath' => array( '//p' ) ) ) );
 
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+		$strings_in_block = new HTML( $config_option );
 
 		$block_name = 'core/paragraph';
 
@@ -237,7 +238,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$config_option->shouldReceive( 'get' )
 		              ->andReturn( array( 'core/visual_block' => array( 'xpath' => array( '//div' ) ) ) );
 
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+		$strings_in_block = new HTML( $config_option );
 
 		$block_name = 'core/visual_block';
 
@@ -274,7 +275,7 @@ class Test_WPML_Gutenberg_Strings_In_Block extends OTGS_TestCase {
 		$config_option->shouldReceive( 'get' )
 		              ->andReturn( array( 'core/image' => array( 'xpath' => array( '//figure/figcaption', '//figure/img/@alt' ) ) ) );
 
-		$strings_in_block = new WPML_Gutenberg_Strings_In_Block( $config_option );
+		$strings_in_block = new HTML( $config_option );
 
 		$block_name = 'core/image';
 
