@@ -9,8 +9,14 @@ class WPML_Gutenberg_Integration_Factory {
 		 */
 		global $sitepress, $wpdb;
 
-		$config_option        = new WPML_Gutenberg_Config_Option();
-		$strings_in_block     = new WPML_Gutenberg_Strings_In_Block( $config_option );
+		$config_option = new WPML_Gutenberg_Config_Option();
+
+		$string_parsers = [
+			new WPML\PB\Gutenberg\StringsInBlock\HTML( $config_option ),
+			new WPML\PB\Gutenberg\StringsInBlock\Attributes( $config_option ),
+		];
+
+		$strings_in_block     = new WPML\PB\Gutenberg\StringsInBlock\Composite( $string_parsers );
 		$string_factory       = new WPML_ST_String_Factory( $wpdb );
 		$strings_registration = new WPML_Gutenberg_Strings_Registration(
 			$strings_in_block,

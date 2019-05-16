@@ -285,7 +285,7 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 	private function get_subject( $string_factory = null, $reuse_translations = null, $string_translation = null ) {
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )->andReturn( array() );
-		$strings_in_block   = new WPML_Gutenberg_Strings_In_Block( $config_option );
+		$strings_in_block   = $this->getStringsInBlock( $config_option );
 		$string_factory     = $string_factory ? $string_factory : $this->get_string_factory();
 		$reuse_translations = $reuse_translations ? $reuse_translations : $this->get_reuse_translation();
 		$string_translation = $string_translation ? $string_translation : $this->get_string_translation( true );
@@ -413,5 +413,14 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 		}
 
 		return $block;
+	}
+
+	private function getStringsInBlock( $config_option ) {
+		$string_parsers = [
+			new WPML\PB\Gutenberg\StringsInBlock\HTML( $config_option ),
+			new WPML\PB\Gutenberg\StringsInBlock\Attributes( $config_option ),
+		];
+
+		return new WPML\PB\Gutenberg\StringsInBlock\Composite( $string_parsers );
 	}
 }

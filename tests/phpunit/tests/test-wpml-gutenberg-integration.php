@@ -17,7 +17,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$config_option = new WPML_Gutenberg_Config_Option();
 
 		$subject = new WPML_Gutenberg_Integration(
-			new WPML_Gutenberg_Strings_In_Block( $config_option ),
+			$this->getStringsInBlock( $config_option ),
 			$config_option,
 			$this->get_sitepress(),
 			$this->get_strings_registration()
@@ -55,7 +55,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$config_option = new WPML_Gutenberg_Config_Option();
 
 		$subject = new WPML_Gutenberg_Integration(
-			new WPML_Gutenberg_Strings_In_Block( $config_option ),
+			$this->getStringsInBlock( $config_option ),
 			$config_option,
 			$this->get_sitepress(),
 			$this->get_strings_registration()
@@ -600,7 +600,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$strings_registration = $strings_registration ? $strings_registration : $this->get_strings_registration();
 
 		return new WPML_Gutenberg_Integration(
-			new WPML_Gutenberg_Strings_In_Block( $config_option ),
+			$this->getStringsInBlock( $config_option ),
 			$config_option,
 			$sitepress,
 			$strings_registration
@@ -635,5 +635,14 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		return $this->getMockBuilder( 'WPML_Gutenberg_Strings_Registration' )
 			->setMethods( array( 'register_strings' ) )
 			->disableOriginalConstructor()->getMock();
+	}
+
+	private function getStringsInBlock( $config_option ) {
+		$string_parsers = [
+			new WPML\PB\Gutenberg\StringsInBlock\HTML( $config_option ),
+			new WPML\PB\Gutenberg\StringsInBlock\Attributes( $config_option ),
+		];
+
+		return new WPML\PB\Gutenberg\StringsInBlock\Composite( $string_parsers );
 	}
 }
