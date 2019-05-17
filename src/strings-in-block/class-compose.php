@@ -2,7 +2,7 @@
 
 namespace WPML\PB\Gutenberg\StringsInBlock;
 
-class Composite implements StringsInBlock {
+class Compose implements StringsInBlock {
 
 	/** @var StringsInBlock[] $parsers */
 	private $parsers = [];

@@ -421,6 +421,6 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 			new WPML\PB\Gutenberg\StringsInBlock\Attributes( $config_option ),
 		];
 
-		return new WPML\PB\Gutenberg\StringsInBlock\Composite( $string_parsers );
+		return new WPML\PB\Gutenberg\StringsInBlock\Compose( $string_parsers );
 	}
 }
