@@ -94,6 +94,34 @@ class TestAttributes extends \OTGS_TestCase {
 		$this->checkString( $strings[0], 'String for something', 'LINE' );
 	}
 
+	/**
+	 * @test
+	 */
+	public function it_should_not_register_numbers() {
+		$config_array = [
+			self::BLOCK_NAME => [
+				'key' => [
+					'key1' => 1,
+					'key2' => 1,
+				],
+			],
+		];
+
+		$block = $this->getBlock();
+		$block->blockName = self::BLOCK_NAME;
+		$block->attrs = [
+			'key1' => '123',
+			'key2' => 123,
+		];
+
+		$config  = $this->getConfig( $config_array );
+		$subject = $this->getSubject( $config );
+
+		$strings = $subject->find( $block );
+
+		$this->assertCount( 0, $strings );
+	}
+
 	private function checkString( \stdClass $string, $value, $type ) {
 		$this->assertEquals( md5( self::BLOCK_NAME . $value ), $string->id, $value );
 		$this->assertEquals( self::BLOCK_NAME, $string->name );

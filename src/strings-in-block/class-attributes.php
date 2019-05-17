@@ -46,7 +46,7 @@ class Attributes extends Base {
 					$strings,
 					$this->findStringsRecursively( $attr_value, $next_level_keys, $block_name )
 				);
-			} else {
+			} elseif ( ! is_numeric( $attr_value ) ) {
 				$type      = $this->get_string_type( $attr_value );
 				$string_id = $this->get_string_id( $block_name, $attr_value );
 				$strings[] = $this->build_string( $string_id, $block_name, $attr_value, $type );
