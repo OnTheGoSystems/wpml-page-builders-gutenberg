@@ -66,6 +66,34 @@ class TestAttributes extends \OTGS_TestCase {
 		$this->checkString( $strings[4], 'String for key3', 'LINE' );
 	}
 
+	/**
+	 * @test
+	 */
+	public function it_should_find_with_regex() {
+		$config_array = [
+			self::BLOCK_NAME => [
+				'key' => [
+					'/^[^_]\S+$/' => 1, // all strings not starting with _
+				],
+			],
+		];
+
+		$block = $this->getBlock();
+		$block->blockName = self::BLOCK_NAME;
+		$block->attrs = [
+			'_something' => 'String for _something',
+			'something'  => 'String for something',
+		];
+
+		$config  = $this->getConfig( $config_array );
+		$subject = $this->getSubject( $config );
+
+		$strings = $subject->find( $block );
+
+		$this->assertCount( 1, $strings );
+		$this->checkString( $strings[0], 'String for something', 'LINE' );
+	}
+
 	private function checkString( \stdClass $string, $value, $type ) {
 		$this->assertEquals( md5( self::BLOCK_NAME . $value ), $string->id, $value );
 		$this->assertEquals( self::BLOCK_NAME, $string->name );
@@ -157,6 +185,49 @@ class TestAttributes extends \OTGS_TestCase {
 			'key3' => 'Translated string A', // translated
 			'key4' => 'Original string B',
 			'key5' => 'Original string C', // not translated because status in progress
+		];
+
+		$config  = $this->getConfig( $config_array );
+		$subject = $this->getSubject( $config );
+
+		$updated_block = $subject->update( $block, $translations, $lang );
+
+		$this->assertEquals( $expected_attrs, $updated_block->attrs );
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_should_update_with_regex() {
+		$lang = 'fr';
+
+		$config_array = [
+			self::BLOCK_NAME => [
+				'key' => [
+					'/^[^_]\S+$/' => 1, // all strings not starting with _
+				],
+			],
+		];
+
+		$block = $this->getBlock();
+		$block->blockName = self::BLOCK_NAME;
+		$block->attrs = [
+			'_something' => 'Original string A',
+			'something'  => 'Original string A',
+		];
+
+		$translations = [
+			md5( self::BLOCK_NAME . 'Original string A' ) => [
+				$lang => [
+					'status' => ICL_TM_COMPLETE,
+					'value'  => 'Translated string A',
+				],
+			],
+		];
+
+		$expected_attrs = [
+			'_something' => 'Original string A',
+			'something'  => 'Translated string A',
 		];
 
 		$config  = $this->getConfig( $config_array );

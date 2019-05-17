@@ -72,14 +72,29 @@ class Attributes extends Base {
 		 * we'll try to find a key with a wildcard.
 		 */
 		foreach ( array_keys( $config_keys ) as $config_key ) {
-			$pattern = '/' . str_replace( '*', 'S+', preg_quote( $config_key, '/' ) ) . '/';
 
-			if ( preg_match( $pattern, $attr_key ) ) {
+			if ( preg_match( $this->getRegex( $config_key ), $attr_key ) ) {
 				return $config_key;
 			}
 		}
 
 		return null;
+	}
+
+	/**
+	 * If the config key is not already a regex
+	 * we will replace the wildcard (*) and make it a valid regex.
+	 *
+	 * @param string $config_key
+	 *
+	 * @return string
+	 */
+	private function getRegex( $config_key ) {
+		if ( @preg_match( $config_key, '' ) !== false ) {
+			return $config_key;
+		}
+
+		return '/' . str_replace( '*', 'S+', preg_quote( $config_key, '/' ) ) . '/';
 	}
 
 	/**
