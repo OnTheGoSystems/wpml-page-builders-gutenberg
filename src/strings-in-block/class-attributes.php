@@ -39,12 +39,13 @@ class Attributes extends Base {
 			}
 
 			if ( is_array( $attr_value ) ) {
-				$next_level_keys = is_array( $config_keys[ $matching_key ] )
-					? $config_keys[ $matching_key ] : [ '*' => 1 ];
+				$children_config_keys = isset( $config_keys[ $matching_key ]['children'] )
+					? $config_keys[ $matching_key ]['children']
+					: $this->getMatchAllKey();
 
 				$strings = array_merge(
 					$strings,
-					$this->findStringsRecursively( $attr_value, $next_level_keys, $block_name )
+					$this->findStringsRecursively( $attr_value, $children_config_keys, $block_name )
 				);
 			} elseif ( ! is_numeric( $attr_value ) ) {
 				$type      = $this->get_string_type( $attr_value );
@@ -69,11 +70,11 @@ class Attributes extends Base {
 
 		/**
 		 * If we don't find an exactly matching key,
-		 * we'll try to find a key with a wildcard.
+		 * we'll try to find a key with a wildcard or a regex.
 		 */
-		foreach ( array_keys( $config_keys ) as $config_key ) {
+		foreach ( $config_keys as $config_key => $key_attrs ) {
 
-			if ( preg_match( $this->getRegex( $config_key ), $attr_key ) ) {
+			if ( preg_match( $this->getRegex( $config_key, $key_attrs ), $attr_key ) ) {
 				return $config_key;
 			}
 		}
@@ -86,11 +87,15 @@ class Attributes extends Base {
 	 * we will replace the wildcard (*) and make it a valid regex.
 	 *
 	 * @param string $config_key
+	 * @param array  $attrs
 	 *
 	 * @return string
 	 */
-	private function getRegex( $config_key ) {
-		if ( @preg_match( $config_key, '' ) !== false ) {
+	private function getRegex( $config_key, array $attrs ) {
+		if (
+			isset( $attrs['search-method'] )
+			&& \WPML_Gutenberg_Config_Option::SEARCH_METHOD_REGEX === $attrs['search-method']
+		) {
 			return $config_key;
 		}
 
@@ -133,10 +138,11 @@ class Attributes extends Base {
 			}
 
 			if ( is_array( $attr_value ) ) {
-				$next_level_keys = is_array( $config_keys[ $matching_key ] )
-					? $config_keys[ $matching_key ] : [ '*' => 1 ];
+				$children_config_keys = isset( $config_keys[ $matching_key ]['children'] )
+					? $config_keys[ $matching_key ]['children']
+					: $this->getMatchAllKey();
 
-				$attrs[ $attr_key ] = $this->updateStringsRecursively( $attr_value, $next_level_keys, $translations, $lang, $block_name );
+				$attrs[ $attr_key ] = $this->updateStringsRecursively( $attr_value, $children_config_keys, $translations, $lang, $block_name );
 			} else {
 				$string_id = $this->get_string_id( $block_name, $attr_value );
 
@@ -170,5 +176,16 @@ class Attributes extends Base {
 		$config = $this->get_block_config( $block, 'key' );
 
 		return $config ? $config : [];
+	}
+
+	/**
+	 * @return array
+	 */
+	private function getMatchAllKey() {
+		return [
+			'*' => [
+				'search-method' => \WPML_Gutenberg_Config_Option::SEARCH_METHOD_WILDCARD,
+			],
+		];
 	}
 }
