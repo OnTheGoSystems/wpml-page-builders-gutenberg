@@ -7,6 +7,9 @@ class WPML_Gutenberg_Config_Option {
 
 	const OPTION = 'wpml-gutenberg-config';
 
+	const SEARCH_METHOD_WILDCARD = 'wildcards';
+	const SEARCH_METHOD_REGEX    = 'regex';
+
 	/**
 	 * @param array $config_data
 	 */
@@ -73,10 +76,14 @@ class WPML_Gutenberg_Config_Option {
 
 		foreach ( $keys_config as $key_config ) {
 
-			$partial_config = 1;
+			$partial_config = [];
+			
+			if ( isset( $key_config['attr']['search-method'] ) ) {
+				$partial_config['search-method'] = $key_config['attr']['search-method'];
+			}
 
 			if ( isset( $key_config['key'] ) ) {
-				$partial_config = $this->get_keys_recursively( $key_config['key'] );
+				$partial_config['children'] = $this->get_keys_recursively( $key_config['key'] );
 			}
 
 			$final_config = array_merge( $final_config, array( $key_config['attr']['name'] => $partial_config ) );

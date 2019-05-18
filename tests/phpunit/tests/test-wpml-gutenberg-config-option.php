@@ -56,12 +56,15 @@ class Test_WPML_Gutenberg_Integration_Config_Option extends OTGS_TestCase {
 		$block_xpaths = array( array( 'xpath1' ), array( 'xpath2' ) );
 		$block_keys   = array(
 			'value' => '',
-			'attr' => array( 'name'  => 'key1' ),
+			'attr' => array(
+				'name'          => 'key1',
+				'search-method' => 'regex',
+			),
 		);
 
 		$expected_block_config = array(
 			'xpath' => array( 'xpath1', 'xpath2' ),
-			'key'   => array( 'key1' => 1 ),
+			'key'   => array( 'key1' => array( 'search-method' => 'regex' ) ),
 		);
 
 		$block_data = array(
@@ -101,32 +104,49 @@ class Test_WPML_Gutenberg_Integration_Config_Option extends OTGS_TestCase {
 		$block_keys = array(
 			array(
 				'value' => '',
-				'attr'  => array( 'name' => 'key1' ),
+				'attr'  => array(
+					'name'          => 'key1',
+					'search-method' => 'regex',
+				),
 			),
 			array(
 				'value' => '',
-				'attr'  => array( 'name' => 'key2' ),
+				'attr'  => array(
+					'name'          => 'key2',
+					'search-method' => 'wildcards',
+				),
 				'key'   => array(
 					array(
 						'value' => '',
-						'attr'  => array( 'name' => 'key21' ),
+						'attr'  => array(
+							'name'          => 'key21',
+							'search-method' => 'wildcards',
+						),
 					),
 					array(
 						'value' => '',
-						'attr'  => array( 'name' => 'key22' ),
+						'attr'  => array(
+							'name'          => 'key22',
+						),
 						'key'   => array(
 							'value' => '',
-							'attr'  => array( 'name' => 'key221' ),
+							'attr'  => array(
+								'name'          => 'key221',
+								'search-method' => 'regex',
+							),
 						),
 					),
 				),
 			),
 			array(
 				'value' => '',
-				'attr'  => array( 'name' => 'key3' ),
+				'attr'  => array(
+					'name'          => 'key3',
+					'search-method' => 'wildcards',
+				),
 				'key'   => array(
 					'value' => '',
-					'attr'  => array( 'name' => 'key31' ),
+					'attr'  => array( 'name' => 'key31' ), // no search-method
 				),
 			),
 		);
@@ -134,15 +154,23 @@ class Test_WPML_Gutenberg_Integration_Config_Option extends OTGS_TestCase {
 		$expected_block_config = array(
 			'xpath' => array(),
 			'key'   => array(
-				'key1' => 1,
+				'key1' => array( 'search-method' => 'regex' ),
 				'key2' => array(
-					'key21' => 1,
-					'key22' => array(
-						'key221' => 1,
+					'search-method' => 'wildcards',
+					'children'      => array(
+						'key21' => array( 'search-method' => 'wildcards' ),
+						'key22' => array(
+							'children' => array(
+								'key221' => array( 'search-method' => 'regex' ),
+							),
+						),
 					),
 				),
 				'key3' => array(
-					'key31' => 1,
+					'search-method' => 'wildcards',
+					'children'      => array(
+						'key31' => array(),
+					),
 				),
 			),
 		);

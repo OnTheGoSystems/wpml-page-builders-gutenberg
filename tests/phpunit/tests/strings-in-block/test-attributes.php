@@ -14,20 +14,23 @@ class TestAttributes extends \OTGS_TestCase {
 	/**
 	 * @test
 	 */
-	public function it_should_find() {
+	public function it_should_find_attribute_strings() {
 		$config_array = [
 			self::BLOCK_NAME => [
 				'key' => [
 					'*1'   => [
-						'key12' => 1,
+						'search-method' => \WPML_Gutenberg_Config_Option::SEARCH_METHOD_WILDCARD,
+						'children'      => [ 'key12' => [] ],
 					],
 					'key2' => [
-						'key22' => [
-							'key*' => 1,
+						'children' => [
+							'key22' => [
+								'children' => [ 'key*' => [] ],
+							],
+							'key*'  => [],
 						],
-						'key*'  => 1,
 					],
-					'key3' => 1,
+					'key3' => [],
 				],
 			],
 		];
@@ -69,11 +72,14 @@ class TestAttributes extends \OTGS_TestCase {
 	/**
 	 * @test
 	 */
-	public function it_should_find_with_regex() {
+	public function it_should_find_attribute_strings_with_regex() {
 		$config_array = [
 			self::BLOCK_NAME => [
 				'key' => [
-					'/^[^_]\S+$/' => 1, // all strings not starting with _
+					// all strings not starting with _
+					'/^[^_]\S+$/' => [
+						'search-method' => \WPML_Gutenberg_Config_Option::SEARCH_METHOD_REGEX,
+					],
 				],
 			],
 		];
@@ -101,8 +107,8 @@ class TestAttributes extends \OTGS_TestCase {
 		$config_array = [
 			self::BLOCK_NAME => [
 				'key' => [
-					'key1' => 1,
-					'key2' => 1,
+					'key1' => [],
+					'key2' => [],
 				],
 			],
 		];
@@ -132,22 +138,25 @@ class TestAttributes extends \OTGS_TestCase {
 	/**
 	 * @test
 	 */
-	public function it_should_update() {
+	public function it_should_update_attributes() {
 		$lang = 'fr';
 
 		$config_array = [
 			self::BLOCK_NAME => [
 				'key' => [
 					'*1'   => [
-						'key12' => 1,
+						'search-method' => \WPML_Gutenberg_Config_Option::SEARCH_METHOD_WILDCARD,
+						'children'      => [ 'key12' => [] ]	,
 					],
 					'key2' => [
-						'key22' => [
-							'key*' => 1,
+						'children' => [
+							'key22' => [
+								'children' => [ 'key*' => [] ],
+							],
+							'key*'  => [],
 						],
-						'key*'  => 1,
 					],
-					'key3' => 1,
+					'key3' => [],
 				],
 			],
 		];
@@ -226,13 +235,16 @@ class TestAttributes extends \OTGS_TestCase {
 	/**
 	 * @test
 	 */
-	public function it_should_update_with_regex() {
+	public function it_should_update_attributes_with_regex() {
 		$lang = 'fr';
 
 		$config_array = [
 			self::BLOCK_NAME => [
 				'key' => [
-					'/^[^_]\S+$/' => 1, // all strings not starting with _
+					// all strings not starting with _
+					'/^[^_]\S+$/' => [
+						'search-method' => \WPML_Gutenberg_Config_Option::SEARCH_METHOD_REGEX,
+					],
 				],
 			],
 		];
