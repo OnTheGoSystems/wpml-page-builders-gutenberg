@@ -69,7 +69,7 @@ abstract class Manage {
 			return [];
 		}
 
-		return \collect( $this->blocks->getIdsFromPost( $element->get_element_id() ) )
+		return \collect( $this->blocks->getChildrenIdsFromPost( $element->get_element_id() ) )
 			->map( function( $block_id ) use ( $element ) {
 				return (object) [
 					'block_id'      => $block_id,
