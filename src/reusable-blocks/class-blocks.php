@@ -16,11 +16,14 @@ class Blocks {
 	}
 
 	/**
+	 * We get block IDs recursively to find possible
+	 * nested reusable blocks.
+	 * 
 	 * @param int $post_id
 	 *
 	 * @return array
 	 */
-	public function getIdsFromPost( $post_id ) {
+	public function getChildrenIdsFromPost( $post_id ) {
 		$post = get_post( $post_id );
 
 		if ( $post ) {
@@ -30,8 +33,9 @@ class Blocks {
 				       && isset( $block['attrs']['ref'] )
 				       && is_numeric( $block['attrs']['ref'] );
 			})->map( function( $block ) {
-				return (int) $block['attrs']['ref'];
-			})->toArray();
+				$block_id = (int) $block['attrs']['ref'];
+				return array_merge( [ $block_id ], $this->getChildrenIdsFromPost( $block_id ) );
+			})->flatten()->toArray();
 		}
 
 		return [];
