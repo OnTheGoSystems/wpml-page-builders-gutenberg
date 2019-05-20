@@ -44,7 +44,7 @@ class TestManageBatch extends \OTGS_TestCase {
 		];
 
 		$blocks_mock = $this->getBlocks();
-		$blocks_mock->method( 'getIdsFromPost' )->willReturnMap( $post_to_reusable_blocks );
+		$blocks_mock->method( 'getChildrenIdsFromPost' )->willReturnMap( $post_to_reusable_blocks );
 
 		$convert_block_id = [
 			[ $reusable_block_1, 'fr', $reusable_block_1_fr ],
@@ -80,7 +80,7 @@ class TestManageBatch extends \OTGS_TestCase {
 
 	private function getBlocks() {
 		return $this->getMockBuilder( Blocks::class )
-			->setMethods( [ 'getIdsFromPost' ] )
+			->setMethods( [ 'getChildrenIdsFromPost' ] )
 			->disableOriginalConstructor()->getMock();
 	}
 
