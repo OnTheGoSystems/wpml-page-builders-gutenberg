@@ -32,13 +32,6 @@ class WPML_Gutenberg_Integration_Factory {
 		);
 
 		if ( $this->should_translate_reusable_blocks() ) {
-			WPML\Container\share(
-				[
-				  '\WPML\PB\Gutenberg\ReusableBlocks\Blocks',
-				  '\WPML\PB\Gutenberg\ReusableBlocks\Translation',
-				]
-			);
-
 			$integrations->add(
 				WPML\Container\make( '\WPML\PB\Gutenberg\ReusableBlocks\Integration' )
 			);
