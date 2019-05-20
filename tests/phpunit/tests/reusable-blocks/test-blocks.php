@@ -105,12 +105,65 @@ class TestBlocks extends \OTGS_TestCase {
 			'args'   => [ $post->post_content ],
 			'return' => $blocks,
 		]);
+
+		$this->set_block_in_post( $block_id, null );
+		
 		$subject = new Blocks();
 		$this->assertEquals(
 			[ $block_id ],
-			$subject->getIdsFromPost( $post_id )
+			$subject->getChildrenIdsFromPost( $post_id )
 		);
 		unset( $GLOBALS['wp_version'] );
+	}
+
+	/**
+	 * @test
+	 * @group wpmlcore-6598
+	 */
+	public function it_should_get_nested_block_ids_from_post() {
+		$GLOBALS['wp_version'] = '5.1.0';
+
+		$post_id        = 123;
+		$block_id       = 456;
+		$child_block_id = 789;
+
+		$this->set_block_in_post( $post_id, $block_id );
+		$this->set_block_in_post( $block_id, $child_block_id );
+		$this->set_block_in_post( $child_block_id, null );
+
+		$subject = new Blocks();
+		$this->assertEquals(
+			[ $block_id, $child_block_id ],
+			$subject->getChildrenIdsFromPost( $post_id )
+		);
+		unset( $GLOBALS['wp_version'] );
+	}
+
+	/**
+	 * @param int $post_id
+	 * @param int $block_id
+	 */
+	private function set_block_in_post( $post_id, $block_id ) {
+		$post = $this->getMockBuilder( 'WP_Post' )->disableOriginalConstructor()->getMock();
+		$post->post_content = 'some block content for ' . $post_id;
+
+		$blocks_in_post = [];
+
+		if ( $block_id ) {
+			$blocks_in_post[] = [
+				'blockName' => 'core/block',
+				'attrs'     => [ 'ref' => (string) $block_id ],
+			];
+		}
+
+		\WP_Mock::userFunction( 'get_post', [
+			'args'   => [ $post_id ],
+			'return' => $post,
+		]);
+		\WP_Mock::userFunction( 'parse_blocks', [
+			'args'   => [ $post->post_content ],
+			'return' => $blocks_in_post,
+		]);
 	}
 
 	/**
@@ -127,6 +180,6 @@ class TestBlocks extends \OTGS_TestCase {
 
 		$subject = new Blocks();
 
-		$this->assertEmpty( $subject->getIdsFromPost( $post_id ) );
+		$this->assertEmpty( $subject->getChildrenIdsFromPost( $post_id ) );
 	}
 }
