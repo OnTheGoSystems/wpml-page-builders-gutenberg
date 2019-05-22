@@ -16,7 +16,7 @@ class WPML_Gutenberg_Integration_Factory {
 			new WPML\PB\Gutenberg\StringsInBlock\Attributes( $config_option ),
 		];
 
-		$strings_in_block     = new WPML\PB\Gutenberg\StringsInBlock\Compose( $string_parsers );
+		$strings_in_block     = new WPML\PB\Gutenberg\StringsInBlock\Collection( $string_parsers );
 		$string_factory       = new WPML_ST_String_Factory( $wpdb );
 		$strings_registration = new WPML_Gutenberg_Strings_Registration(
 			$strings_in_block,

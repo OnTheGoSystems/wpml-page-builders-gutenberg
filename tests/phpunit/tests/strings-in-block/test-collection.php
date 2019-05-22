@@ -7,7 +7,7 @@ namespace WPML\PB\Gutenberg\StringsInBlock;
  * @group gutenberg
  * @group strings-in-block
  */
-class TestCompose extends \OTGS_TestCase {
+class TestCollection extends \OTGS_TestCase {
 
 	/**
 	 * @test
@@ -36,7 +36,7 @@ class TestCompose extends \OTGS_TestCase {
 			->with( $parsed_strings, $block )
 			->reply( $filtered_strings );
 
-		$subject = new Compose( $parsers );
+		$subject = new Collection( $parsers );
 
 		$found_strings = $subject->find( $block );
 
@@ -65,7 +65,7 @@ class TestCompose extends \OTGS_TestCase {
 		        ->with( $block, $string_translations, $lang )
 		        ->reply( $filtered_block );
 
-		$subject = new Compose( $parsers );
+		$subject = new Collection( $parsers );
 
 		$this->assertSame(
 			$filtered_block,
