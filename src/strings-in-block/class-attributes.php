@@ -39,9 +39,7 @@ class Attributes extends Base {
 			}
 
 			if ( is_array( $attr_value ) ) {
-				$children_config_keys = isset( $config_keys[ $matching_key ]['children'] )
-					? $config_keys[ $matching_key ]['children']
-					: $this->getMatchAllKey();
+				$children_config_keys = $this->getChildrenConfigKeys( $config_keys, $matching_key );
 
 				$strings = array_merge(
 					$strings,
@@ -83,23 +81,42 @@ class Attributes extends Base {
 	}
 
 	/**
+	 * @param array  $config_keys
+	 * @param string $matching_key
+	 *
+	 * @return array
+	 */
+	private function getChildrenConfigKeys( array $config_keys, $matching_key ) {
+		return isset( $config_keys[ $matching_key ]['children'] )
+			? $config_keys[ $matching_key ]['children']
+			: $this->getMatchAllKey();
+	}
+
+	/**
 	 * If the config key is not already a regex
 	 * we will replace the wildcard (*) and make it a valid regex.
 	 *
 	 * @param string $config_key
-	 * @param array  $attrs
+	 * @param array  $key_attrs
 	 *
 	 * @return string
 	 */
-	private function getRegex( $config_key, array $attrs ) {
-		if (
-			isset( $attrs['search-method'] )
-			&& \WPML_Gutenberg_Config_Option::SEARCH_METHOD_REGEX === $attrs['search-method']
-		) {
+	private function getRegex( $config_key, array $key_attrs ) {
+		if ( $this->isRegex( $key_attrs ) ) {
 			return $config_key;
 		}
 
 		return '/' . str_replace( '*', 'S+', preg_quote( $config_key, '/' ) ) . '/';
+	}
+
+	/**
+	 * @param array $key_attrs
+	 *
+	 * @return bool
+	 */
+	private function isRegex( array $key_attrs ) {
+		return isset( $key_attrs['search-method'] )
+		       && \WPML_Gutenberg_Config_Option::SEARCH_METHOD_REGEX === $key_attrs['search-method'];
 	}
 
 	/**
@@ -138,11 +155,8 @@ class Attributes extends Base {
 			}
 
 			if ( is_array( $attr_value ) ) {
-				$children_config_keys = isset( $config_keys[ $matching_key ]['children'] )
-					? $config_keys[ $matching_key ]['children']
-					: $this->getMatchAllKey();
-
-				$attrs[ $attr_key ] = $this->updateStringsRecursively( $attr_value, $children_config_keys, $translations, $lang, $block_name );
+				$children_config_keys = $this->getChildrenConfigKeys( $config_keys, $matching_key );
+				$attrs[ $attr_key ]   = $this->updateStringsRecursively( $attr_value, $children_config_keys, $translations, $lang, $block_name );
 			} else {
 				$string_id = $this->get_string_id( $block_name, $attr_value );
 
