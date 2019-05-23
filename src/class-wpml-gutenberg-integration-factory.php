@@ -51,8 +51,10 @@ class WPML_Gutenberg_Integration_Factory {
 		/** @var SitePress $sitepress */
 		global $sitepress;
 
-		return $sitepress->is_translated_post_type(
+		$is_translatable = $sitepress->is_translated_post_type(
 			WPML\PB\Gutenberg\ReusableBlocks\Translation::POST_TYPE
 		);
+
+		return class_exists( '\WPML_Translation_Basket' ) && $is_translatable;
 	}
 }
