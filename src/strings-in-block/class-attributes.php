@@ -178,7 +178,7 @@ class Attributes extends Base {
 	 * @return array
 	 */
 	private function getAttributes( \WP_Block_Parser_Block $block ) {
-		return ! empty( $block->attrs ) && is_array( $block->attrs ) ? $block->attrs : [];
+		return is_array( $block->attrs ) && $block->blockName ? $block->attrs : [];
 	}
 
 	/**

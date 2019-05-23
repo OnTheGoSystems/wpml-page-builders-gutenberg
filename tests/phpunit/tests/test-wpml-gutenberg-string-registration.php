@@ -401,6 +401,8 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 		 * @var \WP_Block_Parser_Block|\Mockery\MockInterface $block
 		 */
 		$block = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName = null;
+		$block->attrs     = null;
 
 		if ( $name ) {
 			$block->blockName = $name;
