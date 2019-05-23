@@ -50,6 +50,8 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 	public function it_creates_when_reusable_blocks_are_translatable( $is_admin ) {
 		global $sitepress, $wpdb;
 
+		$this->getMockBuilder( '\WPML_Translation_Basket' )->disableOriginalConstructor()->getMock();
+		
 		\WP_Mock::userFunction( 'is_admin', [
 			'return' => $is_admin,
 		] );
