@@ -7,7 +7,7 @@
  * @group gutenberg
  */
 class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
-
+	
 	/**
 	 * @test
 	 * @dataProvider dp_is_admin

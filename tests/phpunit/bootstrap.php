@@ -3,6 +3,7 @@ define( 'WPML_ST_SITE_URL', 'https://domain.tld' );
 
 define( 'WPML_ST_TESTS_MAIN_FILE', __DIR__ . '/../../plugin.php' );
 define( 'WPML_ST_PATH', dirname( WPML_ST_TESTS_MAIN_FILE ) );
+define( 'WPML_TM_FOLDER', 'wpml-translation-management-folder' );
 
 /** ST constants */
 define( 'WPML_ST_FOLDER', __DIR__ . '/../wpml-shared/' );
