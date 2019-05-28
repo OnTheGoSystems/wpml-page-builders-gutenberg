@@ -9,6 +9,35 @@ class TestManageBatch extends \OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmlcore-6648
+	 */
+	public function it_should_NOT_add_blocks() {
+		$source_lang         = 'en';
+		$target_langs        = [ 'fr' => 1, 'de' => 1 ];
+		$post_with_no_blocks = 789;
+
+		$elements = [
+			$this->getBatchElement( $post_with_no_blocks, 'post', $source_lang, $target_langs ),
+		];
+
+		$batch = $this->getBatch( $elements );
+		$batch->expects( $this->never() )->method( 'add_element' );
+
+		$blocks_mock = $this->getBlocks();
+		$blocks_mock->method( 'getChildrenIdsFromPost' )->willReturn( [] );
+
+
+		$subject = $this->getSubject( $blocks_mock );
+
+		\WP_Mock::expectActionNotAdded( 'wpml_added_translation_jobs', [ $subject, 'notifyExtraJobsToTranslator' ] );
+
+		$new_batch = $subject->addBlocks( $batch );
+
+		$this->assertSame( $batch, $new_batch );
+	}
+
+	/**
+	 * @test
 	 * @group wpmlcore-6580
 	 */
 	public function it_should_add_blocks() {
@@ -69,13 +98,55 @@ class TestManageBatch extends \OTGS_TestCase {
 
 		$subject = $this->getSubject( $blocks_mock, $translation_mock );
 
+		\WP_Mock::expectActionAdded( 'wpml_added_translation_jobs', [ $subject, 'notifyExtraJobsToTranslator' ] );
+
 		$new_batch = $subject->addBlocks( $batch );
 
 		$this->assertSame( $batch, $new_batch );
 	}
 
-	public function getSubject( $blocks, $translation ) {
-		return new ManageBatch( $blocks, $translation );
+	/**
+	 * @test
+	 * @group wpmlcore-6648
+	 */
+	public function it_should_not_add_notification_on_remote_jobs() {
+		$added_jobs = [
+			'ts-6' => [ 123, 456 ],
+		];
+
+		$notice = $this->getNotice();
+		$notice->expects( $this->never() )->method( 'addJobsCreatedAutomatically' );
+
+		$subject = $this->getSubject( null, null, $notice );
+
+		$subject->notifyExtraJobsToTranslator( $added_jobs );
+	}
+
+	/**
+	 * @test
+	 * @group wpmlcore-6648
+	 */
+	public function it_should_add_notification_on_local_jobs() {
+		$added_jobs = [
+			'local' => [ 123, 456 ],
+		];
+
+		$notice = $this->getNotice();
+		$notice->expects( $this->once() )
+		       ->method( 'addJobsCreatedAutomatically' )
+				->with( $added_jobs['local'] );
+
+		$subject = $this->getSubject( null, null, $notice );
+
+		$subject->notifyExtraJobsToTranslator( $added_jobs );
+	}
+
+	public function getSubject( $blocks = null, $translation = null, $notice = null ) {
+		$blocks      = $blocks ?: $this->getBlocks();
+		$translation = $translation ?: $this->getTranslation();
+		$notice      = $notice ?: $this->getNotice();
+
+		return new ManageBatch( $blocks, $translation, $notice );
 	}
 
 	private function getBlocks() {
@@ -97,6 +168,12 @@ class TestManageBatch extends \OTGS_TestCase {
 		$batch->method( 'get_elements' )->willReturn( $elements );
 
 		return $batch;
+	}
+
+	private function getNotice() {
+		return $this->getMockBuilder( Notice::class )
+		            ->setMethods( [ 'addJobsCreatedAutomatically' ] )
+		            ->disableOriginalConstructor()->getMock();
 	}
 
 	private function getBatchElement( $id, $type, $source_lang, array $target_langs ) {

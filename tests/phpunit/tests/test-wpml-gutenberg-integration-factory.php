@@ -8,6 +8,12 @@
  */
 class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 
+	public function tearDown() {
+		global $wpml_translation_job_factory;
+		unset( $wpml_translation_job_factory );
+		parent::tearDown();
+	}
+	
 	/**
 	 * @test
 	 * @dataProvider dp_is_admin
@@ -32,6 +38,7 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 		\Mockery::mock( 'WPML_PB_String_Translation' );
 
 		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\Integration', '\WPML\PB\Gutenberg\Integration' );
+		$this->expect_container_share( 0 );
 		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration', '\WPML\PB\Gutenberg\Integration' );
 
 		$factory = new WPML_Gutenberg_Integration_Factory();
@@ -67,6 +74,7 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 		\Mockery::mock( 'WPML\PB\Gutenberg\StringsInBlock\StringsInBlock' );
 
 		$this->expect_container_make( 1, '\WPML\PB\Gutenberg\ReusableBlocks\Integration', 'WPML\PB\Gutenberg\Integration' );
+		$this->expect_container_share( (int) $is_admin );
 		$this->expect_container_make( (int) $is_admin, '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration', '\WPML\PB\Gutenberg\Integration' );
 
 		$factory = new WPML_Gutenberg_Integration_Factory();
@@ -94,6 +102,22 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 			'times'  => $times,
 			'args'   => [ $class ],
 			'return' => $mock,
+		] );
+	}
+
+	private function expect_container_share( $times ) {
+		global $wpml_translation_job_factory;
+
+		$wpml_translation_job_factory = $this->createMock( '\WPML_Translation_Job_Factory' );
+		$admin_notices                = $this->createMock( '\WPML_Notices' );
+
+		\WP_Mock::userFunction( 'wpml_get_admin_notices', [
+			'return' => $admin_notices,
+		] );
+
+		\WP_Mock::userFunction( 'WPML\Container\share', [
+			'times'  => $times,
+			'args'   => [ [ $wpml_translation_job_factory, $admin_notices ] ],
 		] );
 	}
 }
