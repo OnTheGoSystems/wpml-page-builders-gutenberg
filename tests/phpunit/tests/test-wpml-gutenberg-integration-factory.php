@@ -7,12 +7,6 @@
  * @group gutenberg
  */
 class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
-
-	public function tearDown() {
-		global $wpml_translation_job_factory;
-		unset( $wpml_translation_job_factory );
-		parent::tearDown();
-	}
 	
 	/**
 	 * @test
