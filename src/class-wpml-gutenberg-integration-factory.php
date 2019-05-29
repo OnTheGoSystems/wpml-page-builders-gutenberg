@@ -44,11 +44,6 @@ class WPML_Gutenberg_Integration_Factory {
 			);
 
 			if ( is_admin() ) {
-				/** @var \WPML_Translation_Job_Factory $wpml_translation_job_factory */
-				global $wpml_translation_job_factory;
-
-				WPML\Container\share( [ $wpml_translation_job_factory, wpml_get_admin_notices() ] );
-
 				$integrations->add(
 					WPML\Container\make( '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration' )
 				);
