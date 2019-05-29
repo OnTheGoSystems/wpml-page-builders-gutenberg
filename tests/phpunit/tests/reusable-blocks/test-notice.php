@@ -52,9 +52,10 @@ class TestNotice extends \OTGS_TestCase {
 		$expected_text .= '<ul><li><a href="' . $edit_url_1 . '#filtered" target="_blank">' . $jobs_map[1][1]->title .'</a></li><li><a href="' . $edit_url_2 . '#filtered" target="_blank">' . $jobs_map[2][1]->title .'</a></li></ul>';
 
 		$notice = $this->getMockBuilder( '\WPML_Notice' )
-			->setMethods( [ 'set_flash', 'set_css_class_types' ] )
+			->setMethods( [ 'set_flash', 'set_restrict_to_screen_ids', 'set_css_class_types' ] )
 			->disableOriginalConstructor()->getMock();
 		$notice->expects( $this->once() )->method( 'set_flash' )->with( true );
+		$notice->expects( $this->once() )->method( 'set_restrict_to_screen_ids' )->with( [ 'post', 'edit-post' ] );
 		$notice->expects( $this->once() )->method( 'set_css_class_types' )->with( 'notice-info' );
 
 		$notices = $this->getMockBuilder( '\WPML_Notices' )

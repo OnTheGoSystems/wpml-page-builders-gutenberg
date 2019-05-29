@@ -21,7 +21,7 @@ class ManageBatch extends Manage {
 
 		$blocks_to_add = $this->getBlockElementsToAdd( $blocks );
 
-		if ( $blocks_to_add->count() < 1 ) {
+		if ( $blocks_to_add->isEmpty() ) {
 			return $batch;
 		}
 
