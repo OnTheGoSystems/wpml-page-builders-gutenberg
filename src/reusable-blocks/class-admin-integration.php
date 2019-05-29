@@ -10,12 +10,17 @@ class AdminIntegration implements \WPML\PB\Gutenberg\Integration {
 	/** @var ManageBasket $manage_basket */
 	private $manage_basket;
 
+	/** @var Notice $notice */
+	private $notice;
+
 	public function __construct(
 		ManageBatch $manage_batch,
-		ManageBasket $manage_basket
+		ManageBasket $manage_basket,
+		Notice $notice
 	) {
 		$this->manage_batch  = $manage_batch;
 		$this->manage_basket = $manage_basket;
+		$this->notice        = $notice;
 	}
 
 	public function add_hooks() {
@@ -26,6 +31,7 @@ class AdminIntegration implements \WPML\PB\Gutenberg\Integration {
 		 */
 		if ( ! $this->isSubmittingBasket() ) {
 			add_filter( 'wpml_send_jobs_batch', [ $this, 'addBlocksToBatch' ] );
+			add_action( 'wpml_added_translation_jobs', [ $this, 'notifyExtraJobsToTranslator' ] );
 		}
 
 		add_action( 'wpml_tm_add_to_basket', [ $this, 'addBlocksToBasket' ] );
@@ -55,5 +61,14 @@ class AdminIntegration implements \WPML\PB\Gutenberg\Integration {
 	 */
 	public function addBlocksToBasket( array $data ) {
 		$this->manage_basket->addBlocks( $data );
+	}
+
+	/**
+	 * @param array $added_jobs
+	 */
+	public function notifyExtraJobsToTranslator( array $added_jobs ) {
+		if ( isset( $added_jobs['local'] ) ) {
+			$this->notice->addJobsCreatedAutomatically( $added_jobs['local'] );
+		}
 	}
 }
