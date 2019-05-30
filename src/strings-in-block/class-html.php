@@ -65,7 +65,9 @@ class HTML extends Base {
 						isset( $string_translations[ $string_id ][ $lang ] ) &&
 						ICL_TM_COMPLETE == $string_translations[ $string_id ][ $lang ]['status']
 					) {
-						$this->set_element_value( $element, $string_translations[ $string_id ][ $lang ]['value'] );
+						$translation = $string_translations[ $string_id ][ $lang ]['value'];
+						$block = $this->update_string_in_innerContent( $block, $element, $translation );
+						$this->set_element_value( $element, $translation );
 					}
 				}
 			}
@@ -81,6 +83,47 @@ class HTML extends Base {
 				$block->innerHTML = $string_translations[ $string_id ][ $lang ]['value'];
 			}
 
+		}
+
+		return $block;
+	}
+
+	/**
+	 * This is required when a block has innerBlocks and translatable content at the root.
+	 * Unfortunately we cannot use the DOM because we have only HTML extracts which
+	 * are not valid taken independently.
+	 *
+	 * e.g. {
+	 *          innerContent => [
+	 *              '<div><p>The title</p>',
+	 *              null,
+	 *              '\n\n',
+	 *              null,
+	 *              '</div>'
+	 *          ]
+	 *      }
+	 *
+	 * @param \WP_Block_Parser_Block $block
+	 * @param \DOMNode               $element
+	 * @param string                 $translation
+	 *
+	 * @return \WP_Block_Parser_Block
+	 */
+	private function update_string_in_innerContent( \WP_Block_Parser_Block $block, \DOMNode $element, $translation ) {
+		if ( empty( $block->innerContent ) ) {
+			return $block;
+		}
+
+		if ( $element instanceof \DOMAttr ) {
+			$search = '/(")(' . $element->nodeValue . ')(")/';
+		} else {
+			$search = '/(>)(' . $element->nodeValue . ')(<)/';
+		}
+
+		foreach ( $block->innerContent as &$inner_content ) {
+			if ( $inner_content ) {
+				$inner_content = preg_replace( $search, '$1' . $translation . '$3', $inner_content );
+			}
 		}
 
 		return $block;

@@ -538,6 +538,144 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmlcore-6627
+	 */
+	public function it_updates_root_content_and_inner_blocks() {
+		$original_post               = \Mockery::mock( 'WP_Post' );
+		$original_post->post_content = 'Post content / Will be replaced with parsed blocks';
+
+		$translated_post_id = 123;
+		$target_lang        = 'de';
+
+		$parent_block_name      = 'some-block-name';
+		$core_parent_block_name = 'core/' . $parent_block_name; // Gutenberg prefixes with 'core/'
+		$p_block_name           = 'paragraph';
+		$core_p_block_name      = 'core/' . $p_block_name; // Gutenberg prefixes with 'core/'
+
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn(
+		              	[
+			                $core_parent_block_name => [
+			                	'xpath' => [
+			                	    '//summary',
+				                    '//details/@data-attr',
+			                    ]
+			                ],
+			                $core_p_block_name    => [ 'xpath' => [ '//p' ] ],
+		                ]
+		              );
+
+		$title             = 'My title';
+		$title_translation = 'DE My title';
+
+		$attr             = 'My Attribute';
+		$attr_translation = 'DE My Attribute';
+
+		$paragraph_text             = 'My paragraph.';
+		$paragraph_text_translation = 'DE My paragraph.';
+
+		$strings = array(
+			md5( $core_parent_block_name . $title ) => [
+				$target_lang => [
+					'value'  => $title_translation,
+					'status' => (string) ICL_TM_COMPLETE,
+				]
+			],
+			md5( $core_parent_block_name . $attr )  => [
+				$target_lang => [
+					'value'  => $attr_translation,
+					'status' => (string) ICL_TM_COMPLETE,
+				]
+			],
+			md5( $core_p_block_name . $paragraph_text )  => [
+				$target_lang => [
+					'value'  => $paragraph_text_translation,
+					'status' => (string) ICL_TM_COMPLETE,
+				],
+			],
+		);
+
+		$block_paragraph               = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block_paragraph->blockName    = $core_p_block_name;
+		$block_paragraph->attrs        = [];
+		$block_paragraph->innerHTML    = '<p>' . $paragraph_text . '</p>';
+		$block_paragraph->innerContent = [ $block_paragraph->innerHTML ];
+
+		$parent_contents = $this->get_parent_block_contents( $title, $attr );
+
+		$parent_block               = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$parent_block->blockName    = $core_parent_block_name;
+		$parent_block->attrs        = [];
+		$parent_block->innerHTML    = $parent_contents[0]
+		                              . $this->get_content_with_block_meta_data( $p_block_name, $block_paragraph->innerHTML )
+		                              . $parent_contents[1];
+
+		$parent_block->innerBlocks  = [ $block_paragraph ];
+		$parent_block->innerContent = [ $parent_contents[0], null, $parent_contents[1] ];
+
+
+		\WP_Mock::userFunction( 'gutenberg_parse_blocks',
+		                        [
+			                        'args'   => [ $original_post->post_content ],
+			                        'return' => [ $parent_block ],
+		                        ]
+		);
+
+		$rendered_paragraph          = $this->get_content_with_block_meta_data( $p_block_name, '<p>' . $paragraph_text_translation . '</p>' );
+		$translated_parent_contents  = $this->get_parent_block_contents( $title_translation, $attr_translation );
+		$translated_inner_content    = $translated_parent_contents[0] . $rendered_paragraph . $translated_parent_contents[1];
+		$rendered_translated_content = $this->get_content_with_block_meta_data( $parent_block_name, $translated_inner_content );
+
+		\WP_Mock::userFunction( 'wp_update_post', [
+			'times' => 1,
+			'args'  => [ [ 'ID' => $translated_post_id, 'post_content' => $rendered_translated_content ] ],
+		] );
+
+		$sitepress = $this->get_sitepress_for_update_in_lang( $target_lang );
+
+		$subject = $this->get_subject( $config_option, $sitepress );
+
+		$subject->string_translated(
+			WPML_Gutenberg_Integration::PACKAGE_ID,
+			$translated_post_id,
+			$original_post,
+			$strings,
+			$target_lang
+		);
+
+	}
+
+	/**
+	 * @param string $title
+	 * @param string $attr
+	 *
+	 * @return array
+	 */
+	private function get_parent_block_contents( $title, $attr ) {
+		return [
+			'<div class="some-block">
+			<details data-attr="' . $attr . '">
+			<summary class="some-block-title">' . $title . '</summary>
+			<div class="some-block-text">',
+			'</div>
+			</details>
+			</div>',
+		];
+	}
+
+	/**
+	 * @param string $block_name
+	 * @param string $content
+	 *
+	 * @return string
+	 */
+	private function get_content_with_block_meta_data( $block_name, $content ) {
+		return '<!-- wp:' . $block_name . ' -->' . $content . '<!-- /wp:' . $block_name . ' -->';
+	}
+
+	/**
+	 * @test
 	 * @group wpmlcore-5923
 	 */
 	public function it_should_not_alter_body_be_translated_if_context_is_translate_images_in_post_content() {
