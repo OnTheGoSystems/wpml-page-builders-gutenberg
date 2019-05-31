@@ -103,10 +103,11 @@ class TestNotice extends \OTGS_TestCase {
 	 */
 	private function getExpectedNoticesMock( $expected_text, $restricted_screen_ids ) {
 		$notice = $this->getMockBuilder( '\WPML_Notice' )
-		               ->setMethods( [ 'set_flash', 'set_restrict_to_screen_ids', 'set_css_class_types' ] )
+		               ->setMethods( [ 'set_flash', 'set_restrict_to_screen_ids', 'set_hideable', 'set_css_class_types' ] )
 		               ->disableOriginalConstructor()->getMock();
 		$notice->expects( $this->once() )->method( 'set_flash' )->with( true );
 		$notice->expects( $this->once() )->method( 'set_restrict_to_screen_ids' )->with( $restricted_screen_ids );
+		$notice->expects( $this->once() )->method( 'set_hideable' )->with( true );
 		$notice->expects( $this->once() )->method( 'set_css_class_types' )->with( 'notice-info' );
 
 		$notices = $this->getMockBuilder( '\WPML_Notices' )

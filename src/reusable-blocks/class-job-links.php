@@ -40,6 +40,6 @@ class JobLinks {
 		                           . $job_id );
 		$job_edit_url = apply_filters( 'icl_job_edit_url', $job_edit_url, $job_id );
 
-		return '<a href="' . $job_edit_url . '" target="_blank">' . $job->title . '</a>';
+		return '<a href="' . $job_edit_url . '" class="wpml-external-link" target="_blank">' . $job->title . '</a>';
 	}
 }
