@@ -118,6 +118,6 @@ class TestJobLinks extends \OTGS_TestCase {
 	 * @return string
 	 */
 	private function getExpectedJobLink( \stdClass $job ) {
-		return '<a href="' . $this->getEditURLFiltered( $job->job_id ) . '" target="_blank">' . $job->title . '</a>';
+		return '<a href="' . $this->getEditURLFiltered( $job->job_id ) . '" class="wpml-external-link" target="_blank">' . $job->title . '</a>';
 	}
 }

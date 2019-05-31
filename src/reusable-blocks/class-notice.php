@@ -33,6 +33,7 @@ class Notice {
 		$notice = $this->notices->create_notice( 'automatic-jobs', $text, __CLASS__ );
 		$notice->set_flash( true );
 		$notice->set_restrict_to_screen_ids( $this->getRestrictScreenIDs() );
+		$notice->set_hideable( true );
 		$notice->set_css_class_types( 'notice-info' );
 		$this->notices->add_notice( $notice );
 	}
