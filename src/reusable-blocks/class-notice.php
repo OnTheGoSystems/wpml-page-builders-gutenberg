@@ -21,6 +21,10 @@ class Notice {
 	public function addJobsCreatedAutomatically( array $job_ids ) {
 		$job_links = $this->job_links->get( $job_ids );
 
+		if ( $job_links->isEmpty() ) {
+			return;
+		}
+
 		$text = '<p>' . _n(
 			'We automatically created a translation job for the reusable block:',
 			'We automatically created translation jobs for the reusable blocks:',

@@ -9,7 +9,25 @@ class TestNotice extends \OTGS_TestCase {
 
 	const POST_ID   = 123;
 	const POST_TYPE = 'page';
-	
+
+	/**
+	 * @test
+	 * @group wpmlcore-6659
+	 */
+	public function it_should_not_add_a_notice_if_no_block_job_links() {
+		$job_ids               = [ '123' ];
+		$empty_link_collection = collect( [] );
+		$job_links             = $this->getJobLinksMock( $job_ids, $empty_link_collection );
+
+		$notices = $this->getMockBuilder( '\WPML_Notices' )
+			->setMethods( [ 'add_notice' ] )->disableOriginalConstructor()->getMock();
+		$notices->expects( $this->never() )->method( 'add_notice' );
+
+		$subject = $this->getSubject( $notices, $job_links );
+
+		$subject->addJobsCreatedAutomatically( $job_ids );
+	}
+
 	/**
 	 * @test
 	 * @dataProvider dp_add_notice_with_reusable_blocks_job_links
