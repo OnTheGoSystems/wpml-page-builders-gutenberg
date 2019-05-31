@@ -58,12 +58,13 @@ class TestHTML extends \OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmlcore-6661
 	 */
-	public function it_does_not_find_column_if_there_is_no_xpath() {
+	public function it_does_not_find_the_column_content_if_the_block_configuration_has_no_xpath() {
 
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )
-		              ->andReturn( array( 'core/column' => array( 'xpath' => array() ) ) );
+		              ->andReturn( array( 'core/column' => array() ) );
 
 		$strings_in_block = new HTML( $config_option );
 

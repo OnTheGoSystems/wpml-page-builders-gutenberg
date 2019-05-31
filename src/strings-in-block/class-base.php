@@ -29,6 +29,26 @@ abstract class Base implements StringsInBlock {
 			return $this->block_types[ $block->blockName ][ $type ];
 		}
 
+		$namespace_config = $this->get_namespace_config( $block, $type );
+
+		if ( $namespace_config ) {
+			return $namespace_config;
+		}
+
+		if ( $this->has_empty_config( $block ) ) {
+			return [];
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param \WP_Block_Parser_Block $block
+	 * @param string                 $type
+	 *
+	 * @return array|null
+	 */
+	public function get_namespace_config( \WP_Block_Parser_Block $block, $type ) {
 		if ( isset( $block->blockName ) ) {
 			$block_name_arr  = explode( '/', $block->blockName );
 			$block_namespace = reset( $block_name_arr );
@@ -39,6 +59,15 @@ abstract class Base implements StringsInBlock {
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param \WP_Block_Parser_Block $block
+	 *
+	 * @return bool
+	 */
+	private function has_empty_config( \WP_Block_Parser_Block $block ) {
+		return isset( $block->blockName, $this->block_types[ $block->blockName ] );
 	}
 
 	/**
