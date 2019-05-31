@@ -32,8 +32,30 @@ class Notice {
 
 		$notice = $this->notices->create_notice( 'automatic-jobs', $text, __CLASS__ );
 		$notice->set_flash( true );
-		$notice->set_restrict_to_screen_ids( [ 'post', 'edit-post' ] );
+		$notice->set_restrict_to_screen_ids( $this->getRestrictScreenIDs() );
 		$notice->set_css_class_types( 'notice-info' );
 		$this->notices->add_notice( $notice );
+	}
+
+	/**
+	 * @return array
+	 */
+	private function getRestrictScreenIDs() {
+		$screen_ids = [ 'post', 'edit-post' ];
+
+		if ( isset( $_GET['return_url'] ) ) {
+			$query  = wpml_parse_url( $_GET['return_url'], PHP_URL_QUERY );
+			parse_str( $query, $params );
+
+			if ( isset( $params['post'] ) ) {
+				$post_id    = filter_var( $params['post'], FILTER_VALIDATE_INT );
+				$screen_ids = [ get_post_type( $post_id ) ];
+			} elseif ( isset( $params['post_type'] ) ) {
+				$post_type  = filter_var( $params['post_type'], FILTER_SANITIZE_STRING );
+				$screen_ids = [ 'edit-' . $post_type ];
+			}
+		}
+
+		return $screen_ids;
 	}
 }
