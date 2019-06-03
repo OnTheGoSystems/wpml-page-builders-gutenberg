@@ -46,7 +46,7 @@ abstract class Base implements StringsInBlock {
 	 *
 	 * @return string
 	 */
-	protected function get_string_type( $string ) {
+	public static function get_string_type( $string ) {
 		$type = 'LINE';
 
 		if ( strpos( $string, "\n" ) !== false ) {

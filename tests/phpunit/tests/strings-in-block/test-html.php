@@ -133,6 +133,62 @@ class TestHTML extends \OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmlcore-6613
+	 */
+	public function it_should_find_strings_in_nested_lists() {
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$block_name    = 'core/list';
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( [ $block_name => [ 'xpath' => [ '//ul/li|//ol/li' ] ] ] );
+
+		$strings_in_block = new HTML( $config_option );
+
+		$parent_1       = 'Parent <strong>1</strong>';
+		$child_11       = 'Child <strong>11</strong>';
+		$grandchild_111 = 'Grandchild<br>111';
+		$grandchild_112 = 'Grandchild 112';
+		$child_12       = 'Child 12';
+		$parent_2       = 'Parent 2';
+		$child_21       = 'Child 21';
+
+		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName = $block_name;
+		$block->innerHTML = $this->get_nested_list(
+			[
+				$parent_1,
+				$child_11,
+				$grandchild_111,
+				$grandchild_112,
+				$child_12,
+				$parent_2,
+				$child_21,
+			]
+		);
+
+		$strings = $strings_in_block->find( $block );
+
+		$this->assertCount( 7, $strings );
+		$this->check_string( $strings[0], $parent_1, 'VISUAL' );
+		$this->check_string( $strings[1], $child_11, 'VISUAL' );
+		$this->check_string( $strings[2], $grandchild_111, 'VISUAL' );
+		$this->check_string( $strings[3], $grandchild_112, 'LINE' );
+		$this->check_string( $strings[4], $child_12, 'LINE' );
+		$this->check_string( $strings[5], $parent_2, 'LINE' );
+		$this->check_string( $strings[6], $child_21, 'LINE' );
+	}
+
+	/**
+	 * @param \stdClass $string
+	 * @param string    $expected_value
+	 * @param string    $expected_type
+	 */
+	private function check_string( \stdClass $string, $expected_value, $expected_type ) {
+		$this->assertEquals( $expected_value, $string->value );
+		$this->assertEquals( $expected_type, $string->type );
+	}
+
+	/**
+	 * @test
 	 */
 	public function it_updates_paragraph() {
 
@@ -315,5 +371,136 @@ class TestHTML extends \OTGS_TestCase {
 
 	}
 
+	/**
+	 * @test
+	 * @group wpmlcore-6613
+	 */
+	public function it_should_update_nested_lists() {
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$block_name    = 'core/list';
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( [ $block_name => [ 'xpath' => [ '//ul/li|//ol/li' ] ] ] );
 
+		$strings_in_block = new HTML( $config_option );
+
+		$parent_1          = 'Parent <strong>1</strong>';
+		$parent_1_tr       = 'TR Parent <strong>1</strong>';
+		$child_11          = 'Child <strong>11</strong>';
+		$child_11_tr       = 'TR Child <strong>11</strong>';
+		$grandchild_111    = 'Grandchild<br>111';
+		$grandchild_111_tr = 'TR Grandchild<br>111';
+		$grandchild_112    = 'Grandchild 112';
+		$grandchild_112_tr = 'TR Grandchild 112';
+		$child_12          = 'Child 12';
+		$child_12_tr       = 'TR Child 12';
+		$parent_2          = 'Parent 2';
+		$parent_2_tr       = 'TR Parent 2';
+		$child_21          = 'Child 21';
+		$child_21_tr       = 'TR Child 21';
+
+		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName = $block_name;
+		$block->innerHTML = $this->get_nested_list(
+			[
+				$parent_1,
+				$child_11,
+				$grandchild_111,
+				$grandchild_112,
+				$child_12,
+				$parent_2,
+				$child_21,
+			]
+		);
+
+		$expected_inner_html = $this->get_nested_list(
+			[
+				$parent_1_tr,
+				$child_11_tr,
+				$grandchild_111_tr,
+				$grandchild_112_tr,
+				$child_12_tr,
+				$parent_2_tr,
+				$child_21_tr,
+			]
+		);
+
+		$target_lang = 'de';
+
+		$strings = $this->get_translated_strings(
+			$block_name,
+			$target_lang,
+			[
+				$parent_1       => $parent_1_tr,
+				$child_11       => $child_11_tr,
+				$grandchild_111 => $grandchild_111_tr,
+				$grandchild_112 => $grandchild_112_tr,
+				$child_12       => $child_12_tr,
+				$parent_2       => $parent_2_tr,
+				$child_21       => $child_21_tr,
+			]
+		);
+
+		$updated_block = $strings_in_block->update( $block, $strings, $target_lang );
+
+		$this->assertEquals( $expected_inner_html, $this->normalize_markup( $updated_block->innerHTML ) );
+	}
+
+	/**
+	 * @param array $values
+	 *
+	 * @return string
+	 */
+	private function get_nested_list( array $values ) {
+		$markup = '<ul>
+						<li>' . $values[0] . '
+							<ol>
+								<li>' . $values[1] . '
+									<ul>
+										<li>' . $values[2]. '</li>
+										<li>' . $values[3]. '</li>
+									</ul>
+								</li>
+								<li>' . $values[4] . '</li>
+							</ol>
+						</li>
+						<li>' . $values[5] . '
+							<ul>
+								<li>' . $values[6] . '</li>
+							</ul>
+						</li>
+					</ul>';
+
+		return $this->normalize_markup( $markup );
+	}
+
+	/**
+	 * @param string $markup
+	 *
+	 * @return string
+	 */
+	private function normalize_markup( $markup ) {
+		return str_replace( [ "\t", "\n", "\r" ], '', $markup );
+	}
+
+	/**
+	 * @param string $block_name
+	 * @param string $target_lang
+	 * @param array  $translations_map
+	 *
+	 * @return array
+	 */
+	private function get_translated_strings( $block_name, $target_lang, array $translations_map ) {
+		$strings = [];
+
+		foreach ( $translations_map as $original => $translation ) {
+			$strings[ md5( $block_name . $original ) ] = [
+				$target_lang => [
+					'value'  => $translation,
+					'status' => (string) ICL_TM_COMPLETE,
+				],
+			];
+		}
+
+		return $strings;
+	}
 }

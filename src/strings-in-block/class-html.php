@@ -2,7 +2,12 @@
 
 namespace WPML\PB\Gutenberg\StringsInBlock;
 
+use WPML\PB\Gutenberg\StringsInBlock\DOMHandler\StandardBlock;
+use WPML\PB\Gutenberg\StringsInBlock\DOMHandler\ListBlock;
+
 class HTML extends Base {
+
+	const LIST_BLOCK_NAME = 'core/list';
 
 	/**
 	 * @param \WP_Block_Parser_Block $block
@@ -15,13 +20,13 @@ class HTML extends Base {
 		$block_queries = $this->get_block_queries( $block );
 
 		if ( is_array( $block_queries ) && isset( $block->innerHTML ) ) {
-
-			$xpath = $this->get_domxpath( $block->innerHTML );
+			$dom_handle = $this->get_dom_handler( $block );
+			$xpath      = $dom_handle->getDomxpath( $block->innerHTML );
 
 			foreach ( $block_queries as $query ) {
 				$elements = $xpath->query( $query );
 				foreach ( $elements as $element ) {
-					list( $text, $type ) = $this->get_inner_HTML( $element );
+					list( $text, $type ) = $dom_handle->getPartialInnerHTML( $element );
 					if ( $text ) {
 						$string_id = $this->get_string_id( $block->blockName, $text );
 						$strings[] = $this->build_string( $string_id, $block->blockName, $text, $type );
@@ -53,25 +58,26 @@ class HTML extends Base {
 		$block_queries = $this->get_block_queries( $block );
 
 		if ( $block_queries && isset( $block->innerHTML ) ) {
+			$dom_handle = $this->get_dom_handler( $block );
+			$dom        = $dom_handle->getDom( $block->innerHTML );
+			$xpath      = new \DOMXPath( $dom );
 
-			$dom   = $this->get_dom( $block->innerHTML );
-			$xpath = new \DOMXPath( $dom );
 			foreach ( $block_queries as $query ) {
 				$elements = $xpath->query( $query );
 				foreach ( $elements as $element ) {
-					list( $text, ) = $this->get_inner_HTML( $element );
+					list( $text, ) = $dom_handle->getPartialInnerHTML( $element );
 					$string_id = $this->get_string_id( $block->blockName, $text );
 					if (
 						isset( $string_translations[ $string_id ][ $lang ] ) &&
 						ICL_TM_COMPLETE == $string_translations[ $string_id ][ $lang ]['status']
 					) {
 						$translation = $string_translations[ $string_id ][ $lang ]['value'];
-						$block = $this->update_string_in_innerContent( $block, $element, $translation );
-						$this->set_element_value( $element, $translation );
+						$block       = $this->update_string_in_innerContent( $block, $element, $translation );
+						$dom_handle->setElementValue( $element, $translation );
 					}
 				}
 			}
-			list( $block->innerHTML, ) = $this->get_inner_HTML( $dom->documentElement );
+			list( $block->innerHTML, ) = $dom_handle->getFullInnerHTML( $dom->documentElement );
 
 		} else {
 
@@ -143,56 +149,6 @@ class HTML extends Base {
 	}
 
 	/**
-	 * @param \DOMNode $element
-	 *
-	 * @return array
-	 */
-	private function get_inner_HTML( \DOMNode $element ) {
-		$innerHTML = "";
-		$children  = $element->childNodes;
-
-		foreach ( $children as $child ) {
-			$innerHTML .= $element->ownerDocument->saveHTML( $child );
-		}
-
-		$type = $this->get_string_type( $innerHTML );
-
-		if ( 'VISUAL' !== $type ) {
-			$innerHTML = html_entity_decode( $innerHTML );
-		}
-
-		return array( $innerHTML, $type );
-	}
-
-	/**
-	 * @param \DOMNode $element
-	 * @param string  $value
-	 */
-	private function set_element_value( \DOMNode $element, $value ) {
-		if ( $element instanceof \DOMAttr ) {
-			$element->parentNode->setAttribute( $element->name, $value );
-		} else {
-			$clone = $this->clone_node_without_children( $element );
-
-			$fragment = $this->get_dom( $value )->firstChild; // Skip the wrapping div
-			foreach ( $fragment->childNodes as $child ) {
-				$clone->appendChild( $element->ownerDocument->importNode( $child, true ) );
-			}
-
-			$element->parentNode->replaceChild( $clone, $element );
-		}
-	}
-
-	/**
-	 * @param \DOMNode $element
-	 *
-	 * @return \DOMNode
-	 */
-	private function clone_node_without_children( \DOMNode $element ) {
-		return $element->cloneNode( false );
-	}
-
-	/**
 	 * @param \WP_Block_Parser_Block $block
 	 *
 	 * @return array|null
@@ -202,32 +158,15 @@ class HTML extends Base {
 	}
 
 	/**
-	 * @param string $html
+	 * @param \WP_Block_Parser_Block $block
 	 *
-	 * @return \DOMDocument
+	 * @return ListBlock|StandardBlock
 	 */
-	private function get_dom( $html ) {
-		$dom = new \DOMDocument();
-		\libxml_use_internal_errors( true );
-		$html = mb_convert_encoding( $html, 'HTML-ENTITIES', 'UTF-8' );
-		$dom->loadHTML( '<div>' . $html . '</div>' );
-		\libxml_clear_errors();
+	private function get_dom_handler( \WP_Block_Parser_Block $block ) {
+		if ( self::LIST_BLOCK_NAME === $block->blockName ) {
+			return new ListBlock();
+		}
 
-		// Remove doc type and <html> <body> wrappers
-		$dom->removeChild( $dom->doctype );
-		$dom->replaceChild( $dom->firstChild->firstChild->firstChild, $dom->firstChild );
-
-		return $dom;
-	}
-
-	/**
-	 * @param string $html
-	 *
-	 * @return \DOMXPath
-	 */
-	private function get_domxpath( $html ) {
-		$dom = $this->get_dom( $html );
-
-		return new \DOMXPath( $dom );
+		return new StandardBlock();
 	}
 }
