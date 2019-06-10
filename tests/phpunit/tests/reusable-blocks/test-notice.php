@@ -140,12 +140,12 @@ class TestNotice extends \OTGS_TestCase {
 	}
 
 	/**
-	 * @param array                          $job_ids
-	 * @param \Illuminate\Support\Collection $links
+	 * @param array                                                                $job_ids
+	 * @param \Tightenco\Collect\Support\Collection|\Illuminate\Support\Collection $links
 	 *
 	 * @return \PHPUnit_Framework_MockObject_MockObject|JobLinks
 	 */
-	private function getJobLinksMock( array $job_ids, \Illuminate\Support\Collection $links ) {
+	private function getJobLinksMock( array $job_ids, $links ) {
 		$job_links = $this->getMockBuilder( JobLinks::class )
 			->setMethods( [ 'get' ] )
 			->disableOriginalConstructor()->getMock();

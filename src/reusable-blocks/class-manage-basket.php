@@ -50,7 +50,7 @@ class ManageBasket extends Manage {
 	/**
 	 * @param array $data
 	 *
-	 * @return \Illuminate\Support\Collection
+	 * @return \Tightenco\Collect\Support\Collection|\Illuminate\Support\Collection
 	 */
 	private function extractAddedPostElements( array $data ) {
 		$source_lang  = $data['translate_from'];

@@ -14,7 +14,7 @@ class JobLinks {
 	/**
 	 * @param array $job_ids
 	 *
-	 * @return \Illuminate\Support\Collection
+	 * @return \Tightenco\Collect\Support\Collection|\Illuminate\Support\Collection
 	 */
 	public function get( array $job_ids ) {
 		return \collect( $job_ids )->map( function( $job_id ) {

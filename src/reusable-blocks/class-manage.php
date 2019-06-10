@@ -19,7 +19,7 @@ abstract class Manage {
 	}
 
 	/**
-	 * @param \Illuminate\Support\Collection $blocks
+	 * @param \Tightenco\Collect\Support\Collection|\Illuminate\Support\Collection $blocks
 	 *
 	 * [
 	 *  (object) [
@@ -34,7 +34,7 @@ abstract class Manage {
 	 *  ],
 	 * ]
 	 *
-	 * @return \Illuminate\Support\Collection
+	 * @return \Tightenco\Collect\Support\Collection|\Illuminate\Support\Collection
 	 */
 	protected function getBlockElementsToAdd( $blocks ) {
 		return $blocks->map( [ $this, 'selectTargetLangs' ] )
@@ -42,11 +42,11 @@ abstract class Manage {
 	}
 
 	/**
-	 * @param \Illuminate\Support\Collection $post_elements
+	 * @param \Tightenco\Collect\Support\Collection|\Illuminate\Support\Collection $post_elements
 	 *
-	 * @return \Illuminate\Support\Collection
+	 * @return \Tightenco\Collect\Support\Collection|\Illuminate\Support\Collection
 	 */
-	protected function getBlocksFromPostElements( \Illuminate\Support\Collection $post_elements ) {
+	protected function getBlocksFromPostElements( $post_elements ) {
 		return $post_elements->map( [ $this, 'findBlocksInElement' ] )
 		                     ->flatten( 1 )
 		                     ->unique( 'block_id' );
