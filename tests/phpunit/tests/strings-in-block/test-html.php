@@ -374,6 +374,43 @@ class TestHTML extends \OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmlcore-6682
+	 */
+	public function it_should_update_innerContent_containing_a_slash() {
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( array( 'core/visual_block' => array( 'xpath' => array( '//div' ) ) ) );
+
+		$strings_in_block = new HTML( $config_option );
+
+		$block_name = 'core/visual_block';
+
+		$target_lang                 = 'de';
+		$original_block_inner_HTML   = '<div>Value 1/w</div>';
+		$translated_block_inner_HTML = '<div>Value 1/w ( TRANSLATED )</div>';
+
+
+		$strings = array(
+			md5( $block_name . $original_block_inner_HTML ) => array(
+				$target_lang => array(
+					'value'  => $translated_block_inner_HTML,
+					'status' => (string) ICL_TM_COMPLETE,
+				)
+			)
+		);
+
+		$block               = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName    = $block_name;
+		$block->innerHTML    = '<div>' . $original_block_inner_HTML . '</div>';
+		$block->innerContent = [ $block->innerHTML ];
+
+		$updated_block = $strings_in_block->update( $block, $strings, $target_lang );
+
+		$this->assertEquals( '<div>' . $translated_block_inner_HTML . '</div>', $updated_block->innerHTML );
+	}
+
+	/**
+	 * @test
 	 * @group wpmlcore-6613
 	 */
 	public function it_should_update_nested_lists() {
