@@ -120,10 +120,12 @@ class HTML extends Base {
 			return $block;
 		}
 
+		$search_value = preg_quote( $element->nodeValue, '/' );
+
 		if ( $element instanceof \DOMAttr ) {
-			$search = '/(")(' . $element->nodeValue . ')(")/';
+			$search = '/(")(' . $search_value . ')(")/';
 		} else {
-			$search = '/(>)(' . $element->nodeValue . ')(<)/';
+			$search = '/(>)(' . $search_value . ')(<)/';
 		}
 
 		foreach ( $block->innerContent as &$inner_content ) {
