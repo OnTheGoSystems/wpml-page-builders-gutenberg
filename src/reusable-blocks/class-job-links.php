@@ -14,10 +14,10 @@ class JobLinks {
 	/**
 	 * @param array $job_ids
 	 *
-	 * @return \Illuminate\Support\Collection
+	 * @return \WPML\Collect\Support\Collection
 	 */
 	public function get( array $job_ids ) {
-		return \collect( $job_ids )->map( function( $job_id ) {
+		return \wpml_collect( $job_ids )->map( function( $job_id ) {
 			return $this->getJobEditLink( $job_id );
 		} )->filter();
 	}

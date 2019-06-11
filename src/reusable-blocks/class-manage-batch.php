@@ -5,7 +5,7 @@ namespace WPML\PB\Gutenberg\ReusableBlocks;
 class ManageBatch extends Manage {
 
 	public function addBlocks( \WPML_TM_Translation_Batch $batch ) {
-		$blocks = $this->getBlocksFromPostElements( \collect( $batch->get_elements() ) );
+		$blocks = $this->getBlocksFromPostElements( \wpml_collect( $batch->get_elements() ) );
 
 		$this->getBlockElementsToAdd( $blocks )->each(
 				function( $block ) use ( $batch ) {

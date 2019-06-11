@@ -16,7 +16,7 @@ class TestNotice extends \OTGS_TestCase {
 	 */
 	public function it_should_not_add_a_notice_if_no_block_job_links() {
 		$job_ids               = [ '123' ];
-		$empty_link_collection = collect( [] );
+		$empty_link_collection = wpml_collect( [] );
 		$job_links             = $this->getJobLinksMock( $job_ids, $empty_link_collection );
 
 		$notices = $this->getMockBuilder( '\WPML_Notices' )
@@ -73,7 +73,7 @@ class TestNotice extends \OTGS_TestCase {
 
 		$notices = $this->getExpectedNoticesMock( $expected_text, $restricted_screen_ids );
 
-		$links = \collect( [ $this->getLink( $job_id_1 ), $this->getLink( $job_id_2 ) ] );
+		$links = \wpml_collect( [ $this->getLink( $job_id_1 ), $this->getLink( $job_id_2 ) ] );
 
 		$job_links = $this->getJobLinksMock( $job_ids, $links );
 
@@ -141,11 +141,11 @@ class TestNotice extends \OTGS_TestCase {
 
 	/**
 	 * @param array                          $job_ids
-	 * @param \Illuminate\Support\Collection $links
+	 * @param \WPML\Collect\Support\Collection $links
 	 *
 	 * @return \PHPUnit_Framework_MockObject_MockObject|JobLinks
 	 */
-	private function getJobLinksMock( array $job_ids, \Illuminate\Support\Collection $links ) {
+	private function getJobLinksMock( array $job_ids, \WPML\Collect\Support\Collection $links ) {
 		$job_links = $this->getMockBuilder( JobLinks::class )
 			->setMethods( [ 'get' ] )
 			->disableOriginalConstructor()->getMock();

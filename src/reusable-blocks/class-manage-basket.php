@@ -50,16 +50,16 @@ class ManageBasket extends Manage {
 	/**
 	 * @param array $data
 	 *
-	 * @return \Illuminate\Support\Collection
+	 * @return \WPML\Collect\Support\Collection
 	 */
 	private function extractAddedPostElements( array $data ) {
 		$source_lang  = $data['translate_from'];
-		$target_langs = \collect( $data['tr_action'] )
+		$target_langs = \wpml_collect( $data['tr_action'] )
 			->filter( function( $translate ) { return $translate; } )
 			->map( function( $translate ) { return (int) $translate; } )
 			->toArray();
 
-		return \collect( $data['post'] )->map(
+		return \wpml_collect( $data['post'] )->map(
 			function( $item ) use ( $source_lang, $target_langs ) {
 				if (
 					isset( $item['checked'], $item['type'] )
