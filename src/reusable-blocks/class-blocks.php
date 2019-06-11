@@ -27,7 +27,7 @@ class Blocks {
 		$post = get_post( $post_id );
 
 		if ( $post ) {
-			$blocks = \collect( \WPML_Gutenberg_Integration::parse_blocks( $post->post_content ) );
+			$blocks = \wpml_collect( \WPML_Gutenberg_Integration::parse_blocks( $post->post_content ) );
 			return $blocks->filter( function( $block ) {
 				return 'core/block' === $block['blockName']
 				       && isset( $block['attrs']['ref'] )

@@ -19,7 +19,7 @@ abstract class Manage {
 	}
 
 	/**
-	 * @param \Illuminate\Support\Collection $blocks
+	 * @param \WPML\Collect\Support\Collection $blocks
 	 *
 	 * [
 	 *  (object) [
@@ -34,7 +34,7 @@ abstract class Manage {
 	 *  ],
 	 * ]
 	 *
-	 * @return \Illuminate\Support\Collection
+	 * @return \WPML\Collect\Support\Collection
 	 */
 	protected function getBlockElementsToAdd( $blocks ) {
 		return $blocks->map( [ $this, 'selectTargetLangs' ] )
@@ -42,11 +42,11 @@ abstract class Manage {
 	}
 
 	/**
-	 * @param \Illuminate\Support\Collection $post_elements
+	 * @param \WPML\Collect\Support\Collection $post_elements
 	 *
-	 * @return \Illuminate\Support\Collection
+	 * @return \WPML\Collect\Support\Collection
 	 */
-	protected function getBlocksFromPostElements( \Illuminate\Support\Collection $post_elements ) {
+	protected function getBlocksFromPostElements( \WPML\Collect\Support\Collection $post_elements ) {
 		return $post_elements->map( [ $this, 'findBlocksInElement' ] )
 		                     ->flatten( 1 )
 		                     ->unique( 'block_id' );
@@ -69,7 +69,7 @@ abstract class Manage {
 			return [];
 		}
 
-		return \collect( $this->blocks->getChildrenIdsFromPost( $element->get_element_id() ) )
+		return \wpml_collect( $this->blocks->getChildrenIdsFromPost( $element->get_element_id() ) )
 			->map( function( $block_id ) use ( $element ) {
 				return (object) [
 					'block_id'      => $block_id,
@@ -105,7 +105,7 @@ abstract class Manage {
 	 * @return \stdClass
 	 */
 	public function selectTargetLangs( \stdClass $block ) {
-		$block->target_langs = collect( $block->target_langs )
+		$block->target_langs = wpml_collect( $block->target_langs )
 			->filter( function ( $unused, $target_lang )  use ( $block ) {
 				return $this->requiresTranslation( $block->block_id, $target_lang );
 			} )
