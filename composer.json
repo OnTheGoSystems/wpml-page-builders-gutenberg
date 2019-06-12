@@ -23,7 +23,7 @@
   "require": {
     "roave/security-advisories": "dev-master",
     "jakeasmith/http_build_url": "^1.0",
-    "tightenco/collect": "dev-wpml-collect-proposal"
+    "tightenco/collect": "dev-wpml-collect"
   },
   "require-dev": {
     "phpunit/phpunit": "~5.7",
