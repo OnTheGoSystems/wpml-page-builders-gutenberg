@@ -62,6 +62,7 @@ class WPML_Gutenberg_Integration_Factory {
 			WPML\PB\Gutenberg\ReusableBlocks\Translation::POST_TYPE
 		);
 
-		return has_action( 'wpml_loaded', 'wpml_tm_load' ) && $is_translatable;
+		// We need to make sure that the DIC is used on TM
+		return class_exists( '\WPML\TM\Container\Config' ) && $is_translatable;
 	}
 }
