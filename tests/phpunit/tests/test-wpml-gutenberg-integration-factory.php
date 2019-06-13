@@ -1,5 +1,7 @@
 <?php
 
+use WPML\PB\Gutenberg\ReusableBlocks\Translation;
+
 /**
  * Class Test_WPML_Gutenberg_Integration_Factory
  *
@@ -21,10 +23,55 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 			'return' => $is_admin,
 		] );
 
+		\WP_Mock::userFunction( 'has_action', [
+			'times' => 1,
+			'args' => [ 'wpml_loaded', 'wpml_tm_load' ],
+			'return' => true,
+		] );
+
 		$sitepress = \Mockery::mock( 'SitePress' );
 		$sitepress->shouldReceive( 'is_translated_post_type' )
 		          ->with( WPML\PB\Gutenberg\ReusableBlocks\Translation::POST_TYPE )
 		          ->andReturn( false );
+
+		$wpdb      = \Mockery::mock( 'wpdb' );
+		\Mockery::mock( 'WPML_ST_String_Factory' );
+		\Mockery::mock( 'WPML_PB_Reuse_Translations' );
+		\Mockery::mock( 'WPML_PB_String_Translation' );
+
+		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\Integration', '\WPML\PB\Gutenberg\Integration' );
+		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration', '\WPML\PB\Gutenberg\Integration' );
+
+		$factory = new WPML_Gutenberg_Integration_Factory();
+
+		$this->assertInstanceOf( \WPML\PB\Gutenberg\Integration::class, $factory->create() );
+
+		unset( $sitepress );
+	}
+
+	/**
+	 * @test
+	 * @dataProvider dp_is_admin
+	 *
+	 * @param bool $is_admin
+	 */
+	public function it_creates_when_TM_is_not_loaded( $is_admin ) {
+		global $sitepress, $wpdb;
+
+		\WP_Mock::userFunction( 'is_admin', [
+			'return' => $is_admin,
+		] );
+
+		\WP_Mock::userFunction( 'has_action', [
+			'times' => 1,
+			'args' => [ 'wpml_loaded', 'wpml_tm_load' ],
+			'return' => false,
+		] );
+
+		$sitepress = \Mockery::mock( 'SitePress' );
+		$sitepress->shouldReceive( 'is_translated_post_type' )
+		          ->with( WPML\PB\Gutenberg\ReusableBlocks\Translation::POST_TYPE )
+		          ->andReturn( true );
 
 		$wpdb      = \Mockery::mock( 'wpdb' );
 		\Mockery::mock( 'WPML_ST_String_Factory' );
@@ -54,6 +101,11 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 		
 		\WP_Mock::userFunction( 'is_admin', [
 			'return' => $is_admin,
+		] );
+		\WP_Mock::userFunction( 'has_action', [
+			'times' => 1,
+			'args' => [ 'wpml_loaded', 'wpml_tm_load' ],
+			'return' => true,
 		] );
 
 		$sitepress = \Mockery::mock( 'SitePress' );
