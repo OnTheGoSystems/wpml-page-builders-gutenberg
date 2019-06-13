@@ -133,6 +133,47 @@ class TestManageBasket extends \OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmlcore-6689
+	 */
+	public function it_should_NOT_add_block_for_a_post_translated_to_its_source_language() {
+		$source_lang               = 'en';
+		$fr                        = 'fr';
+		$de                        = 'de';
+		$post_with_reusable_blocks = 123;
+
+		$data = [
+			'translate_from' => $source_lang,
+			'post'           => [
+				$post_with_reusable_blocks => [
+					'type'    => 'post',
+					'checked' => $post_with_reusable_blocks,
+				],
+			],
+			'tr_action'      => [
+				$fr => '1',
+				$de => '0',
+			],
+		];
+
+		$blocks_mock = $this->getBlocks();
+		$blocks_mock->expects( $this->never() )
+		            ->method( 'getChildrenIdsFromPost' );
+
+		$translation_mock = $this->getTranslation();
+		$translation_mock->method( 'getSourceLang' )
+			->with( $post_with_reusable_blocks )->willReturn( $fr );
+
+		$basket_mock = $this->getTranslationBasket();
+		$basket_mock->expects( $this->never() )
+		            ->method( 'update_basket' );
+
+		$subject = $this->getSubject( $blocks_mock, $translation_mock, $basket_mock );
+
+		$subject->addBlocks( $data );
+	}
+
+	/**
+	 * @test
 	 * @group wpmlcore-6590
 	 * @expectedException \RuntimeException
 	 */
@@ -158,7 +199,7 @@ class TestManageBasket extends \OTGS_TestCase {
 
 	private function getTranslation() {
 		return $this->getMockBuilder( Translation::class )
-		            ->setMethods( [ 'convertBlockId' ] )
+		            ->setMethods( [ 'convertBlockId', 'getSourceLang' ] )
 		            ->disableOriginalConstructor()->getMock();
 	}
 

@@ -62,18 +62,40 @@ class ManageBasket extends Manage {
 		return \wpml_collect( $data['post'] )->map(
 			function( $item ) use ( $source_lang, $target_langs ) {
 				if (
-					isset( $item['checked'], $item['type'] )
-					&& 'post' === $item['type']
+					! isset( $item['checked'], $item['type'] )
+					|| 'post' !== $item['type']
 				) {
-					return new BasketElement(
-						(int) $item['checked'],
-						$source_lang,
-						$target_langs
-					);
+					return null;
 				}
 
-				return null;
+				$target_langs = $this->filterTargetLangs( $target_langs, $item['checked'] );
+
+				if ( ! $target_langs ) {
+					return null;
+				}
+
+				return new BasketElement(
+					(int) $item['checked'],
+					$source_lang,
+					$target_langs
+				);
 			}
 		)->filter();
+	}
+
+	/**
+	 * @param array $target_langs
+	 * @param int   $post_id
+	 *
+	 * @return array
+	 */
+	private function filterTargetLangs( array $target_langs, $post_id ) {
+		$post_source_lang = $this->translation->getSourceLang( $post_id );
+
+		return \wpml_collect( $target_langs )->reject(
+			function( $unused, $target_lang ) use ( $post_source_lang ) {
+				return $target_lang === $post_source_lang;
+			}
+		)->toArray();
 	}
 }

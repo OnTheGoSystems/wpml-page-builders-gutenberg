@@ -89,6 +89,39 @@ class TestTranslation extends \OTGS_TestCase {
 			$subject->convertBlock( $block, $lang )
 		);
 	}
+
+	/**
+	 * @test
+	 * @dataProvider dp_post_details
+	 * @group wpmlcore-6689
+	 *
+	 * @param null|\stdClass $post_details
+	 * @param null|string    $expected_lang
+	 */
+	public function it_should_get_source_lang_from_post_id( $post_details, $expected_lang ) {
+		$post_id   = 123;
+		$post_type = 'page';
+
+		\WP_Mock::userFunction( 'get_post_type', [
+			'args'   => [ $post_id ],
+			'return' => $post_type,
+		] );
+
+		$sitepress = $this->getSitepress();
+		$sitepress->method( 'get_element_language_details' )
+			->with( $post_id, 'post_' . $post_type )->willReturn( $post_details );
+
+		$subject = $this->getSubject( $sitepress );
+
+		$this->assertEquals( $expected_lang, $subject->getSourceLang( $post_id ) );
+	}
+	
+	public function dp_post_details() {
+		return [
+			[ (object) [ 'source_language_code' => 'fr' ], 'fr' ],
+			[ false, null ],
+		];
+	}
 	
 	private function getSubject( $sitepress = null ) {
 		$sitepress = $sitepress ? $sitepress : $this->getSitepress();
@@ -97,7 +130,7 @@ class TestTranslation extends \OTGS_TestCase {
 
 	private function getSitepress() {
 		return $this->getMockBuilder( \SitePress::class )
-			->setMethods( [ 'set_element_language_details', 'get_object_id' ] )
+			->setMethods( [ 'get_element_language_details', 'get_object_id' ] )
 			->disableOriginalConstructor()->getMock();
 	}
 }
