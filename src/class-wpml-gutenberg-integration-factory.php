@@ -62,6 +62,6 @@ class WPML_Gutenberg_Integration_Factory {
 			WPML\PB\Gutenberg\ReusableBlocks\Translation::POST_TYPE
 		);
 
-		return class_exists( '\WPML_Translation_Basket' ) && $is_translatable;
+		return has_action( 'wpml_loaded', 'wpml_tm_load' ) && $is_translatable;
 	}
 }
