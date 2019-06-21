@@ -63,6 +63,8 @@ class WPML_Gutenberg_Integration_Factory {
 		);
 
 		// We need to make sure that the DIC is used on TM
-		return class_exists( '\WPML\TM\Container\Config' ) && $is_translatable;
+		return class_exists( '\WPML\TM\Container\Config' )
+		       && did_action( 'wpml_after_tm_loaded' )
+		       && $is_translatable;
 	}
 }
