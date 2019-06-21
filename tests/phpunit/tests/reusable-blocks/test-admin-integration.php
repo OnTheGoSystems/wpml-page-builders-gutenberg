@@ -11,6 +11,8 @@ class TestAdminIntegration extends \OTGS_TestCase {
 	 * @test
 	 */
 	public function it_should_add_hooks() {
+		$this->getMockBuilder( '\WPML_TM_Translation_Batch' )->getMock();
+
 		$subject = $this->getSubject();
 
 		\WP_Mock::expectFilterAdded( 'wpml_send_jobs_batch', [ $subject, 'addBlocksToBatch' ] );
@@ -22,9 +24,13 @@ class TestAdminIntegration extends \OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @runInSeparateProcess
+	 * @preserveGlobalState false
 	 */
 	public function it_should_add_hooks_when_submitting_the_basket() {
 		$_POST = [ 'action' => 'send_basket_item' ];
+
+		$this->getMockBuilder( '\WPML_TM_Translation_Batch' )->getMock();
 
 		$subject = $this->getSubject();
 
