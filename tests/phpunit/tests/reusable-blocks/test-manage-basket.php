@@ -204,7 +204,7 @@ class TestManageBasket extends \OTGS_TestCase {
 	}
 
 	private function getTranslationBasket() {
-		return $this->getMockBuilder( '\WPML_Translation_Basket' )
+		return $this->getMockBuilder( Basket::class )
 		            ->setMethods( [ 'update_basket' ] )
 		            ->disableOriginalConstructor()->getMock();
 	}

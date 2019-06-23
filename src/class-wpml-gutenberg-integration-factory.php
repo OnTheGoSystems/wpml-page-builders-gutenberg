@@ -58,11 +58,9 @@ class WPML_Gutenberg_Integration_Factory {
 		/** @var SitePress $sitepress */
 		global $sitepress;
 
-		$is_translatable = $sitepress->is_translated_post_type(
+		return $sitepress->is_translated_post_type(
 			WPML\PB\Gutenberg\ReusableBlocks\Translation::POST_TYPE
 		);
 
-		// We need to make sure that the DIC is used on TM
-		return class_exists( '\WPML\TM\Container\Config' ) && $is_translatable;
 	}
 }

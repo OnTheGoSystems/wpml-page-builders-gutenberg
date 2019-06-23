@@ -44,40 +44,6 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 		unset( $sitepress );
 	}
 
-	/**
-	 * @test
-	 * @dataProvider dp_is_admin
-	 * @runInSeparateProcess
-	 * @preserveGlobalState false
-	 *
-	 * @param bool $is_admin
-	 */
-	public function it_creates_when_blocks_are_translatable_and_TM_DIC_is_missing( $is_admin ) {
-		global $sitepress, $wpdb;
-
-		\WP_Mock::userFunction( 'is_admin', [
-			'return' => $is_admin,
-		] );
-
-		$sitepress = \Mockery::mock( 'SitePress' );
-		$sitepress->shouldReceive( 'is_translated_post_type' )
-		          ->with( WPML\PB\Gutenberg\ReusableBlocks\Translation::POST_TYPE )
-		          ->andReturn( true );
-
-		$wpdb      = \Mockery::mock( 'wpdb' );
-		\Mockery::mock( 'WPML_ST_String_Factory' );
-		\Mockery::mock( 'WPML_PB_Reuse_Translations' );
-		\Mockery::mock( 'WPML_PB_String_Translation' );
-
-		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\Integration', '\WPML\PB\Gutenberg\Integration' );
-		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration', '\WPML\PB\Gutenberg\Integration' );
-
-		$factory = new WPML_Gutenberg_Integration_Factory();
-
-		$this->assertInstanceOf( \WPML\PB\Gutenberg\Integration::class, $factory->create() );
-
-		unset( $sitepress );
-	}
 
 	/**
 	 * @test

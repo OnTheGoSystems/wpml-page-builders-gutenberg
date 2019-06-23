@@ -4,10 +4,10 @@ namespace WPML\PB\Gutenberg\ReusableBlocks;
 
 class JobLinks {
 
-	/** @var \WPML_Translation_Job_Factory $job_factory */
+	/** @var JobFactory $job_factory */
 	private $job_factory;
 
-	public function __construct( \WPML_Translation_Job_Factory $job_factory ) {
+	public function __construct( JobFactory $job_factory ) {
 		$this->job_factory = $job_factory;
 	}
 

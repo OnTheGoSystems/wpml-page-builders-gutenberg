@@ -53,7 +53,7 @@ class TestJobLinks extends \OTGS_TestCase {
 	 *
 	 * @return JobLinks
 	 */
-	private function getSubject( \WPML_Translation_Job_Factory $job_factory ) {
+	private function getSubject( JobFactory $job_factory ) {
 		return new JobLinks( $job_factory );
 	}
 
@@ -63,7 +63,7 @@ class TestJobLinks extends \OTGS_TestCase {
 	 * @return \PHPUnit_Framework_MockObject_MockObject|\WPML_Translation_Job_Factory
 	 */
 	private function getJobFactory( array $jobs_map ) {
-		$factory = $this->getMockBuilder( '\WPML_Translation_Job_Factory' )
+		$factory = $this->getMockBuilder( JobFactory::class )
 			->setMethods( [ 'get_translation_job' ] )
 			->disableOriginalConstructor()->getMock();
 		$factory->method( 'get_translation_job' )->willReturnMap( $jobs_map );

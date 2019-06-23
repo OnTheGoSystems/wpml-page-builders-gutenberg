@@ -4,13 +4,13 @@ namespace WPML\PB\Gutenberg\ReusableBlocks;
 
 class ManageBasket extends Manage {
 
-	/** @var \WPML_Translation_Basket $translation_basket */
+	/** @var Basket $translation_basket */
 	private $translation_basket;
 
 	public function __construct(
 		Blocks $blocks,
 		Translation $translation,
-		\WPML_Translation_Basket $translation_basket
+		Basket $translation_basket
 	) {
 		parent::__construct( $blocks, $translation );
 		$this->translation_basket = $translation_basket;
