@@ -146,7 +146,7 @@ class TestHTML extends \OTGS_TestCase {
 
 		$parent_1       = 'Parent <strong>1</strong>';
 		$child_11       = 'Child <strong>11</strong>';
-		$grandchild_111 = 'Grandchild<br>111';
+		$grandchild_111 = 'Grandchild<br/>111';
 		$grandchild_112 = 'Grandchild 112';
 		$child_12       = 'Child 12';
 		$parent_2       = 'Parent 2';
@@ -202,8 +202,8 @@ class TestHTML extends \OTGS_TestCase {
 		$block_name = 'core/paragraph';
 
 		$target_lang                 = 'de';
-		$original_block_inner_HTML   = 'some block content &amp; special chars<br>';
-		$translated_block_inner_HTML = 'some block content &amp; special chars ( TRANSLATED )<br>';
+		$original_block_inner_HTML   = 'some block content &amp; special chars<br/>';
+		$translated_block_inner_HTML = 'some block content &amp; special chars ( TRANSLATED )<br/>';
 
 
 		$strings = array(
@@ -366,7 +366,7 @@ class TestHTML extends \OTGS_TestCase {
 		$updated_block = $strings_in_block->update( $block, $strings, $target_lang );
 
 		$this->assertEquals(
-			'<figure class="wp-block-image"><img src="xxx" alt="' . $alt_text_translated . '" class="xxx"><figcaption>' . $caption_translated . '</figcaption></figure>',
+			'<figure class="wp-block-image"><img src="xxx" alt="' . $alt_text_translated . '" class="xxx"/><figcaption>' . $caption_translated . '</figcaption></figure>',
 			$updated_block->innerHTML
 		);
 
@@ -411,6 +411,47 @@ class TestHTML extends \OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmlcore-6643
+	 */
+	public function it_should_update_and_NOT_escape_invalid_href() {
+		$block_name = 'core/some_block';
+
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( [ $block_name => [ 'xpath' => [ '//div' ] ] ] );
+
+		$strings_in_block = new HTML( $config_option );
+
+		$target_lang                 = 'de';
+		$original_block_inner_HTML   = '<a href="[some-shortcode]">Click me</a>';
+		$translated_block_inner_HTML = '<a href="[some-shortcode]">Click me translated</a>';
+
+
+		$strings = array(
+			md5( $block_name . $original_block_inner_HTML ) => array(
+				$target_lang => array(
+					'value'  => $translated_block_inner_HTML,
+					'status' => (string) ICL_TM_COMPLETE,
+				)
+			)
+		);
+
+		$block               = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName    = $block_name;
+		$block->innerHTML    = '<div>' . $original_block_inner_HTML . '</div>';
+		$block->innerContent = [ $block->innerHTML ];
+
+		$updated_block = $strings_in_block->update( $block, $strings, $target_lang );
+
+		$this->assertEquals( '<div>' . $translated_block_inner_HTML . '</div>', $updated_block->innerHTML );
+
+		$not_expected = '<div><a href="%5Bsome-shortcode%5D">Click me</a></div>';
+
+		$this->assertNotSame( $not_expected, $updated_block->innerHTML );
+	}
+
+	/**
+	 * @test
 	 * @group wpmlcore-6613
 	 */
 	public function it_should_update_nested_lists() {
@@ -425,8 +466,8 @@ class TestHTML extends \OTGS_TestCase {
 		$parent_1_tr       = 'TR Parent <strong>1</strong>';
 		$child_11          = 'Child <strong>11</strong>';
 		$child_11_tr       = 'TR Child <strong>11</strong>';
-		$grandchild_111    = 'Grandchild<br>111';
-		$grandchild_111_tr = 'TR Grandchild<br>111';
+		$grandchild_111    = 'Grandchild<br/>111';
+		$grandchild_111_tr = 'TR Grandchild<br/>111';
 		$grandchild_112    = 'Grandchild 112';
 		$grandchild_112_tr = 'TR Grandchild 112';
 		$child_12          = 'Child 12';
