@@ -186,6 +186,12 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			)
 		);
 
+		\WP_Mock::userFunction( 'wp_slash', [
+			'times'      => 1,
+			'args'       => [ json_encode( $attributes, JSON_UNESCAPED_UNICODE ) ],
+			'return_arg' => true,
+		] );
+
 		$rendered_block = '<!-- wp:' . $block_name . ' ' . json_encode( $attributes, JSON_UNESCAPED_UNICODE ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
 
 		\WP_Mock::userFunction( 'wp_update_post',
@@ -277,6 +283,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	/**
 	 * @test
 	 * @group wpmlcore-6221
+	 * @group wpmlcore-6774
 	 *
 	 * @dataProvider inner_html_provider
 	 */
@@ -326,6 +333,12 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			)
 		);
 
+		\WP_Mock::userFunction( 'wp_slash', [
+			'times'      => 1,
+			'args'       => [ json_encode( $attributes ) ],
+			'return_arg' => true,
+		] );
+
 		$rendered_block = "<!-- wp:column -->";
 		$rendered_block .= $inner_html_before;
 		$rendered_block .= '<!-- wp:' . $block_name . ' ' . json_encode( $attributes ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
@@ -361,8 +374,6 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$inner_html = '<div class="wp-block-media-text__content"></div>';
 		$inner_html_before = '<div class="wp-block-media-text__content">';
 		$inner_html_after = '</div>';
-
-		$subject = $this->get_subject();
 
 		$original_post               = \Mockery::mock( 'WP_Post' );
 		$original_post->post_content = 'Post content';
@@ -408,6 +419,12 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 				'return' => $blocks,
 			)
 		);
+
+		\WP_Mock::userFunction( 'wp_slash', [
+			'times'      => 1,
+			'args'       => [ json_encode( $attributes ) ],
+			'return_arg' => true,
+		] );
 
 		$rendered_block = "<!-- wp:media-text -->";
 		$rendered_block .= $inner_html_before;
@@ -510,6 +527,12 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			                        'return' => $blocks,
 		                        )
 		);
+
+		\WP_Mock::userFunction( 'wp_slash', [
+			'times'      => 1,
+			'args'       => [ json_encode( $attributes ) ],
+			'return_arg' => true,
+		] );
 
 		$rendered_inner_block_1   = '<!-- wp:' . $block_name . ' -->' . $translated_block_inner_HTML_1 . '<!-- /wp:' . $block_name . ' -->';
 		$rendered_inner_block_2   = '<!-- wp:' . $block_name . ' -->' . $translated_block_inner_HTML_2 . '<!-- /wp:' . $block_name . ' -->';
