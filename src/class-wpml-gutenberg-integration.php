@@ -21,11 +21,6 @@ class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 	private $config_option;
 
 	/**
-	 * @var SitePress
-	 */
-	private $sitepress;
-
-	/**
 	 * @var WPML_Gutenberg_Strings_Registration $strings_registration
 	 */
 	private $strings_registration;
@@ -33,12 +28,10 @@ class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 	public function __construct(
 		WPML\PB\Gutenberg\StringsInBlock\StringsInBlock $strings_in_block,
 		WPML_Gutenberg_Config_Option $config_option,
-		SitePress $sitepress,
 		WPML_Gutenberg_Strings_Registration $strings_registration
 	) {
 		$this->strings_in_blocks    = $strings_in_block;
 		$this->config_option        = $config_option;
-		$this->sitepress            = $sitepress;
 		$this->strings_registration = $strings_registration;
 	}
 
@@ -120,9 +113,7 @@ class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 				$content .= $this->render_block( $block );
 			}
 
-			$this->sitepress->switch_lang( $lang );
-			wp_update_post( array( 'ID' => $translated_post_id, 'post_content' => $content ) );
-			$this->sitepress->switch_lang( null );
+			wpml_update_escaped_post( [ 'ID' => $translated_post_id, 'post_content' => $content ], $lang );
 		}
 
 	}

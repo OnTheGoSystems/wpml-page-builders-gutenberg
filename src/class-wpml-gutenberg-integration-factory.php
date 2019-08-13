@@ -33,7 +33,6 @@ class WPML_Gutenberg_Integration_Factory {
 			new WPML_Gutenberg_Integration(
 				$strings_in_block,
 				$config_option,
-				$sitepress,
 				$strings_registration
 			)
 		);

@@ -26,7 +26,6 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$subject = new WPML_Gutenberg_Integration(
 			$this->getStringsInBlock( $config_option ),
 			$config_option,
-			$this->get_sitepress(),
 			$this->get_strings_registration()
 		);
 
@@ -64,7 +63,6 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$subject = new WPML_Gutenberg_Integration(
 			$this->getStringsInBlock( $config_option ),
 			$config_option,
-			$this->get_sitepress(),
 			$this->get_strings_registration()
 		);
 
@@ -84,7 +82,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$string_registration = $this->get_strings_registration();
 		$string_registration->expects( $this->never() )->method( 'register_strings' );
 
-		$subject = $this->get_subject( null, null, $string_registration );
+		$subject = $this->get_subject( null, $string_registration );
 
 		$post               = \Mockery::mock( 'WP_Post' );
 		$post->post_content = 'post content with no block meta comment';
@@ -113,7 +111,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		                    ->method( 'register_strings' )
 		                    ->with( $post, $package );
 
-		$subject = $this->get_subject( null, null, $strings_registration );
+		$subject = $this->get_subject( null, $strings_registration );
 
 		$subject->register_strings( $post, $package );
 
@@ -188,15 +186,15 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 		$rendered_block = '<!-- wp:' . $block_name . ' ' . json_encode( $attributes, JSON_UNESCAPED_UNICODE ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
 
-		\WP_Mock::userFunction( 'wp_update_post',
-			array(
-				'times' => 1,
-				'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => $rendered_block ) ),
-			) );
+		\WP_Mock::userFunction( 'wpml_update_escaped_post', [
+			'times' => 1,
+			'args'  => [
+				[ 'ID' => $translated_post_id, 'post_content' => $rendered_block ],
+				$target_lang
+			],
+		] );
 
-		$sitepress = $this->get_sitepress_for_update_in_lang( $target_lang );
-
-		$subject = $this->get_subject( null, $sitepress );
+		$subject = $this->get_subject();
 
 		$subject->string_translated(
 			WPML_Gutenberg_Integration::PACKAGE_ID,
@@ -254,15 +252,15 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 		$rendered_block = '<!-- wp:' . $block_name . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
 
-		\WP_Mock::userFunction( 'wp_update_post',
-			array(
+		\WP_Mock::userFunction( 'wpml_update_escaped_post', [
 				'times' => 1,
-				'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => $rendered_block ) ),
-			) );
+				'args'  => [
+					[ 'ID' => $translated_post_id, 'post_content' => $rendered_block ],
+					$target_lang
+				],
+		] );
 
-		$sitepress = $this->get_sitepress_for_update_in_lang( $target_lang );
-
-		$subject = $this->get_subject( null, $sitepress );
+		$subject = $this->get_subject();
 
 		$subject->string_translated(
 			WPML_Gutenberg_Integration::PACKAGE_ID,
@@ -332,15 +330,15 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$rendered_block .= $inner_html_after;
 		$rendered_block .= "<!-- /wp:column -->";
 
-		\WP_Mock::userFunction( 'wp_update_post',
-			array(
-				'times' => 1,
-				'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => $rendered_block ) ),
-			) );
+		\WP_Mock::userFunction( 'wpml_update_escaped_post', [
+			'times' => 1,
+			'args'  => [
+				[ 'ID' => $translated_post_id, 'post_content' => $rendered_block ],
+				$target_lang,
+			],
+		] );
 
-		$sitepress = $this->get_sitepress_for_update_in_lang( $target_lang );
-
-		$subject = $this->get_subject( null, $sitepress );
+		$subject = $this->get_subject();
 
 		$subject->string_translated(
 			WPML_Gutenberg_Integration::PACKAGE_ID,
@@ -361,8 +359,6 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$inner_html = '<div class="wp-block-media-text__content"></div>';
 		$inner_html_before = '<div class="wp-block-media-text__content">';
 		$inner_html_after = '</div>';
-
-		$subject = $this->get_subject();
 
 		$original_post               = \Mockery::mock( 'WP_Post' );
 		$original_post->post_content = 'Post content';
@@ -415,15 +411,15 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$rendered_block .= $inner_html_after;
 		$rendered_block .= "<!-- /wp:media-text -->";
 
-		\WP_Mock::userFunction( 'wp_update_post',
-			array(
-				'times' => 1,
-				'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => $rendered_block ) ),
-			) );
+		\WP_Mock::userFunction( 'wpml_update_escaped_post', [
+			'times' => 1,
+			'args'  => [
+				[ 'ID' => $translated_post_id, 'post_content' => $rendered_block ],
+				$target_lang,
+			],
+		] );
 
-		$sitepress = $this->get_sitepress_for_update_in_lang( $target_lang );
-
-		$subject = $this->get_subject( null, $sitepress );
+		$subject = $this->get_subject();
 
 		$subject->string_translated(
 			WPML_Gutenberg_Integration::PACKAGE_ID,
@@ -517,14 +513,15 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 		$rendered_translated_content = '<!-- wp:' . $block_name . ' ' . json_encode( $attributes ) . ' -->' . $translated_inner_content . '<!-- /wp:' . $block_name . ' -->';
 
-		\WP_Mock::userFunction( 'wp_update_post', array(
-            'times' => 1,
-            'args'  => array( array( 'ID' => $translated_post_id, 'post_content' => $rendered_translated_content ) ),
-        ));
+		\WP_Mock::userFunction( 'wpml_update_escaped_post', [
+			'times' => 1,
+			'args'  => [
+				[ 'ID' => $translated_post_id, 'post_content' => $rendered_translated_content ],
+				$target_lang,
+			],
+		] );
 
-		$sitepress = $this->get_sitepress_for_update_in_lang( $target_lang );
-
-		$subject = $this->get_subject( null, $sitepress );
+		$subject = $this->get_subject();
 
 		$subject->string_translated(
 			WPML_Gutenberg_Integration::PACKAGE_ID,
@@ -627,14 +624,15 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$translated_inner_content    = $translated_parent_contents[0] . $rendered_paragraph . $translated_parent_contents[1];
 		$rendered_translated_content = $this->get_content_with_block_meta_data( $parent_block_name, $translated_inner_content );
 
-		\WP_Mock::userFunction( 'wp_update_post', [
+		\WP_Mock::userFunction( 'wpml_update_escaped_post', [
 			'times' => 1,
-			'args'  => [ [ 'ID' => $translated_post_id, 'post_content' => $rendered_translated_content ] ],
+			'args'  => [
+				[ 'ID' => $translated_post_id, 'post_content' => $rendered_translated_content ],
+				$target_lang,
+			],
 		] );
 
-		$sitepress = $this->get_sitepress_for_update_in_lang( $target_lang );
-
-		$subject = $this->get_subject( $config_option, $sitepress );
+		$subject = $this->get_subject( $config_option );
 
 		$subject->string_translated(
 			WPML_Gutenberg_Integration::PACKAGE_ID,
@@ -735,19 +733,17 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		);
 	}
 
-	public function get_subject( $config_option = null, $sitepress = null, $strings_registration = null ) {
+	public function get_subject( $config_option = null, $strings_registration = null ) {
 		if ( ! $config_option ) {
 			$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 			$config_option->shouldReceive( 'get' )->andReturn( array() );
 		}
 
-		$sitepress            = $sitepress ? $sitepress : $this->get_sitepress();
 		$strings_registration = $strings_registration ? $strings_registration : $this->get_strings_registration();
 
 		return new WPML_Gutenberg_Integration(
 			$this->getStringsInBlock( $config_option ),
 			$config_option,
-			$sitepress,
 			$strings_registration
 		);
 	}
@@ -767,13 +763,6 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		return $this->getMockBuilder( 'SitePress' )
 			->setMethods( array( 'switch_lang' ) )
 			->disableOriginalConstructor()->getMock();
-	}
-
-	private function get_sitepress_for_update_in_lang( $lang ) {
-		$sitepress = $this->get_sitepress();
-		$sitepress->expects( $this->exactly( 2 ) )->method( 'switch_lang' )
-			->withConsecutive( array( $lang ), array( null ) );
-		return $sitepress;
 	}
 
 	private function get_strings_registration() {
