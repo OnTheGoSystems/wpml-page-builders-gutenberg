@@ -4,6 +4,7 @@ namespace WPML\PB\Gutenberg\StringsInBlock;
 
 use WPML\PB\Gutenberg\StringsInBlock\DOMHandler\StandardBlock;
 use WPML\PB\Gutenberg\StringsInBlock\DOMHandler\ListBlock;
+use WPML\PB\Gutenberg\XPath;
 
 class HTML extends Base {
 
@@ -24,12 +25,13 @@ class HTML extends Base {
 			$xpath      = $dom_handle->getDomxpath( $block->innerHTML );
 
 			foreach ( $block_queries as $query ) {
+				list( $query, $definedType ) = XPath::parse( $query );
 				$elements = $xpath->query( $query );
 				foreach ( $elements as $element ) {
 					list( $text, $type ) = $dom_handle->getPartialInnerHTML( $element );
 					if ( $text ) {
 						$string_id = $this->get_string_id( $block->blockName, $text );
-						$strings[] = $this->build_string( $string_id, $block->blockName, $text, $type );
+						$strings[] = $this->build_string( $string_id, $block->blockName, $text, $definedType ? $definedType : $type );
 					}
 				}
 			}
@@ -63,6 +65,7 @@ class HTML extends Base {
 			$xpath      = new \DOMXPath( $dom );
 
 			foreach ( $block_queries as $query ) {
+				list( $query, ) = XPath::parse( $query );
 				$elements = $xpath->query( $query );
 				foreach ( $elements as $element ) {
 					list( $text, ) = $dom_handle->getPartialInnerHTML( $element );

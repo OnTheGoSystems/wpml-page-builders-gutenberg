@@ -1,5 +1,7 @@
 <?php
 
+use WPML\PB\Gutenberg\XPath;
+
 /**
  * Class WPML_Gutenberg_Config_Option
  */
@@ -42,7 +44,7 @@ class WPML_Gutenberg_Config_Option {
 			$blocks[ $block_name ]['xpath'] = array();
 
 			foreach ( $block_config['xpath'] as $xpaths ) {
-				$xpaths                         = $this->normalize_xpath_data( $xpaths );
+				$xpaths                         = XPath::normalize( $xpaths );
 				$blocks[ $block_name ]['xpath'] = array_merge( $blocks[ $block_name ]['xpath'], array_values( $xpaths ) );
 
 			}
@@ -77,7 +79,7 @@ class WPML_Gutenberg_Config_Option {
 		foreach ( $keys_config as $key_config ) {
 
 			$partial_config = [];
-			
+
 			if ( isset( $key_config['attr']['search-method'] ) ) {
 				$partial_config['search-method'] = $key_config['attr']['search-method'];
 			}
@@ -90,18 +92,6 @@ class WPML_Gutenberg_Config_Option {
 		}
 
 		return $final_config;
-	}
-
-	/**
-	 * If a sequence has only one element, we will wrap it
-	 * in order to have the same data shape as for multiple elements.
-	 *
-	 * @param array|string $data
-	 *
-	 * @return array
-	 */
-	private function normalize_xpath_data( $data ) {
-		return is_string( $data ) ? array( 'value' => $data ) : $data;
 	}
 
 	/**

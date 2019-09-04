@@ -14,12 +14,12 @@
       "src/"
     ]
   },
-  "repositories": [
-    {
+  "repositories": {
+    "collect": {
       "type": "vcs",
       "url": "https://github.com/OnTheGoSystems/collect.git"
     }
-  ],
+  },
   "require": {
     "roave/security-advisories": "dev-master",
     "jakeasmith/http_build_url": "^1.0"

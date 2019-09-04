@@ -1,6 +1,7 @@
 <?php
 
 use WPML\PB\Gutenberg\ReusableBlocks\Translation;
+use tad\FunctionMocker\FunctionMocker;
 
 /**
  * Class Test_WPML_Gutenberg_Integration_Factory
@@ -9,7 +10,7 @@ use WPML\PB\Gutenberg\ReusableBlocks\Translation;
  * @group gutenberg
  */
 class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
-	
+
 	/**
 	 * @test
 	 * @dataProvider dp_is_admin
@@ -27,12 +28,16 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 		$sitepress->shouldReceive( 'is_translated_post_type' )
 		          ->with( WPML\PB\Gutenberg\ReusableBlocks\Translation::POST_TYPE )
 		          ->andReturn( false );
+		$sitepress->shouldReceive( 'get_active_languages' )->andReturn( [] );
 
 		$wpdb      = \Mockery::mock( 'wpdb' );
 		\Mockery::mock( 'WPML_ST_String_Factory' );
 		\Mockery::mock( 'WPML_PB_Reuse_Translations' );
 		\Mockery::mock( 'WPML_PB_String_Translation' );
 		\Mockery::mock( '\WPML\TM\Container\Config' );
+		$this->expect_container_make( 1, 'WPML_Translate_Link_Targets' );
+		$translateLinks = \Mockery::mock( 'alias:WPML\PB\TranslateLinks' );
+		$translateLinks->shouldReceive( 'getTranslatorForString' )->andReturn( function() {} );
 
 		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\Integration', '\WPML\PB\Gutenberg\Integration' );
 		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration', '\WPML\PB\Gutenberg\Integration' );
@@ -55,7 +60,7 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 		global $sitepress, $wpdb;
 
 		$this->getMockBuilder( '\WPML_Translation_Basket' )->disableOriginalConstructor()->getMock();
-		
+
 		\WP_Mock::userFunction( 'is_admin', [
 			'return' => $is_admin,
 		] );
@@ -64,12 +69,16 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 		$sitepress->shouldReceive( 'is_translated_post_type' )
 		          ->with( WPML\PB\Gutenberg\ReusableBlocks\Translation::POST_TYPE )
 		          ->andReturn( true );
+		$sitepress->shouldReceive( 'get_active_languages' )->andReturn( [] );
 
 		$wpdb      = \Mockery::mock( 'wpdb' );
 		\Mockery::mock( 'WPML_ST_String_Factory' );
 		\Mockery::mock( 'WPML_PB_Reuse_Translations' );
 		\Mockery::mock( 'WPML\PB\Gutenberg\StringsInBlock\StringsInBlock' );
 		\Mockery::mock( '\WPML\TM\Container\Config' );
+		$this->expect_container_make( 1, 'WPML_Translate_Link_Targets' );
+		$translateLinks = \Mockery::mock( 'alias:WPML\PB\TranslateLinks' );
+		$translateLinks->shouldReceive( 'getTranslatorForString' )->andReturn( function() {} );
 
 		$this->expect_container_make( 1, '\WPML\PB\Gutenberg\ReusableBlocks\Integration', 'WPML\PB\Gutenberg\Integration' );
 		$this->expect_container_make( (int) $is_admin, '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration', '\WPML\PB\Gutenberg\Integration' );

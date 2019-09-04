@@ -1,5 +1,7 @@
 <?php
 
+use function WPML\Container\make;
+
 class WPML_Gutenberg_Integration_Factory {
 
 	/** @return \WPML\PB\Gutenberg\Integration */
@@ -22,11 +24,14 @@ class WPML_Gutenberg_Integration_Factory {
 		$integrations = new WPML\PB\Gutenberg\Integration_Composite();
 
 		$string_factory       = new WPML_ST_String_Factory( $wpdb );
+
 		$strings_registration = new WPML_Gutenberg_Strings_Registration(
 			$strings_in_block,
 			$string_factory,
 			new WPML_PB_Reuse_Translations( $string_factory ),
-			new WPML_PB_String_Translation( $wpdb )
+			new WPML_PB_String_Translation( $wpdb ),
+			make( 'WPML_Translate_Link_Targets' ),
+			WPML\PB\TranslateLinks::getTranslatorForString( $string_factory, $sitepress->get_active_languages() )
 		);
 
 		$integrations->add(
@@ -39,12 +44,12 @@ class WPML_Gutenberg_Integration_Factory {
 
 		if ( $this->should_translate_reusable_blocks() ) {
 			$integrations->add(
-				WPML\Container\make( '\WPML\PB\Gutenberg\ReusableBlocks\Integration' )
+				make( '\WPML\PB\Gutenberg\ReusableBlocks\Integration' )
 			);
 
 			if ( is_admin() ) {
 				$integrations->add(
-					WPML\Container\make( '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration' )
+					make( '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration' )
 				);
 			}
 		}

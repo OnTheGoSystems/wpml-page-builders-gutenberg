@@ -209,6 +209,136 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 	}
 
 	/**
+	 * @test
+	 */
+	public function it_registers_strings_and_handles_links() {
+		$post               = \Mockery::mock( 'WP_Post' );
+		$post->post_content = 'post content is not relevant in this test';
+
+		$package = array(
+			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
+		);
+
+		$blocks = array(
+			'block 1' => $this->get_block( 'core/other', 'some block content 1', 1 ),
+		);
+
+		$string_name_1 = md5( $blocks['block 1']->blockName . $blocks['block 1']->innerHTML );
+		$string_id_1   = 123;
+
+		\WP_Mock::userFunction(
+			'gutenberg_parse_blocks',
+			array(
+				'times'  => 1,
+				'args'   => array( $post->post_content ),
+				'return' => $blocks,
+			)
+		);
+
+		\WP_Mock::onFilter( 'wpml_string_id_from_package' )
+		        ->with( 0, $package, $string_name_1, $blocks['block 1']->innerHTML )
+		        ->reply( $string_id_1 );
+
+		$string = Mockery::mock( 'WPML_ST_String' );
+		$string->shouldReceive( 'set_location' );
+
+		$string_factory = $this->get_string_factory();
+		$string_factory->method( 'find_by_id' )->willReturn( $string );
+
+		$link_string = (object) [
+			'id' => $string_id_1,
+			'value' => 'http::/something.com',
+			'name' => $string_name_1,
+			'type' => 'LINK'
+		];
+
+		$strings_in_blocks = \Mockery::mock( WPML\PB\Gutenberg\StringsInBlock\Collection::class );
+		$strings_in_blocks->shouldReceive( 'find' )->andReturn( [ $link_string ] );
+
+		$translate_link_targets = Mockery::mock( 'WPML_Translate_Link_Targets' );
+		$translate_link_targets->shouldReceive( 'is_internal_url' )->andReturn( true );
+
+		$set_links_translation = new ClosureMock;
+		$set_links_translation->shouldBeCalled()->with( $string_id_1 );
+
+		$subject = $this->get_subject(
+			$string_factory,
+			null,
+			null,
+			$strings_in_blocks,
+			$translate_link_targets,
+			$set_links_translation->get()
+			);
+
+		$subject->register_strings( $post, $package );
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_registers_strings_and_sets_external_links_to_line() {
+		$post               = \Mockery::mock( 'WP_Post' );
+		$post->post_content = 'post content is not relevant in this test';
+
+		$package = array(
+			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
+		);
+
+		$blocks = array(
+			'block 1' => $this->get_block( 'core/other', 'some block content 1', 1 ),
+		);
+
+		$string_name_1 = md5( $blocks['block 1']->blockName . $blocks['block 1']->innerHTML );
+		$string_id_1   = 123;
+
+		\WP_Mock::userFunction(
+			'gutenberg_parse_blocks',
+			array(
+				'times'  => 1,
+				'args'   => array( $post->post_content ),
+				'return' => $blocks,
+			)
+		);
+
+		\WP_Mock::onFilter( 'wpml_string_id_from_package' )
+		        ->with( 0, $package, $string_name_1, $blocks['block 1']->innerHTML )
+		        ->reply( $string_id_1 );
+
+		$string = Mockery::mock( 'WPML_ST_String' );
+		$string->shouldReceive( 'set_location' );
+
+		$string_factory = $this->get_string_factory();
+		$string_factory->method( 'find_by_id' )->willReturn( $string );
+
+		$link_string = (object) [
+			'id' => $string_id_1,
+			'value' => 'http::/something.com',
+			'name' => $string_name_1,
+			'type' => 'LINK'
+		];
+
+		$strings_in_blocks = \Mockery::mock( WPML\PB\Gutenberg\StringsInBlock\Collection::class );
+		$strings_in_blocks->shouldReceive( 'find' )->andReturn( [ $link_string ] );
+
+		$translate_link_targets = Mockery::mock( 'WPML_Translate_Link_Targets' );
+		$translate_link_targets->shouldReceive( 'is_internal_url' )->andReturn( false );
+
+		$set_links_translation = new ClosureMock;
+		$set_links_translation->shouldNotBeCalled();
+
+		$subject = $this->get_subject(
+			$string_factory,
+			null,
+			null,
+			$strings_in_blocks,
+			$translate_link_targets,
+			$set_links_translation->get()
+		);
+
+		$subject->register_strings( $post, $package );
+	}
+
+	/**
 	 * Test reuse translation.
 	 *
 	 * @test
@@ -282,19 +412,30 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 	 *
 	 * @return WPML_Gutenberg_Strings_Registration
 	 */
-	private function get_subject( $string_factory = null, $reuse_translations = null, $string_translation = null ) {
+	private function get_subject(
+		$string_factory = null,
+		$reuse_translations = null,
+		$string_translation = null,
+		$strings_in_block = null,
+	    $translate_link_targets = null,
+		$set_link_translations = null
+	) {
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )->andReturn( array() );
-		$strings_in_block   = $this->getStringsInBlock( $config_option );
+		$strings_in_block   = $strings_in_block ? $strings_in_block : $this->getStringsInBlock( $config_option );
 		$string_factory     = $string_factory ? $string_factory : $this->get_string_factory();
 		$reuse_translations = $reuse_translations ? $reuse_translations : $this->get_reuse_translation();
 		$string_translation = $string_translation ? $string_translation : $this->get_string_translation( true );
+		$translate_link_targets = $translate_link_targets ? $translate_link_targets : Mockery::mock( 'WPML_Translate_Link_Targets' );
+		$set_link_translations = $set_link_translations ? $set_link_translations : function() {};
 
 		return new WPML_Gutenberg_Strings_Registration(
 			$strings_in_block,
 			$string_factory,
 			$reuse_translations,
-			$string_translation
+			$string_translation,
+			$translate_link_targets,
+			$set_link_translations
 		);
 	}
 
@@ -426,3 +567,22 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 		return new WPML\PB\Gutenberg\StringsInBlock\Collection( $string_parsers );
 	}
 }
+
+class ClosureMock {
+
+	public function __construct() {
+		$this->mock = Mockery::mock( stdClass::class );
+	}
+
+	public function shouldBeCalled( $count = 1 ) {
+		return $this->mock->shouldReceive( 'function' )->times( $count );
+	}
+
+	public function shouldNotBeCalled() {
+		return $this->shouldBeCalled( 0 );
+	}
+
+	public function get() {
+		return [ $this->mock, 'function' ];
+	}
+};
