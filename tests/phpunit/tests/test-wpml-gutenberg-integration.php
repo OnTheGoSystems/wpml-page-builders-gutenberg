@@ -155,7 +155,12 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 		$block_name                  = 'some-block-name';
 		$core_block_name             = 'core/' . $block_name; // Gutenberg prefixes with 'core/'
-		$attributes                  = array( 'att_1' => 'value_1', 'att_2' => 'value_2', 'att_3' => 'polish żółć' );
+		$attributes                  = array(
+			'att_1' => 'value_1',
+			'att_2' => 'value_2',
+			'att_3' => 'polish żółć',
+			'att_4' => 'Value with "quotes"',
+		);
 		$original_block_inner_HTML   = 'some block content';
 		$translated_block_inner_HTML = 'some block content ( TRANSLATED )';
 
@@ -184,7 +189,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			)
 		);
 
-		$rendered_block = '<!-- wp:' . $block_name . ' ' . json_encode( $attributes, JSON_UNESCAPED_UNICODE ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
+		$rendered_block = '<!-- wp:' . $block_name . ' ' . json_encode( $attributes, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
 
 		\WP_Mock::userFunction( 'wpml_update_escaped_post', [
 			'times' => 1,
