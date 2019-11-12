@@ -118,7 +118,7 @@ abstract class DOMHandle {
 		return $element->cloneNode( false );
 	}
 
-	protected function getDOMString( \DOMNode $element ) {
+	protected function getAsHTML5( \DOMNode $element ) {
 		return strtr( $element->ownerDocument->saveXML( $element, LIBXML_NOEMPTYTAG ),
 			[
 				'></area>'   => '/>',
