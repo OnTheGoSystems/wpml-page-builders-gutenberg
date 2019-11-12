@@ -20,7 +20,7 @@ class ListBlock extends DOMHandle {
 				continue;
 			}
 
-			$innerHTML .= $element->ownerDocument->saveXML( $child );
+			$innerHTML .= $this->getDOMString( $child );
 		}
 
 		if ( $is_partial ) {
