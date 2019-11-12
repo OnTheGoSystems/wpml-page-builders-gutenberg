@@ -361,7 +361,7 @@ class TestHTML extends \OTGS_TestCase {
 
 		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
 		$block->blockName = $block_name;
-		$block->innerHTML = '<figure class="wp-block-image"><img src="xxx" alt="' . $alt_text . '" class="xxx"/><figcaption>' . $caption . '</figcaption></figure>';
+		$block->innerHTML = '<figure class="wp-block-image"><img src="xxx" alt="' . $alt_text . '" class="xxx" /><figcaption>' . $caption . '</figcaption></figure>';
 
 		$updated_block = $strings_in_block->update( $block, $strings, $target_lang );
 
