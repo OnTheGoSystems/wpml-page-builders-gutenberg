@@ -117,4 +117,25 @@ abstract class DOMHandle {
 	private function cloneNodeWithoutChildren( \DOMNode $element ) {
 		return $element->cloneNode( false );
 	}
+
+	protected function getAsHTML5( \DOMNode $element ) {
+		return strtr( $element->ownerDocument->saveXML( $element, LIBXML_NOEMPTYTAG ),
+			[
+				'></area>'   => '/>',
+				'></base>'   => '/>',
+				'></br>'     => '/>',
+				'></col>'    => '/>',
+				'></embed>'  => '/>',
+				'></hr>'     => '/>',
+				'></img>'    => '/>',
+				'></input>'  => '/>',
+				'></link>'   => '/>',
+				'></meta>'   => '/>',
+				'></param>'  => '/>',
+				'></source>' => '/>',
+				'></track>'  => '/>',
+				'></wbr>'    => '/>',
+			] );
+	}
+
 }

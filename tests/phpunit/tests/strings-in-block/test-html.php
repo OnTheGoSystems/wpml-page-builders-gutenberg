@@ -525,6 +525,44 @@ class TestHTML extends \OTGS_TestCase {
 	}
 
 	/**
+	 * @test
+	 */
+	public function it_does_not_output_self_closing_tags() {
+
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( array( 'core/paragraph' => array( 'xpath' => array( '//p' ) ) ) );
+
+		$strings_in_block = new HTML( $config_option );
+
+		$block_name = 'core/paragraph';
+
+		$target_lang                 = 'de';
+		$original_block_inner_HTML   = '<span class="SHOULD_NOT_SELF_CLOSE"></span><span class="another">Content</span>';
+		$translated_block_inner_HTML = '<span class="SHOULD_NOT_SELF_CLOSE"></span><span class="another">Content (TRANSLATED)</span>';;
+
+
+		$strings = array(
+			md5( $block_name . $original_block_inner_HTML ) => array(
+				$target_lang => array(
+					'value'  => $translated_block_inner_HTML,
+					'status' => (string) ICL_TM_COMPLETE,
+				)
+			)
+		);
+
+		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName = $block_name;
+		$block->innerHTML = '<p>' . $original_block_inner_HTML . '</p>';
+
+		$updated_block = $strings_in_block->update( $block, $strings, $target_lang );
+
+		$this->assertEquals( '<p>' . $translated_block_inner_HTML . '</p>', $updated_block->innerHTML );
+
+	}
+
+
+	/**
 	 * @param array $values
 	 *
 	 * @return string
