@@ -80,7 +80,9 @@ class HTML extends Base {
 					}
 				}
 			}
-			list( $block->innerHTML, ) = $dom_handle->getFullInnerHTML( $dom->documentElement );
+			list( $translation, ) = $dom_handle->getFullInnerHTML( $dom->documentElement );
+			$block = apply_filters( 'wpml_updating_block_translation', $block, $translation );
+			$block->innerHTML = $translation;
 
 		} else {
 
@@ -89,7 +91,9 @@ class HTML extends Base {
 				isset( $string_translations[ $string_id ][ $lang ] ) &&
 				ICL_TM_COMPLETE == $string_translations[ $string_id ][ $lang ]['status']
 			) {
-				$block->innerHTML = $string_translations[ $string_id ][ $lang ]['value'];
+				$translation = $string_translations[ $string_id ][ $lang ]['value'];
+				$block = apply_filters( 'wpml_updating_block_translation', $block, $translation );
+				$block->innerHTML = $translation;
 			}
 
 		}

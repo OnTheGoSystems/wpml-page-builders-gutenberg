@@ -219,9 +219,17 @@ class TestHTML extends \OTGS_TestCase {
 		$block->blockName = $block_name;
 		$block->innerHTML = '<p>' . $original_block_inner_HTML . '</p>';
 
+		$filteredBlock        = clone $block;
+		$filteredBlock->attrs = [ 'test', 'data' ];
+
+		\WP_Mock::onFilter( 'wpml_updating_block_translation' )
+		        ->with( $block, '<p>' . $translated_block_inner_HTML . '</p>' )
+		        ->reply( $filteredBlock );
+
 		$updated_block = $strings_in_block->update( $block, $strings, $target_lang );
 
 		$this->assertEquals( '<p>' . $translated_block_inner_HTML . '</p>', $updated_block->innerHTML );
+		$this->assertEquals( $filteredBlock->attrs, $updated_block->attrs );
 
 	}
 
