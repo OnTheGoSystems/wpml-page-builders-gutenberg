@@ -5,10 +5,11 @@
  */
 class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 
-	const PACKAGE_ID              = 'Gutenberg';
-	const GUTENBERG_OPENING_START = '<!-- wp:';
-	const GUTENBERG_CLOSING_START = '<!-- /wp:';
-	const CLASSIC_BLOCK_NAME      = 'core/classic-block';
+	const PACKAGE_ID                         = 'Gutenberg';
+	const GUTENBERG_OPENING_START            = '<!-- wp:';
+	const GUTENBERG_CLOSING_START            = '<!-- /wp:';
+	const CLASSIC_BLOCK_NAME                 = 'core/classic-block';
+	const TOOLSET_FIELDS_AND_TEXT_BLOCK_NAME = 'toolset-blocks/fields-and-text';
 
 	/**
 	 * @var WPML\PB\Gutenberg\StringsInBlock\StringsInBlock
@@ -194,6 +195,10 @@ class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 
 		} else {
 			$content = $block->innerHTML;
+		}
+
+		if ( self::TOOLSET_FIELDS_AND_TEXT_BLOCK_NAME === $block->blockName ) {
+			$content = wpautop( $content );
 		}
 
 		return $content;
