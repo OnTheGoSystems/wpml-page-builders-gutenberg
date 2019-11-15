@@ -5,6 +5,7 @@
  *
  * @group page-builders
  * @group gutenberg
+ * @group wpmlcore-6938
  */
 class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
@@ -434,80 +435,6 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			$target_lang
 		);
 
-	}
-
-	/**
-	 * @test
-	 * @group wpmlcore-6074
-	 * @group wpmlcore-6221
-	 * @group wpmlcore-6938
-	 */
-	public function it_updates_toolset_fileds_and_text_block() {
-		$original_post               = \Mockery::mock( 'WP_Post' );
-		$original_post->post_content = 'Post content';
-
-		$translated_post_id = 22;
-
-		$target_lang = 'de';
-
-		$block_prefix                      = 'toolset-blocks/'; // Toolset prefixes with 'toolset-blocks/'.
-		$block_name                        = 'fields-and-text';
-		$full_block_name                   = $block_prefix . $block_name;
-		$attributes                        = [ 'blockid' => 'cc33bd9d-6638-4462-a70e-52226b29f38b' ];
-		$original_block_inner_HTML         = '\r\n\r\nLine 1\r\n\r\nLine 2\r\n\r\n[wpv-post-link]\r\n\r\n';
-		$translated_block_inner_HTML       = '\r\n\r\nLine 1-ru\r\n\r\nLine 2-ru\r\n\r\n[wpv-post-link]\r\n\r\n';
-		$translated_block_inner_HTML_autop = '<p>Line 1-ru</p><p>Line 2-ru</p><p>[wpv-post-link]</p>';
-
-		$strings = [
-			md5( $full_block_name . $original_block_inner_HTML ) => [
-				$target_lang => [
-					'value'  => $translated_block_inner_HTML,
-					'status' => (string) ICL_TM_COMPLETE,
-				],
-			],
-		];
-
-		$blocks = [];
-
-		$block              = \Mockery::mock( 'WP_Block_Parser_Block' );
-		$block->blockName   = $full_block_name;
-		$block->attrs       = $attributes;
-		$block->innerHTML   = $original_block_inner_HTML;
-		$block->innerBlocks = [];
-		$blocks[]           = $block;
-
-		\WP_Mock::userFunction( 'gutenberg_parse_blocks',
-			[
-				'args'   => [ $original_post->post_content ],
-				'return' => $blocks,
-			]
-		);
-
-		$rendered_block = '<!-- wp:' . $full_block_name . ' ' . json_encode( $attributes ) . ' -->' . $translated_block_inner_HTML_autop . '<!-- /wp:' . $full_block_name . ' -->';
-
-		\WP_Mock::userFunction( 'wpml_update_escaped_post', [
-			'times' => 1,
-			'args'  => [
-				[ 'ID' => $translated_post_id, 'post_content' => $rendered_block ],
-				$target_lang,
-			],
-		] );
-
-		\WP_Mock::userFunction( 'wpautop', [
-			'times'  => 1,
-			'args'   => [ $translated_block_inner_HTML ],
-			'return' => $translated_block_inner_HTML_autop,
-		] );
-
-		$subject = $this->get_subject();
-
-		$subject->string_translated(
-			WPML_Gutenberg_Integration::PACKAGE_ID,
-			$translated_post_id,
-			$original_post,
-			$strings,
-			$target_lang
-		);
 	}
 
 	public function inner_html_provider() {
