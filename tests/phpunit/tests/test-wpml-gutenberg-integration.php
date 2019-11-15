@@ -5,7 +5,6 @@
  *
  * @group page-builders
  * @group gutenberg
- * @group wpmlcore-6938
  */
 class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
