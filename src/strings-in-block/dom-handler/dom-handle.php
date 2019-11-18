@@ -54,6 +54,8 @@ abstract class DOMHandle {
 			$innerHTML = html_entity_decode( $innerHTML );
 		}
 
+		$innerHTML = $this->removeCdataFromStyleTag( $innerHTML );
+
 		return array( $innerHTML, $type );
 	}
 
@@ -136,6 +138,10 @@ abstract class DOMHandle {
 				'></track>'  => '/>',
 				'></wbr>'    => '/>',
 			] );
+	}
+
+	private function removeCdataFromStyleTag( $innerHTML ) {
+		return preg_replace( '/<style(.*?)><!\\[CDATA\\[(.*?)\\]\\]><\\/style>/', '<style$1>$2</style>', $innerHTML );
 	}
 
 }
