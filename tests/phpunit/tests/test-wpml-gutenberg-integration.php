@@ -189,7 +189,9 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			)
 		);
 
-		$rendered_block = '<!-- wp:' . $block_name . ' ' . json_encode( $attributes, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
+		$renderedAttributes = $attributes;
+		$renderedAttributes['translatedWithWPMLTM'] = '1';
+		$rendered_block = '<!-- wp:' . $block_name . ' ' . json_encode( $renderedAttributes, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
 
 		\WP_Mock::userFunction( 'wpml_update_escaped_post', [
 			'times' => 1,
@@ -226,7 +228,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 		$block_name                  = 'some-block-name';
 		$core_block_name             = 'core/' . $block_name; // Gutenberg prefixes with 'core/'
-		$attributes                  = new stdClass();
+		$attributes                  = [];
 		$original_block_inner_HTML   = 'some block content';
 		$translated_block_inner_HTML = 'some block content ( TRANSLATED )';
 
@@ -255,7 +257,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			)
 		);
 
-		$rendered_block = '<!-- wp:' . $block_name . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
+		$rendered_block = '<!-- wp:' . $block_name . ' {"translatedWithWPMLTM":"1"} -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
 
 		\WP_Mock::userFunction( 'wpml_update_escaped_post', [
 				'times' => 1,
@@ -329,9 +331,12 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			)
 		);
 
+		$renderedAttributes = $attributes;
+		$renderedAttributes['translatedWithWPMLTM'] = '1';
+
 		$rendered_block = "<!-- wp:column -->";
 		$rendered_block .= $inner_html_before;
-		$rendered_block .= '<!-- wp:' . $block_name . ' ' . json_encode( $attributes ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
+		$rendered_block .= '<!-- wp:' . $block_name . ' ' . json_encode( $renderedAttributes ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
 		$rendered_block .= $inner_html_after;
 		$rendered_block .= "<!-- /wp:column -->";
 
@@ -410,9 +415,12 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			)
 		);
 
-		$rendered_block = "<!-- wp:media-text -->";
+		$renderedAttributes = $attributes;
+		$renderedAttributes["translatedWithWPMLTM"] = "1";
+
+		$rendered_block = '<!-- wp:media-text -->';
 		$rendered_block .= $inner_html_before;
-		$rendered_block .= '<!-- wp:' . $block_name . ' ' . json_encode( $attributes ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
+		$rendered_block .= '<!-- wp:' . $block_name . ' ' . json_encode( $renderedAttributes ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
 		$rendered_block .= $inner_html_after;
 		$rendered_block .= "<!-- /wp:media-text -->";
 
@@ -512,8 +520,8 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		                        )
 		);
 
-		$rendered_inner_block_1   = '<!-- wp:' . $block_name . ' -->' . $translated_block_inner_HTML_1 . '<!-- /wp:' . $block_name . ' -->';
-		$rendered_inner_block_2   = '<!-- wp:' . $block_name . ' -->' . $translated_block_inner_HTML_2 . '<!-- /wp:' . $block_name . ' -->';
+		$rendered_inner_block_1   = '<!-- wp:' . $block_name . ' {"translatedWithWPMLTM":"1"} -->' . $translated_block_inner_HTML_1 . '<!-- /wp:' . $block_name . ' -->';
+		$rendered_inner_block_2   = '<!-- wp:' . $block_name . ' {"translatedWithWPMLTM":"1"} -->' . $translated_block_inner_HTML_2 . '<!-- /wp:' . $block_name . ' -->';
 		$translated_inner_content = 'before' . $rendered_inner_block_1 . 'inner' . $rendered_inner_block_2 . 'after';
 
 		$rendered_translated_content = '<!-- wp:' . $block_name . ' ' . json_encode( $attributes ) . ' -->' . $translated_inner_content . '<!-- /wp:' . $block_name . ' -->';
@@ -624,10 +632,10 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		                        ]
 		);
 
-		$rendered_paragraph          = $this->get_content_with_block_meta_data( $p_block_name, '<p>' . $paragraph_text_translation . '</p>' );
+		$rendered_paragraph          = $this->get_content_with_block_meta_data( $p_block_name, '<p>' . $paragraph_text_translation . '</p>', true );
 		$translated_parent_contents  = $this->get_parent_block_contents( $title_translation, $attr_translation );
 		$translated_inner_content    = $translated_parent_contents[0] . $rendered_paragraph . $translated_parent_contents[1];
-		$rendered_translated_content = $this->get_content_with_block_meta_data( $parent_block_name, $translated_inner_content );
+		$rendered_translated_content = $this->get_content_with_block_meta_data( $parent_block_name, $translated_inner_content, true);
 
 		\WP_Mock::userFunction( 'wpml_update_escaped_post', [
 			'times' => 1,
@@ -673,8 +681,9 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	 *
 	 * @return string
 	 */
-	private function get_content_with_block_meta_data( $block_name, $content ) {
-		return '<!-- wp:' . $block_name . ' -->' . $content . '<!-- /wp:' . $block_name . ' -->';
+	private function get_content_with_block_meta_data( $block_name, $content, $translated = false ) {
+		$attributes = $translated ? '{"translatedWithWPMLTM":"1"}' : '';
+		return '<!-- wp:' . $block_name . ' ' . $attributes. ' -->' . $content . '<!-- /wp:' . $block_name . ' -->';
 	}
 
 	/**

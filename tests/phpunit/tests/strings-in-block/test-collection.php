@@ -48,6 +48,7 @@ class TestCollection extends \OTGS_TestCase {
 	 */
 	public function it_should_update() {
 		$block               = $this->getBlock();
+		$block->innerHTML    = '';
 		$string_translations = [ 'some string translations' ];
 		$lang                = 'fr';
 
