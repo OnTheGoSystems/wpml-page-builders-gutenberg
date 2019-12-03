@@ -144,6 +144,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 	/**
 	 * @test
 	 * @group wpmlcore-6221
+	 * @group wpmlcore-6995
 	 */
 	public function it_updates_translated_page() {
 		$original_post               = \Mockery::mock( 'WP_Post' );
@@ -160,6 +161,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			'att_2' => 'value_2',
 			'att_3' => 'polish żółć',
 			'att_4' => 'Value with "quotes"',
+			'att_5' => '<div>[my_shortcode foo="bar" id="123"]Some<br/>content[/my_shortcode]</div>',
 		);
 		$original_block_inner_HTML   = 'some block content';
 		$translated_block_inner_HTML = 'some block content ( TRANSLATED )';
@@ -189,9 +191,8 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			)
 		);
 
-		$renderedAttributes = $attributes;
-		$renderedAttributes['translatedWithWPMLTM'] = '1';
-		$rendered_block = '<!-- wp:' . $block_name . ' ' . json_encode( $renderedAttributes, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE ) . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
+		$encodedAttributes = '{"att_1":"value_1","att_2":"value_2","att_3":"polish żółć","att_4":"Value with \u0022quotes\u0022","att_5":"\u003Cdiv\u003E[my_shortcode foo=\u0022bar\u0022 id=\u0022123\u0022]Some\u003Cbr/\u003Econtent[/my_shortcode]\u003C/div\u003E","translatedWithWPMLTM":"1"}';
+		$rendered_block = '<!-- wp:' . $block_name . ' ' . $encodedAttributes . ' -->' . $translated_block_inner_HTML . '<!-- /wp:' . $block_name . ' -->';
 
 		\WP_Mock::userFunction( 'wpml_update_escaped_post', [
 			'times' => 1,
