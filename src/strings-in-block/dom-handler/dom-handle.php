@@ -121,7 +121,8 @@ abstract class DOMHandle {
 	}
 
 	protected function getAsHTML5( \DOMNode $element ) {
-		return strtr( $element->ownerDocument->saveXML( $element, LIBXML_NOEMPTYTAG ),
+		return strtr(
+			$element->ownerDocument->saveXML( $element, LIBXML_NOEMPTYTAG ),
 			[
 				'></area>'   => '/>',
 				'></base>'   => '/>',
