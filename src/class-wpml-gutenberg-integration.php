@@ -158,7 +158,7 @@ class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 
 			$block_attributes = '';
 			if ( self::has_non_empty_attributes( $block ) ) {
-				$block_attributes = ' ' . json_encode( $block->attrs, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE );
+				$block_attributes = ' ' . json_encode( $block->attrs, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 			}
 			$content .= self::GUTENBERG_OPENING_START . $block_type . $block_attributes . ' -->';
 
