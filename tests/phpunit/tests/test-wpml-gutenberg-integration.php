@@ -748,6 +748,23 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		);
 	}
 
+	/**
+	 * @test
+	 * @group wpmlcore-7038
+	 */
+	public function it_should_render_self_closing_block() {
+		$block               = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName    = 'acf/testimonials';
+		$block->attrs        = [ 'foo' => 'bar' ];
+		$block->innerHTML    = '';
+		$block->innerContent = [];
+
+		$this->assertEquals(
+			'<!-- wp:' . $block->blockName . ' ' . json_encode( $block->attrs ) . ' /-->',
+			WPML_Gutenberg_Integration::render_block( $block )
+		);
+	}
+
 	public function get_subject( $config_option = null, $strings_registration = null ) {
 		if ( ! $config_option ) {
 			$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
