@@ -7,6 +7,11 @@ namespace WPML\PB\Gutenberg\ConvertIdsInBlock;
  */
 class TestBlockAttributes extends \OTGS_TestCase {
 
+	public function tearDown() {
+		unset( $GLOBALS['sitepress'] );
+		parent::tearDown();
+	}
+
 	/**
 	 * @test
 	 */
@@ -14,10 +19,10 @@ class TestBlockAttributes extends \OTGS_TestCase {
 		$name        = 'foo';
 		$id          = 123;
 		$convertedId = 456;
-		$type        = 'page';
+		$slug        = 'page';
 
 		$config = [
-			[ 'name' => $name, 'type' => $type ],
+			[ 'name' => $name, 'slug' => $slug, 'type' => 'post' ],
 		];
 
 		$getBlock = function( $id ) use ( $name ) {
@@ -32,15 +37,29 @@ class TestBlockAttributes extends \OTGS_TestCase {
 		$block         = $getBlock( $id );
 		$expectedBlock = $getBlock( $convertedId );
 
-		\WP_Mock::userFunction( 'wpml_object_id_filter', [
-			'args'   => [ $id, $type ],
-			'return' => $convertedId,
-		] );
+		$this->mockConvertIds( $id, $convertedId, $slug );
 
 		\Mockery::mock( 'WP_Block_Parser_Block' );
 
 		$subject = new BlockAttributes( $config );
 
 		$this->assertEquals( $expectedBlock, $subject->convert( $block ) );
+	}
+
+	private function mockConvertIds( $id, $convertedId, $slug ) {
+		global $sitepress;
+
+		$sitepress = $this->getMockBuilder( '\SitePress' )
+			->setMethods( [ 'is_display_as_translated_post_type' ] )
+			->disableOriginalConstructor()->getMock();
+
+		$sitepress->method( 'is_display_as_translated_post_type' )
+			->with( $slug )
+			->willReturn( false );
+
+		\WP_Mock::userFunction( 'wpml_object_id_filter', [
+			'args'   => [ $id, $slug ],
+			'return' => $convertedId,
+		] );
 	}
 }

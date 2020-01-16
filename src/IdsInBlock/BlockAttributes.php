@@ -17,6 +17,7 @@ class BlockAttributes extends Base {
 			if ( isset( $block['attrs'][ $name ] ) ) {
 				$block['attrs'][ $name ] = self::convertIds(
 					$block['attrs'][ $name ],
+					$attributeConfig['slug'],
 					$attributeConfig['type']
 				);
 			}

@@ -27,7 +27,7 @@ class TagAttributes extends Base {
 
 			foreach ( $nodes as $node ) {
 				/** @var \DOMNode $node */
-				$ids = implode( ',' , self::convertIds( explode( ',', $node->nodeValue ), $attributeConfig['type'] ) );
+				$ids = implode( ',' , self::convertIds( explode( ',', $node->nodeValue ), $attributeConfig['slug'], $attributeConfig['type'] ) );
 				$blockObject = \WPML_Gutenberg_Integration::sanitize_block( $block );
 				$block = (array) HTML::update_string_in_innerContent( $blockObject, $node, $ids );
 				$domHandler->setElementValue( $node, $ids );
