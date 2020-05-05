@@ -42,7 +42,9 @@ abstract class DOMHandle {
 	 * @return array
 	 */
 	private function getInnerHTML( \DOMNode $element, $context ) {
-		$innerHTML = $this->getInnerHTMLFromChildNodes( $element, $context );
+		$innerHTML = $element instanceof \DOMText
+			? $element->nodeValue
+			: $this->getInnerHTMLFromChildNodes( $element, $context );
 
 		$type = Base::get_string_type( $innerHTML );
 
@@ -88,6 +90,10 @@ abstract class DOMHandle {
 	public function setElementValue( \DOMNode $element, $value ) {
 		if ( $element instanceof \DOMAttr ) {
 			$element->parentNode->setAttribute( $element->name, $value );
+		} elseif ( $element instanceof \DOMText ) {
+			$clone = $this->cloneNodeWithoutChildren( $element );
+			$clone->nodeValue = $value;
+			$element->parentNode->replaceChild( $clone, $element );
 		} else {
 			$clone = $this->cloneNodeWithoutChildren( $element );
 			$fragment = $this->getDom( $value )->firstChild; // Skip the wrapping div

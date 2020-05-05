@@ -58,6 +58,35 @@ class TestHTML extends \OTGS_TestCase {
 
 	/**
 	 * @test
+	 * @group wpmlcore-7234
+	 */
+	public function it_finds_DOMText_string() {
+		$blockName = 'core/my-block';
+		$text      = 'Some string';
+
+		$configOption = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$configOption->shouldReceive( 'get' )
+			->andReturn( [ $blockName => [ 'xpath' => [ '//div/text()' ] ] ] );
+
+		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName = $blockName;
+		$block->innerHTML = "<div>$text<span>Not to find</span></div>";
+
+		$stringsInBlock = new HTML( $configOption );
+
+		$strings = $stringsInBlock->find( $block );
+
+		$this->assertCount( 1, $strings );
+
+		$string = $strings[0];
+
+		$this->assertEquals( $block->blockName, $string->name );
+		$this->assertEquals( $text, $string->value );
+		$this->assertEquals( 'LINE', $string->type );
+	}
+
+	/**
+	 * @test
 	 * @group wpmlcore-6661
 	 */
 	public function it_does_not_find_the_column_content_if_the_block_configuration_has_no_xpath() {
@@ -321,6 +350,46 @@ class TestHTML extends \OTGS_TestCase {
 
 		$this->assertEquals( '<div>' . $translated_block_inner_HTML . '</div>', $updated_block->innerHTML );
 
+	}
+
+	/**
+	 * @test
+	 * @group wpmlcore-7234
+	 */
+	public function it_updates_DOMText_node() {
+		$blockName      = 'core/my-block';
+		$targetLang     = 'fr';
+		$originalText   = 'Some text';
+		$translatedText = 'FR Some text';
+
+		$configOption = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$configOption->shouldReceive( 'get' )
+		              ->andReturn( [ $blockName => [ 'xpath' => [ '//div/text()' ] ] ] );
+
+		$strings = [
+			md5( $blockName . $originalText ) => [
+				$targetLang => [
+					'value'  => $translatedText,
+					'status' => (string) ICL_TM_COMPLETE,
+				]
+			]
+		];
+
+		$getBlockContent = function( $text ) {
+			return "<div>$text<span>Not to translate</span></div>";
+		};
+
+		$block               = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName    = $blockName;
+		$block->innerHTML    = $getBlockContent( $originalText );
+		$block->innerContent = [ $block->innerHTML ];
+
+		$strings_in_block = new HTML( $configOption );
+
+		$updated_block = $strings_in_block->update( $block, $strings, $targetLang );
+
+		$this->assertEquals( $getBlockContent( $translatedText ), $updated_block->innerHTML );
+		$this->assertEquals( [ $getBlockContent( $translatedText ) ], $updated_block->innerContent );
 	}
 
 	/**
