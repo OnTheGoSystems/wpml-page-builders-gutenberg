@@ -52,8 +52,6 @@ class TestHTML extends \OTGS_TestCase {
 		$this->assertEquals( $block->blockName, $string->name );
 		$this->assertEquals( $paragraph, $string->value );
 		$this->assertEquals( 'VISUAL', $string->type );
-
-
 	}
 
 	/**
@@ -83,6 +81,39 @@ class TestHTML extends \OTGS_TestCase {
 		$this->assertEquals( $block->blockName, $string->name );
 		$this->assertEquals( $text, $string->value );
 		$this->assertEquals( 'LINE', $string->type );
+	}
+
+	/**
+	 * @test
+	 * @group wpmlcore-6351
+	 */
+	public function it_finds_string_and_set_type_depending_on_length() {
+		$blockName = 'core/my-block';
+
+		$configOption = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$configOption->shouldReceive( 'get' )
+			->andReturn( [ $blockName => [ 'xpath' => [ '//p' ] ] ] );
+
+		/** @return \WP_Block_Parser_Block|\Mockery\MockInterface */
+		$getBlock = function( $text ) use ( $blockName ) {
+			$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
+			$block->blockName = $blockName;
+			$block->innerHTML = "<p>$text</p>";
+
+			return $block;
+		};
+
+		$stringsInBlock = new HTML( $configOption );
+
+		$longText = rand_long_str( Base::LONG_STRING_LENGTH + 1 );
+		$strings  = $stringsInBlock->find( $getBlock( $longText ) );
+
+		$this->assertEquals( 'AREA', $strings[0]->type );
+
+		$notSoLongText = rand_long_str( Base::LONG_STRING_LENGTH );
+		$strings       = $stringsInBlock->find( $getBlock( $notSoLongText ) );
+
+		$this->assertEquals( 'LINE', $strings[0]->type );
 	}
 
 	/**
