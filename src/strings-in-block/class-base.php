@@ -87,7 +87,7 @@ abstract class Base implements StringsInBlock {
 		if ( strpos( $string, '<' ) !== false ) {
 			$type = 'VISUAL';
 		}
-		if ( strpos( $string, '://' ) !== false ) {
+		if ( filter_var( $string, FILTER_VALIDATE_URL ) ) {
 			$type = 'LINK';
 		}
 
