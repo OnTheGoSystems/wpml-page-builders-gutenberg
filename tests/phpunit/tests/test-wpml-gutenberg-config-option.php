@@ -93,6 +93,58 @@ class Test_WPML_Gutenberg_Integration_Config_Option extends OTGS_TestCase {
 		$subject->update_from_config( $config_settings );
 	}
 
+
+
+	/**
+	 * @test
+	 * @group wpmlcore-7069
+	 */
+	public function it_updates_option_from_config_with_only_one_xpath_containing_type_attribute() {
+		$subject = new WPML_Gutenberg_Config_Option();
+
+		$blockType = 'block/type';
+		$xpath     = '//my/xpath';
+		$type      = 'link';
+
+		$blockDate = [
+			'attr'  => [ 'type' => $blockType, 'translate' => '1' ],
+			'xpath' => [
+				// For a single element, it's not wrapped in a array
+				// For multiple elements, each is wrapped in an array.
+				'value' => $xpath,
+				'attr'  => [ 'type' => $type ],
+			],
+		];
+
+		$expectedBlockConfig = [
+			'xpath' => [
+				[
+					'value' => $xpath,
+					'type'  => strtoupper( $type ),
+				],
+			],
+		];
+
+		$configSettings = [
+			'wpml-config' => [
+				'gutenberg-blocks' => [
+					'gutenberg-block' => [ $blockDate ],
+				],
+			],
+		];
+
+		\WP_Mock::userFunction( 'update_option',
+			[
+				'times' => 1,
+				'args'  => [
+					WPML_Gutenberg_Config_Option::OPTION,
+					[ $blockType => $expectedBlockConfig ],
+				],
+			] );
+
+		$subject->update_from_config( $configSettings );
+	}
+
 	/**
 	 * @test
 	 * @group wpmlcore-6606
