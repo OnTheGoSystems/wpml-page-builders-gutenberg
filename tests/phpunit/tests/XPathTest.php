@@ -7,14 +7,6 @@ class XPathTest extends \PHPUnit_Framework_TestCase {
 	/**
 	 * @test
 	 */
-	public function it_normalizes_string() {
-		$string = 'data';
-		$this->assertEquals( [ 'value' => $string ], XPath::normalize( $string ) );
-	}
-
-	/**
-	 * @test
-	 */
 	public function it_normalizes_array() {
 		$array = [ 'value' => 'data' ];
 		$this->assertEquals( $array, XPath::normalize( $array ) );
