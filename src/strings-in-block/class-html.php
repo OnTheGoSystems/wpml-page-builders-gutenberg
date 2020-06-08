@@ -2,6 +2,7 @@
 
 namespace WPML\PB\Gutenberg\StringsInBlock;
 
+use WPML\FP\Obj;
 use WPML\PB\Gutenberg\StringsInBlock\DOMHandler\StandardBlock;
 use WPML\PB\Gutenberg\StringsInBlock\DOMHandler\ListBlock;
 use WPML\PB\Gutenberg\XPath;
@@ -69,15 +70,14 @@ class HTML extends Base {
 				$elements = $xpath->query( $query );
 				foreach ( $elements as $element ) {
 					list( $text, ) = $dom_handle->getPartialInnerHTML( $element );
-					$string_id = $this->get_string_id( $block->blockName, $text );
-					if (
-						isset( $string_translations[ $string_id ][ $lang ] ) &&
-						ICL_TM_COMPLETE == $string_translations[ $string_id ][ $lang ]['status']
-					) {
-						$translation = $string_translations[ $string_id ][ $lang ]['value'];
-						$block       = self::update_string_in_innerContent( $block, $element, $translation );
-						$dom_handle->setElementValue( $element, $translation );
-					}
+					$block = $this->updateTranslationInBlock(
+						$text,
+						$lang,
+						$block,
+						$string_translations,
+						$element,
+						$dom_handle
+					);
 				}
 			}
 			list( $block->innerHTML, ) = $dom_handle->getFullInnerHTML( $dom->documentElement );
@@ -173,5 +173,39 @@ class HTML extends Base {
 		}
 
 		return new StandardBlock();
+	}
+
+	/**
+	 * @param                        $text
+	 * @param                        $lang
+	 * @param \WP_Block_Parser_Block $block
+	 * @param array                  $string_translations
+	 * @param                        $element
+	 * @param                        $dom_handle
+	 *
+	 * @return \WP_Block_Parser_Block
+	 */
+	private function updateTranslationInBlock( $text, $lang, \WP_Block_Parser_Block $block, array $string_translations, $element, $dom_handle ) {
+		$translation = $this->getTranslation( $text, $lang, $block, $string_translations );
+		if ( $translation ) {
+			$block = self::update_string_in_innerContent( $block, $element, $translation );
+			$dom_handle->setElementValue( $element, $translation );
+		}
+
+		return $block;
+	}
+
+	private function getTranslation( $text, $lang, \WP_Block_Parser_Block $block, array $string_translations ) {
+		$translationFromPageBuilder = apply_filters( 'wpml_pb_update_translations_in_content', $text, $lang );
+		if ( $translationFromPageBuilder === $text ) {
+			$string_id = $this->get_string_id( $block->blockName, $text );
+			if ( Obj::path( [ $string_id, $lang, 'status' ], $string_translations ) == ICL_TM_COMPLETE ) {
+				return $string_translations[ $string_id ][ $lang ]['value'];
+			} else {
+				return null;
+			}
+		} else {
+			return $translationFromPageBuilder;
+		}
 	}
 }

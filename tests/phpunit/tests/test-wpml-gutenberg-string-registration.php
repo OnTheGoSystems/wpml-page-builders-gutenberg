@@ -18,8 +18,7 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_registers_strings() {
-		$post               = \Mockery::mock( 'WP_Post' );
-		$post->post_content = 'post content is not relevant in this test';
+		$post = self::createPost();
 
 		$package = array(
 			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
@@ -103,8 +102,7 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 	 * @group wpmlcore-6325
 	 */
 	public function it_registers_strings_and_set_location() {
-		$post               = \Mockery::mock( 'WP_Post' );
-		$post->post_content = 'post content is not relevant in this test';
+		$post = self::createPost();
 
 		$package = array(
 			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
@@ -159,8 +157,7 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 	 * @group wpmltm-3081
 	 */
 	public function it_registers_strings_and_set_wrap_tag() {
-		$post               = \Mockery::mock( 'WP_Post' );
-		$post->post_content = 'post content is not relevant in this test';
+		$post = self::createPost();
 
 		$package = array(
 			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
@@ -212,8 +209,7 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_registers_strings_and_handles_links() {
-		$post               = \Mockery::mock( 'WP_Post' );
-		$post->post_content = 'post content is not relevant in this test';
+		$post = self::createPost();
 
 		$package = array(
 			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
@@ -277,8 +273,7 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_registers_strings_and_sets_external_links_to_line() {
-		$post               = \Mockery::mock( 'WP_Post' );
-		$post->post_content = 'post content is not relevant in this test';
+		$post = self::createPost();
 
 		$package = array(
 			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
@@ -344,8 +339,7 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 	 * @test
 	 */
 	public function it_register_strings_and_reuse_translations() {
-		$post               = \Mockery::mock( 'WP_Post' );
-		$post->post_content = 'post content is not relevant in this test';
+		$post = self::createPost();
 
 		$package = array(
 			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
@@ -396,6 +390,56 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 			->with( $original_strings, $current_strings, $leftover_strings );
 
 		$subject = $this->get_subject( null, $reuse_translations, $string_translation );
+
+		$subject->register_strings( $post, $package );
+	}
+
+	/**
+	 * Test set string location.
+	 *
+	 * @test
+	 * @group wpmlcore-6325
+	 */
+	public function it_does_not_register_strings_that_are_handled_by_other_page_builer() {
+		$post = self::createPost();
+
+		$package = array(
+			'kind' => WPML_Gutenberg_Integration::PACKAGE_ID,
+		);
+
+		$blocks = array(
+			'block 1' => $this->get_block( 'some name 1', 'some block content 1' ),
+		);
+
+		\WP_Mock::userFunction(
+			'gutenberg_parse_blocks',
+			array(
+				'times'  => 1,
+				'args'   => array( $post->post_content ),
+				'return' => $blocks,
+			)
+		);
+
+		\WP_Mock::onFilter( 'wpml_pb_register_strings_in_content' )
+		        ->with( false, $post->ID, $blocks['block 1']->innerHTML )
+		        ->reply( true );
+
+		$this->expectAction(
+			'wpml_register_string',
+			array(
+				$blocks['block 1']->innerHTML,
+				md5( $blocks['block 1']->blockName . $blocks['block 1']->innerHTML ),
+				$package,
+				$blocks['block 1']->blockName,
+				'VISUAL',
+			),
+			0 // Action to register the string should never be called
+		);
+
+		$string_factory = $this->get_string_factory();
+		$string_factory->method( 'find_by_id' )->willReturnMap( [] );
+
+		$subject = $this->get_subject( $string_factory );
 
 		$subject->register_strings( $post, $package );
 	}
@@ -566,6 +610,19 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 
 		return new WPML\PB\Gutenberg\StringsInBlock\Collection( $string_parsers );
 	}
+
+	/**
+	 * @return \Mockery\MockInterface
+	 */
+	private static function createPost() {
+		$postId             = 456;
+		$post               = \Mockery::mock( 'WP_Post' );
+		$post->ID           = $postId;
+		$post->post_content = 'post content is not relevant in this test';
+
+		return $post;
+	}
+
 }
 
 class ClosureMock {
