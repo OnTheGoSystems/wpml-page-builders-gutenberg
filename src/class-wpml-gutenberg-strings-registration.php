@@ -54,7 +54,8 @@ class WPML_Gutenberg_Strings_Registration {
 
 		$this->register_blocks(
 			WPML_Gutenberg_Integration::parse_blocks( $post->post_content ),
-			$package_data
+			$package_data,
+			$post->ID
 		);
 
 		$current_strings = $this->string_translation->get_package_strings( $package_data );
@@ -68,7 +69,7 @@ class WPML_Gutenberg_Strings_Registration {
 	 * @param array $blocks
 	 * @param array $package_data
 	 */
-	private function register_blocks( array $blocks, array $package_data ) {
+	private function register_blocks( array $blocks, array $package_data, $post_id ) {
 
 		foreach ( $blocks as $block ) {
 
@@ -76,6 +77,10 @@ class WPML_Gutenberg_Strings_Registration {
 			$strings = $this->strings_in_blocks->find( $block );
 
 			foreach ( $strings as $string ) {
+
+				if( apply_filters( 'wpml_pb_register_strings_in_content', false, $post_id, $string->value ) ) {
+					continue;
+				}
 
 				if ( 'LINK' === $string->type && ! $this->translate_link_targets->is_internal_url( $string->value ) ) {
 					$string->type = 'LINE';
@@ -109,7 +114,7 @@ class WPML_Gutenberg_Strings_Registration {
 			}
 
 			if ( isset( $block->innerBlocks ) ) {
-				$this->register_blocks( $block->innerBlocks, $package_data );
+				$this->register_blocks( $block->innerBlocks, $package_data, $post_id );
 			}
 		}
 	}
