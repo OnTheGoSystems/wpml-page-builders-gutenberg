@@ -186,22 +186,26 @@ class HTML extends Base {
 	 * @return \WP_Block_Parser_Block
 	 */
 	private function updateTranslationInBlock( $text, $lang, \WP_Block_Parser_Block $block, array $string_translations, $element, $dom_handle ) {
-		$translation                = null;
-		$translationFromPageBuilder = apply_filters( 'wpml_pb_update_translations_in_content', $text, $lang );
-		if ( $translationFromPageBuilder === $text ) {
-			$string_id = $this->get_string_id( $block->blockName, $text );
-			if ( Obj::path( [ $string_id, $lang, 'status'], $string_translations ) == ICL_TM_COMPLETE ) {
-				$translation = $string_translations[ $string_id ][ $lang ]['value'];
-			}
-		} else {
-			$translation = $translationFromPageBuilder;
-		}
-
+		$translation = $this->getTranslation( $text, $lang, $block, $string_translations );
 		if ( $translation ) {
 			$block = self::update_string_in_innerContent( $block, $element, $translation );
 			$dom_handle->setElementValue( $element, $translation );
 		}
 
 		return $block;
+	}
+
+	private function getTranslation( $text, $lang, \WP_Block_Parser_Block $block, array $string_translations ) {
+		$translationFromPageBuilder = apply_filters( 'wpml_pb_update_translations_in_content', $text, $lang );
+		if ( $translationFromPageBuilder === $text ) {
+			$string_id = $this->get_string_id( $block->blockName, $text );
+			if ( Obj::path( [ $string_id, $lang, 'status' ], $string_translations ) == ICL_TM_COMPLETE ) {
+				return $string_translations[ $string_id ][ $lang ]['value'];
+			} else {
+				return null;
+			}
+		} else {
+			return $translationFromPageBuilder;
+		}
 	}
 }
