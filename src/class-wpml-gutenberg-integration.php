@@ -42,6 +42,7 @@ class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 		add_filter( 'wpml_config_array', array( $this, 'wpml_config_filter' ) );
 		add_filter( 'wpml_pb_should_body_be_translated', array( $this, 'should_body_be_translated_filter' ), PHP_INT_MAX, 3 );
 		add_filter( 'wpml_get_translatable_types', array( $this, 'remove_package_strings_type_filter' ), 11 );
+		add_filter( 'wpml_pb_should_handle_package', array( $this, 'should_also_handle_shortcodes' ), 10, 3 );
 	}
 
 	/**
@@ -355,5 +356,19 @@ class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 		}
 
 		return $types;
+	}
+
+	/**
+	 * Gutenberg needs to also handle shortcode packages. This is required for an
+	 * edge case when the page only contains a single block that has a shortcode.
+	 *
+	 * @param bool   $state
+	 * @param string $packageKind
+	 * @param string $strategyPackageKind
+	 *
+	 * @return bool
+	 */
+	public function should_also_handle_shortcodes( $state, $packageKind, $strategyPackageKind ) {
+		return $state || ( $strategyPackageKind === 'Gutenberg' && $packageKind === 'Page Builder ShortCode Strings' );
 	}
 }

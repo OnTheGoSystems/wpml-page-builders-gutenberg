@@ -49,6 +49,8 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 
 		WP_Mock::expectFilterAdded( 'wpml_get_translatable_types', array( $subject, 'remove_package_strings_type_filter' ), 11 );
 
+		WP_Mock::expectFilterAdded( 'wpml_pb_should_handle_package', [ $subject, 'should_also_handle_shortcodes' ], 10, 3 );
+
 		$subject->add_hooks();
 	}
 
@@ -763,6 +765,20 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 			'<!-- wp:' . $block->blockName . ' ' . json_encode( $block->attrs ) . ' /-->',
 			WPML_Gutenberg_Integration::render_block( $block )
 		);
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_should_also_handle_shortcodes() {
+		$subject = $this->get_subject();
+
+		$this->assertFalse( $subject->should_also_handle_shortcodes( false, 'anything', 'anything' ) );
+		$this->assertFalse( $subject->should_also_handle_shortcodes( false, 'anything', 'Gutenberg' ) );
+		$this->assertFalse( $subject->should_also_handle_shortcodes( false, 'Page Builder ShortCode Strings' , 'anything') );
+
+		$this->assertTrue( $subject->should_also_handle_shortcodes( false, 'Page Builder ShortCode Strings', 'Gutenberg' ) );
+		$this->assertTrue( $subject->should_also_handle_shortcodes( true, 'anything', 'anything' ) );
 	}
 
 	public function get_subject( $config_option = null, $strings_registration = null ) {
