@@ -54,6 +54,8 @@ class WPML_Gutenberg_Integration_Factory {
 			}
 		}
 
+		$integrations->add( new \WPML\PB\Gutenberg\Media\Integration() );
+
 		return $integrations;
 	}
 
