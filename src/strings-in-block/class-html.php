@@ -82,16 +82,13 @@ class HTML extends Base {
 			}
 			list( $block->innerHTML, ) = $dom_handle->getFullInnerHTML( $dom->documentElement );
 
-		} else {
+		} elseif ( isset( $block->blockName, $block->innerHTML ) && '' !== trim( $block->innerHTML ) ) {
 
-			$string_id = $this->get_block_string_id( $block );
-			if (
-				isset( $string_translations[ $string_id ][ $lang ] ) &&
-				ICL_TM_COMPLETE == $string_translations[ $string_id ][ $lang ]['status']
-			) {
-				$block->innerHTML = $string_translations[ $string_id ][ $lang ]['value'];
+			$translation = $this->getTranslation( $block->innerHTML, $lang, $block, $string_translations );
+
+			if ( $translation ) {
+				$block->innerHTML = $translation;
 			}
-
 		}
 
 		return $block;
