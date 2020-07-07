@@ -52,15 +52,20 @@ class WPML_Gutenberg_Strings_Registration {
 		$this->leftover_strings = $original_strings = $this->string_translation->get_package_strings( $package_data );
 		$this->string_location  = 1;
 
+		$stringCleanUp = apply_filters( 'wpml_pb_get_string_clean_up', '', $post->ID );
+
 		$this->register_blocks(
 			WPML_Gutenberg_Integration::parse_blocks( $post->post_content ),
 			$package_data,
-			$post->ID
+			$post->ID,
+			$stringCleanUp
 		);
 
 		$current_strings = $this->string_translation->get_package_strings( $package_data );
 
 		$this->reuse_translations->find_and_reuse_translations( $original_strings, $current_strings, $this->leftover_strings );
+
+		$stringCleanUp->cleanUp();
 
 		do_action( 'wpml_delete_unused_package_strings', $package_data );
 	}
@@ -69,7 +74,7 @@ class WPML_Gutenberg_Strings_Registration {
 	 * @param array $blocks
 	 * @param array $package_data
 	 */
-	private function register_blocks( array $blocks, array $package_data, $post_id ) {
+	private function register_blocks( array $blocks, array $package_data, $post_id, $stringCleanUp ) {
 
 		foreach ( $blocks as $block ) {
 
@@ -78,7 +83,7 @@ class WPML_Gutenberg_Strings_Registration {
 
 			foreach ( $strings as $string ) {
 
-				if( apply_filters( 'wpml_pb_register_strings_in_content', false, $post_id, $string->value ) ) {
+				if( apply_filters( 'wpml_pb_register_strings_in_content', false, $post_id, $string->value, $stringCleanUp ) ) {
 					continue;
 				}
 
@@ -114,7 +119,7 @@ class WPML_Gutenberg_Strings_Registration {
 			}
 
 			if ( isset( $block->innerBlocks ) ) {
-				$this->register_blocks( $block->innerBlocks, $package_data, $post_id );
+				$this->register_blocks( $block->innerBlocks, $package_data, $post_id, $stringCleanUp );
 			}
 		}
 	}
