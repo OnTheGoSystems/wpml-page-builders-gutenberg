@@ -727,6 +727,35 @@ class TestHTML extends \OTGS_TestCase {
 		$this->assertEquals( '<p>' . $newContent . '</p>', $updated_block->innerHTML );
 	}
 
+	/**
+	 * @test
+	 * @group wpmlcore-7341
+	 */
+	public function it_updates_for_other_page_builders_using_filter_and_no_xpath() {
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )->andReturn( [] );
+
+		$strings_in_block = new HTML( $config_option );
+
+		$block_name = 'core/html';
+
+		$content          = 'some content';
+		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName = $block_name;
+		$block->innerHTML = $content;
+
+		$newContent = 'some content from other pagebuilder eg. shortcodes handling';
+
+		$lang = 'de';
+		\WP_Mock::onFilter( 'wpml_pb_update_translations_in_content' )
+		        ->with( $content, $lang )
+		        ->reply( $newContent );
+
+		$updated_block = $strings_in_block->update( $block, [], $lang );
+
+		$this->assertEquals( $newContent, $updated_block->innerHTML );
+	}
+
 
 	/**
 	 * @param array $values
