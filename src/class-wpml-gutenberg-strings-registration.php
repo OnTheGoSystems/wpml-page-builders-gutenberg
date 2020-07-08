@@ -48,25 +48,22 @@ class WPML_Gutenberg_Strings_Registration {
 	 */
 	public function register_strings( WP_Post $post, $package_data ) {
 		do_action( 'wpml_start_string_package_registration', $package_data );
+		do_action( 'wpml_start_GB_register_strings', $post, $package_data );
 
 		$this->leftover_strings = $original_strings = $this->string_translation->get_package_strings( $package_data );
 		$this->string_location  = 1;
 
-		$stringCleanUp = apply_filters( 'wpml_pb_get_string_clean_up', '', $post->ID );
-
 		$this->register_blocks(
 			WPML_Gutenberg_Integration::parse_blocks( $post->post_content ),
 			$package_data,
-			$post->ID,
-			$stringCleanUp
+			$post->ID
 		);
 
 		$current_strings = $this->string_translation->get_package_strings( $package_data );
 
 		$this->reuse_translations->find_and_reuse_translations( $original_strings, $current_strings, $this->leftover_strings );
 
-		$stringCleanUp->cleanUp();
-
+		do_action( 'wpml_end_GB_register_strings', $post, $package_data );
 		do_action( 'wpml_delete_unused_package_strings', $package_data );
 	}
 
@@ -74,7 +71,7 @@ class WPML_Gutenberg_Strings_Registration {
 	 * @param array $blocks
 	 * @param array $package_data
 	 */
-	private function register_blocks( array $blocks, array $package_data, $post_id, $stringCleanUp ) {
+	private function register_blocks( array $blocks, array $package_data, $post_id ) {
 
 		foreach ( $blocks as $block ) {
 
@@ -83,7 +80,7 @@ class WPML_Gutenberg_Strings_Registration {
 
 			foreach ( $strings as $string ) {
 
-				if( apply_filters( 'wpml_pb_register_strings_in_content', false, $post_id, $string->value, $stringCleanUp ) ) {
+				if( apply_filters( 'wpml_pb_register_strings_in_content', false, $post_id, $string->value ) ) {
 					continue;
 				}
 
@@ -119,7 +116,7 @@ class WPML_Gutenberg_Strings_Registration {
 			}
 
 			if ( isset( $block->innerBlocks ) ) {
-				$this->register_blocks( $block->innerBlocks, $package_data, $post_id, $stringCleanUp );
+				$this->register_blocks( $block->innerBlocks, $package_data, $post_id );
 			}
 		}
 	}
