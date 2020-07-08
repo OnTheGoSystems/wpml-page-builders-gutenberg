@@ -52,6 +52,9 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 		\WP_Mock::expectAction( 'wpml_start_string_package_registration', $package );
 		\WP_Mock::expectAction( 'wpml_delete_unused_package_strings', $package );
 
+		\WP_Mock::expectAction( 'wpml_start_GB_register_strings', $post, $package );
+		\WP_Mock::expectAction( 'wpml_end_GB_register_strings', $post, $package );
+
 		$string_factory = $this->get_string_factory();
 
 		$subject = $this->get_subject( $string_factory );
@@ -424,8 +427,7 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 		        ->with(
 		        	false,
 			        $post->ID,
-			        $blocks['block 1']->innerHTML,
-			        \Mockery::mock( 'WPML\PB\Shortcode\StringCleanUp' )
+			        $blocks['block 1']->innerHTML
 		        )
 		        ->reply( true );
 
@@ -623,13 +625,6 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 		$post               = \Mockery::mock( 'WP_Post' );
 		$post->ID           = 456;
 		$post->post_content = 'post content is not relevant in this test';
-
-		$stringCleanUp = \Mockery::mock( 'WPML\PB\Shortcode\StringCleanUp' );
-		$stringCleanUp->shouldReceive( 'cleanUp' )->once();
-
-		WP_Mock::onFilter( 'wpml_pb_get_string_clean_up' )
-			->with( '', $post->ID )
-			->reply( $stringCleanUp );
 
 		return $post;
 	}
