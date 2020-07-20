@@ -403,7 +403,7 @@ class Test_WPML_Gutenberg_String_Registration extends OTGS_TestCase {
 	 * @test
 	 * @group wpmlcore-6325
 	 */
-	public function it_does_not_register_strings_that_are_handled_by_other_page_builer() {
+	public function it_does_not_register_strings_that_are_handled_by_other_page_builder() {
 		$post = self::createPost();
 
 		$package = array(
