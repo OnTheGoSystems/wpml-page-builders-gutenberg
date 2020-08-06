@@ -17,7 +17,16 @@ class TestHTML extends \OTGS_TestCase {
 
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )
-		              ->andReturn( array( 'core/paragraph' => array( 'xpath' => array( '//p' ) ) ) );
+		              ->andReturn( [
+			              'core/paragraph' => [
+				              'xpath' => [
+					              [
+						              'value' => '//p',
+						              'label' => 'Paragraph label',
+					              ],
+				              ],
+			              ],
+		              ] );
 
 		$strings_in_block = new HTML( $config_option );
 
@@ -33,7 +42,7 @@ class TestHTML extends \OTGS_TestCase {
 
 		$string = $strings[0];
 
-		$this->assertEquals( $block->blockName, $string->name );
+		$this->assertEquals( 'Paragraph label', $string->name );
 		$this->assertEquals( html_entity_decode( $paragraph ), $string->value );
 		$this->assertEquals( 'LINE', $string->type );
 
@@ -49,7 +58,7 @@ class TestHTML extends \OTGS_TestCase {
 
 		$string = $strings[0];
 
-		$this->assertEquals( $block->blockName, $string->name );
+		$this->assertEquals( 'Paragraph label', $string->name );
 		$this->assertEquals( $paragraph, $string->value );
 		$this->assertEquals( 'VISUAL', $string->type );
 	}
@@ -64,7 +73,7 @@ class TestHTML extends \OTGS_TestCase {
 
 		$configOption = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$configOption->shouldReceive( 'get' )
-			->andReturn( [ $blockName => [ 'xpath' => [ '//div/text()' ] ] ] );
+			->andReturn( [ $blockName => [ 'xpath' => [ '//div/text()' ], 'label' => 'Block fallback label' ] ] );
 
 		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
 		$block->blockName = $blockName;
@@ -78,7 +87,7 @@ class TestHTML extends \OTGS_TestCase {
 
 		$string = $strings[0];
 
-		$this->assertEquals( $block->blockName, $string->name );
+		$this->assertEquals( 'Block fallback label', $string->name );
 		$this->assertEquals( $text, $string->value );
 		$this->assertEquals( 'LINE', $string->type );
 	}
