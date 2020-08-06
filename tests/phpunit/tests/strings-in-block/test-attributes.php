@@ -6,6 +6,7 @@ namespace WPML\PB\Gutenberg\StringsInBlock;
  * @group page-builders
  * @group gutenberg
  * @group strings-in-block
+ *
  */
 class TestAttributes extends \OTGS_TestCase {
 
@@ -48,11 +49,12 @@ class TestAttributes extends \OTGS_TestCase {
 						'children' => [
 							'key22' => [
 								'children' => [ 'key*' => [] ],
+								'label' => 'Key22 label'
 							],
 							'key*'  => [],
 						],
 					],
-					'key3' => [],
+					'key3' => [ 'label' => 'Key3 label' ],
 				],
 			],
 			self::BLOCK_NAMESPACE => [
@@ -90,8 +92,8 @@ class TestAttributes extends \OTGS_TestCase {
 		$this->checkString( $strings[0], 'String for key12', 'LINE' );
 		$this->checkString( $strings[1], "String for key211\nSecond line", 'AREA' );
 		$this->checkString( $strings[2], 'String for key212<br>second line', 'VISUAL' );
-		$this->checkString( $strings[3], 'String for key22', 'LINE' );
-		$this->checkString( $strings[4], 'String for key3', 'LINE' );
+		$this->checkString( $strings[3], 'String for key22', 'LINE', 'Key22 label' );
+		$this->checkString( $strings[4], 'String for key3', 'LINE', 'Key3 label' );
 	}
 
 	/**
@@ -181,9 +183,9 @@ class TestAttributes extends \OTGS_TestCase {
 		$this->checkString( $strings[0], 'String for foo', 'LINE' );
 	}
 
-	private function checkString( \stdClass $string, $value, $type ) {
+	private function checkString( \stdClass $string, $value, $type, $name = self::BLOCK_NAME ) {
 		$this->assertEquals( md5( self::BLOCK_NAME . $value ), $string->id, $value );
-		$this->assertEquals( self::BLOCK_NAME, $string->name );
+		$this->assertEquals( $name, $string->name );
 		$this->assertEquals( $value, $string->value );
 		$this->assertEquals( $type, $string->type );
 	}
