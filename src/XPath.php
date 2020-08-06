@@ -2,6 +2,8 @@
 
 namespace WPML\PB\Gutenberg;
 
+use WPML\FP\Obj;
+
 class XPath {
 
 	/**
@@ -14,26 +16,33 @@ class XPath {
 	 * @return array
 	 */
 	public static function normalize( $data ) {
-		if ( isset( $data['attr']['type'] ) ) {
-			$data['value'] = [
-				'value' => $data['value'],
-				'type' => strtoupper( $data['attr']['type'] )
-			];
+		if ( isset( $data['attr'] ) ) {
+			$data['value'] = array_merge( [ 'value' => $data['value'] ], $data['attr'] );
+			if ( isset( $data['value']['type'] ) ) { // @todo This IF will be redundant when I improve `over` function
+				$data = Obj::over( Obj::lensPath( [ 'value', 'type' ] ), 'strtoupper', $data );
+			}
+
 			unset( $data['attr'] );
 		}
+
 		return $data;
 	}
 
 	/**
 	 * @param string|array $query
 	 *
-	 * @return array
+	 * @return array [query, type, label]
 	 */
 	public static function parse( $query ) {
-		if ( is_array( $query ) )  {
-			return [ $query['value'], $query['type'] ];
+		if ( is_array( $query ) ) {
+			return [
+				$query['value'],
+				isset( $query['type'] ) ? $query['type'] : '',
+				isset( $query['label'] ) ? $query['label'] : '',
+			];
 		}
-		return [ $query, '' ];
+
+		return [ $query, '', '' ];
 	}
 
 }

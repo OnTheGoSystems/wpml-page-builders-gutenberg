@@ -23,17 +23,25 @@ class XPathTest extends \PHPUnit_Framework_TestCase {
 	/**
 	 * @test
 	 */
+	public function it_handles_label_attrib() {
+		$array = [ 'value' => 'data', 'attr' => ['label' => 'My label'] ];
+		$this->assertEquals( [ 'value' => [ 'value' => 'data', 'label' => 'My label' ] ], XPath::normalize( $array ) );
+	}
+
+	/**
+	 * @test
+	 */
 	public function it_parses_query_as_string() {
 		$string = 'data';
-		$this->assertEquals( [ $string, '' ], XPath::parse( $string ) );
+		$this->assertEquals( [ $string, '', '' ], XPath::parse( $string ) );
 	}
 
 	/**
 	 * @test
 	 */
 	public function it_parses_query_with_type() {
-		$query = [ 'value' => 'data', 'type' => 'LINK' ];
-		$this->assertEquals( [ 'data', 'LINK' ], XPath::parse( $query ) );
+		$query = [ 'value' => 'data', 'type' => 'LINK', 'label' => 'My label' ];
+		$this->assertEquals( [ 'data', 'LINK', 'My label' ], XPath::parse( $query ) );
 	}
 
 }

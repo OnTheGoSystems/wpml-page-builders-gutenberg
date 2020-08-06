@@ -53,42 +53,44 @@ class Test_WPML_Gutenberg_Integration_Config_Option extends OTGS_TestCase {
 		$subject = new WPML_Gutenberg_Config_Option();
 
 		$block_type   = 'block/type';
-		$block_xpaths = array( array( 'xpath1' ), array( 'xpath2' ) );
-		$block_keys   = array(
+		$block_xpaths = [ [ 'xpath1' ], [ 'xpath2' ] ];
+		$block_keys = [
 			'value' => '',
-			'attr' => array(
+			'attr'  => [
 				'name'          => 'key1',
 				'search-method' => 'regex',
-			),
-		);
+				'label'         => 'Key label',
+			],
+		];
 
-		$expected_block_config = array(
-			'xpath' => array( 'xpath1', 'xpath2' ),
-			'key'   => array( 'key1' => array( 'search-method' => 'regex' ) ),
-		);
+		$expected_block_config = [
+			'xpath' => [ 'xpath1', 'xpath2' ],
+			'key'   => [ 'key1' => [ 'search-method' => 'regex', 'label' => 'Key label' ] ],
+			'label' => 'Block label',
+		];
 
-		$block_data = array(
-			'attr'  => array( 'type' => $block_type, 'translate' => '1' ),
+		$block_data = [
+			'attr'  => [ 'type' => $block_type, 'translate' => '1', 'label' => 'Block label' ],
 			'xpath' => $block_xpaths,
 			'key'   => $block_keys,
-		);
+		];
 
-		$config_settings = array(
-			'wpml-config' => array(
-				'gutenberg-blocks' => array(
-					'gutenberg-block' => array( $block_data ),
-				),
-			),
-		);
+		$config_settings = [
+			'wpml-config' => [
+				'gutenberg-blocks' => [
+					'gutenberg-block' => [ $block_data ],
+				],
+			],
+		];
 
 		\WP_Mock::userFunction( 'update_option',
-		                        array(
-			                        'times' => 1,
-			                        'args'  => array(
-				                        WPML_Gutenberg_Config_Option::OPTION,
-				                        array( $block_type => $expected_block_config ),
-			                        ),
-		                        ) );
+			[
+				'times' => 1,
+				'args'  => [
+					WPML_Gutenberg_Config_Option::OPTION,
+					[ $block_type => $expected_block_config ],
+				],
+			] );
 
 		$subject->update_from_config( $config_settings );
 	}
@@ -112,7 +114,7 @@ class Test_WPML_Gutenberg_Integration_Config_Option extends OTGS_TestCase {
 				// For a single element, it's not wrapped in a array
 				// For multiple elements, each is wrapped in an array.
 				'value' => $xpath,
-				'attr'  => [ 'type' => $type ],
+				'attr'  => [ 'type' => $type, 'label' => 'XPath Label' ],
 			],
 		];
 
@@ -121,6 +123,7 @@ class Test_WPML_Gutenberg_Integration_Config_Option extends OTGS_TestCase {
 				[
 					'value' => $xpath,
 					'type'  => strtoupper( $type ),
+					'label' => 'XPath Label'
 				],
 			],
 		];

@@ -2,6 +2,7 @@
 
 namespace WPML\PB\Gutenberg\StringsInBlock;
 
+use WPML\FP\Maybe;
 use WPML\FP\Obj;
 use WPML\PB\Gutenberg\StringsInBlock\DOMHandler\StandardBlock;
 use WPML\PB\Gutenberg\StringsInBlock\DOMHandler\ListBlock;
@@ -25,14 +26,19 @@ class HTML extends Base {
 			$dom_handle = $this->get_dom_handler( $block );
 			$xpath      = $dom_handle->getDomxpath( $block->innerHTML );
 
-			foreach ( $block_queries as $query ) {
-				list( $query, $definedType ) = XPath::parse( $query );
+			foreach ( $block_queries as $blockQuery ) {
+				list( $query, $definedType, $label ) = XPath::parse( $blockQuery );
 				$elements = $xpath->query( $query );
 				foreach ( $elements as $element ) {
 					list( $text, $type ) = $dom_handle->getPartialInnerHTML( $element );
 					if ( $text ) {
 						$string_id = $this->get_string_id( $block->blockName, $text );
-						$strings[] = $this->build_string( $string_id, $block->blockName, $text, $definedType ? $definedType : $type );
+						$strings[] = $this->build_string(
+							$string_id,
+							$label ?: $this->get_block_label( $block ),
+							$text,
+							$definedType ? $definedType : $type
+						);
 					}
 				}
 			}
@@ -41,7 +47,12 @@ class HTML extends Base {
 
 			$string_id = $this->get_block_string_id( $block );
 			if ( $string_id ) {
-				$strings[] = $this->build_string( $string_id, $block->blockName, $block->innerHTML, 'VISUAL' );
+				$strings[] = $this->build_string(
+					$string_id,
+					$this->get_block_label( $block ),
+					$block->innerHTML,
+					'VISUAL'
+				);
 			}
 
 		}
