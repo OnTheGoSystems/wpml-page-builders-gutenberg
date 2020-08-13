@@ -3,6 +3,7 @@
 namespace WPML\PB\Gutenberg\StringsInBlock;
 
 use WPML\FP\Obj;
+use WPML\PB\Gutenberg\StringsInBlock\DOMHandler\HtmlBlock;
 use WPML\PB\Gutenberg\StringsInBlock\DOMHandler\StandardBlock;
 use WPML\PB\Gutenberg\StringsInBlock\DOMHandler\ListBlock;
 use WPML\PB\Gutenberg\XPath;
@@ -10,6 +11,7 @@ use WPML\PB\Gutenberg\XPath;
 class HTML extends Base {
 
 	const LIST_BLOCK_NAME = 'core/list';
+	const HTML_BLOCK_NAME = 'core/html';
 
 	/**
 	 * @param \WP_Block_Parser_Block $block
@@ -162,11 +164,14 @@ class HTML extends Base {
 	/**
 	 * @param \WP_Block_Parser_Block $block
 	 *
-	 * @return ListBlock|StandardBlock
+	 * @return ListBlock|StandardBlock|HtmlBlock
 	 */
 	private function get_dom_handler( \WP_Block_Parser_Block $block ) {
 		if ( self::LIST_BLOCK_NAME === $block->blockName ) {
 			return new ListBlock();
+		}
+		if ( self::HTML_BLOCK_NAME === $block->blockName ) {
+			return new HtmlBlock();
 		}
 
 		return new StandardBlock();
