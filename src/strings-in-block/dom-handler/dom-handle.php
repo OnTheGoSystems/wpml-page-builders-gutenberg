@@ -49,7 +49,7 @@ abstract class DOMHandle {
 	 *
 	 * @return array
 	 */
-	private function getInnerHTML( \DOMNode $element, $context ) {
+	protected function getInnerHTML( \DOMNode $element, $context ) {
 		$innerHTML = $element instanceof \DOMText
 			? $element->nodeValue
 			: $this->getInnerHTMLFromChildNodes( $element, $context );
@@ -151,7 +151,7 @@ abstract class DOMHandle {
 			] );
 	}
 
-	private function removeCdataFromStyleTag( $innerHTML ) {
+	protected function removeCdataFromStyleTag( $innerHTML ) {
 		return preg_replace( '/<style(.*?)><!\\[CDATA\\[(.*?)\\]\\]><\\/style>/', '<style$1>$2</style>', $innerHTML );
 	}
 
