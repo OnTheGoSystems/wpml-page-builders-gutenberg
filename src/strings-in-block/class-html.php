@@ -167,14 +167,12 @@ class HTML extends Base {
 	 * @return ListBlock|StandardBlock|HtmlBlock
 	 */
 	private function get_dom_handler( \WP_Block_Parser_Block $block ) {
-		if ( self::LIST_BLOCK_NAME === $block->blockName ) {
-			return new ListBlock();
-		}
-		if ( self::HTML_BLOCK_NAME === $block->blockName ) {
-			return new HtmlBlock();
-		}
+		$class = wpml_collect( [
+			self::LIST_BLOCK_NAME => ListBlock::class,
+			self::HTML_BLOCK_NAME => HtmlBlock::class,
+		] )->get( $block->blockName, StandardBlock::class );
 
-		return new StandardBlock();
+		return new $class();
 	}
 
 	/**
