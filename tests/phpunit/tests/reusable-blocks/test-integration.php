@@ -2,6 +2,8 @@
 
 namespace WPML\PB\Gutenberg\ReusableBlocks;
 
+use WPML\FP\Fns;
+
 /**
  * @group reusable-blocks
  */
@@ -22,6 +24,7 @@ class TestIntegration extends \OTGS_TestCase {
 		$subject = $this->getSubject();
 
 		\WP_Mock::expectFilterAdded( 'render_block_data', [ $subject, 'convertReusableBlock' ] );
+		\WP_Mock::expectFilterAdded( 'render_block', Fns::withoutRecursion( Fns::identity(), [ $subject, 'reRenderInnerReusableBlock' ] ), 10, 2 );
 
 		$subject->add_hooks();
 	}
@@ -43,6 +46,93 @@ class TestIntegration extends \OTGS_TestCase {
 		$this->assertEquals(
 			$converted_block,
 			$subject->convertReusableBlock( $block )
+		);
+	}
+
+	/**
+	 * @test
+	 * @group wpmlcore-7651
+	 */
+	public function itShouldNotReRenderIfNotAReusableBlock() {
+		$blockContent = 'The original block content';
+		$block        = [ 'foo' => 'bar' ];
+
+		$translation = $this->getTranslation();
+		$translation->expects( $this->never() )->method( 'convertBlock' );
+
+		\WP_Mock::userFunction( 'render_block' )->never();
+
+		$subject = $this->getSubject( $translation );
+
+		$this->assertEquals(
+			$blockContent,
+			$subject->reRenderInnerReusableBlock( $blockContent, $block )
+		);
+	}
+
+	/**
+	 * @test
+	 * @group wpmlcore-7651
+	 */
+	public function itShouldNotReRenderIfBlockAlreadyConverted() {
+		$id           = 123;
+		$blockContent = 'The original block content';
+		$block        = [
+			'attrs' => [
+				'ref' => $id,
+			],
+		];
+
+		$translation = $this->getTranslation();
+		$translation->method( 'convertBlock' )
+			->with( $block )
+			->willReturnArgument( 0 );
+
+		\WP_Mock::userFunction( 'render_block' )->never();
+
+		$subject = $this->getSubject( $translation );
+
+		$this->assertEquals(
+			$blockContent,
+			$subject->reRenderInnerReusableBlock( $blockContent, $block )
+		);
+	}
+
+	/**
+	 * @test
+	 * @group wpmlcore-7651
+	 */
+	public function itShouldReRenderBlock() {
+		$id                = 123;
+		$convertedId       = 456;
+		$blockContent      = 'The original block content';
+		$translatedContent = 'The translated content';
+
+		$getBlock = function( $id ) {
+			return [
+				'attrs' => [
+					'ref' => $id,
+				],
+			];
+		};
+
+		$block          = $getBlock( $id );
+		$convertedBlock = $getBlock( $convertedId );
+
+		$translation = $this->getTranslation();
+		$translation->method( 'convertBlock' )
+			->with( $block )
+			->willReturn( $convertedBlock );
+
+		\WP_Mock::userFunction( 'render_block' )
+			->with( $convertedBlock )
+			->andReturn( $translatedContent );
+
+		$subject = $this->getSubject( $translation );
+
+		$this->assertEquals(
+			$translatedContent,
+			$subject->reRenderInnerReusableBlock( $blockContent, $block )
 		);
 	}
 
