@@ -131,7 +131,7 @@ abstract class DOMHandle {
 	}
 
 	protected function getAsHTML5( \DOMNode $element ) {
-		return strtr(
+		return str_replace( '--/>', '-->', strtr(
 			$element->ownerDocument->saveXML( $element, LIBXML_NOEMPTYTAG ),
 			[
 				'></area>'   => '/>',
@@ -148,7 +148,7 @@ abstract class DOMHandle {
 				'></source>' => '/>',
 				'></track>'  => '/>',
 				'></wbr>'    => '/>',
-			] );
+			] ) );
 	}
 
 	protected function removeCdataFromStyleTag( $innerHTML ) {
