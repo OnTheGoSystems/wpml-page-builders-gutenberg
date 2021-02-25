@@ -73,7 +73,12 @@ class TestHTML extends \OTGS_TestCase {
 
 		$configOption = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$configOption->shouldReceive( 'get' )
-			->andReturn( [ $blockName => [ 'xpath' => [ '//div/text()' ], 'label' => 'Block fallback label' ] ] );
+		             ->andReturn( [
+			             $blockName => [
+				             'xpath' => [ '//div/text()' ],
+				             'label' => 'Block fallback label'
+			             ]
+		             ] );
 
 		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
 		$block->blockName = $blockName;
@@ -101,10 +106,10 @@ class TestHTML extends \OTGS_TestCase {
 
 		$configOption = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$configOption->shouldReceive( 'get' )
-			->andReturn( [ $blockName => [ 'xpath' => [ '//p' ] ] ] );
+		             ->andReturn( [ $blockName => [ 'xpath' => [ '//p' ] ] ] );
 
 		/** @return \WP_Block_Parser_Block|\Mockery\MockInterface */
-		$getBlock = function( $text ) use ( $blockName ) {
+		$getBlock = function ( $text ) use ( $blockName ) {
 			$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
 			$block->blockName = $blockName;
 			$block->innerHTML = "<p>$text</p>";
@@ -172,7 +177,14 @@ class TestHTML extends \OTGS_TestCase {
 	public function it_finds_image() {
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )
-		              ->andReturn( array( 'core/image' => array( 'xpath' => array( '//figure/figcaption', '//figure/img/@alt' ) ) ) );
+		              ->andReturn( array(
+			              'core/image' => array(
+				              'xpath' => array(
+					              '//figure/figcaption',
+					              '//figure/img/@alt'
+				              )
+			              )
+		              ) );
 
 		$strings_in_block = new HTML( $config_option );
 
@@ -404,7 +416,7 @@ class TestHTML extends \OTGS_TestCase {
 
 		$configOption = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$configOption->shouldReceive( 'get' )
-		              ->andReturn( [ $blockName => [ 'xpath' => [ '//div/text()' ] ] ] );
+		             ->andReturn( [ $blockName => [ 'xpath' => [ '//div/text()' ] ] ] );
 
 		$strings = [
 			md5( $blockName . $originalText ) => [
@@ -415,7 +427,7 @@ class TestHTML extends \OTGS_TestCase {
 			]
 		];
 
-		$getBlockContent = function( $text ) {
+		$getBlockContent = function ( $text ) {
 			return "<div>$text<span>Not to translate</span></div>";
 		};
 
@@ -439,7 +451,14 @@ class TestHTML extends \OTGS_TestCase {
 
 		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
 		$config_option->shouldReceive( 'get' )
-		              ->andReturn( array( 'core/image' => array( 'xpath' => array( '//figure/figcaption', '//figure/img/@alt' ) ) ) );
+		              ->andReturn( array(
+			              'core/image' => array(
+				              'xpath' => array(
+					              '//figure/figcaption',
+					              '//figure/img/@alt'
+				              )
+			              )
+		              ) );
 
 		$strings_in_block = new HTML( $config_option );
 
@@ -699,12 +718,65 @@ class TestHTML extends \OTGS_TestCase {
 
 		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
 		$block->blockName = $block_name;
-		$block->innerHTML = '<style type="text/css">.wpmltest { justify-content: flex-start;  }</style><p>' . $original_block_inner_HTML . '</p>';
+		$style            = '<style type="text/css">.wpmltest { justify-content: flex-start;  }</style>';
+		$block->innerHTML = $style . '<p>' . $original_block_inner_HTML . '</p>';
 
 		$updated_block = $strings_in_block->update( $block, $strings, $target_lang );
 
-		$this->assertEquals( '<style type="text/css">.wpmltest { justify-content: flex-start;  }</style><p>' . $translated_block_inner_HTML . '</p>', $updated_block->innerHTML );
+		$this->assertEquals( $style . '<p>' . $translated_block_inner_HTML . '</p>', $updated_block->innerHTML );
 
+		$styleMultiline = "
+<style>
+	@media (max-width: 599px) {
+		.gh-side-image {
+			display: none;
+		}
+	}
+</style>";
+
+		$block->innerHTML = $styleMultiline . '<p>' . $original_block_inner_HTML . '</p>';
+
+		$updated_block = $strings_in_block->update( $block, $strings, $target_lang );
+
+		$this->assertEquals( $styleMultiline . '<p>' . $translated_block_inner_HTML . '</p>', $updated_block->innerHTML );
+
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_should_not_wrap_script_tag_content_in_CDATA() {
+
+		$config_option = \Mockery::mock( 'WPML_Gutenberg_Config_Option' );
+		$config_option->shouldReceive( 'get' )
+		              ->andReturn( array( 'core/paragraph' => array( 'xpath' => array( '//p' ) ) ) );
+
+		$strings_in_block = new HTML( $config_option );
+
+		$block_name = 'core/paragraph';
+
+		$target_lang                 = 'de';
+		$original_block_inner_HTML   = '<span class="another">Content</span>';
+		$translated_block_inner_HTML = '<span class="another">Content (TRANSLATED)</span>';
+
+
+		$strings = array(
+			md5( $block_name . $original_block_inner_HTML ) => array(
+				$target_lang => array(
+					'value'  => $translated_block_inner_HTML,
+					'status' => (string) ICL_TM_COMPLETE,
+				)
+			)
+		);
+
+		$block            = \Mockery::mock( 'WP_Block_Parser_Block' );
+		$block->blockName = $block_name;
+		$script            = '<script>alert("TEST")</script>';
+		$block->innerHTML = $script . '<p>' . $original_block_inner_HTML . '</p>';
+
+		$updated_block = $strings_in_block->update( $block, $strings, $target_lang );
+
+		$this->assertEquals( $script . '<p>' . $translated_block_inner_HTML . '</p>', $updated_block->innerHTML );
 	}
 
 	/**
@@ -777,8 +849,8 @@ class TestHTML extends \OTGS_TestCase {
 							<ol>
 								<li>' . $values[1] . '
 									<ul>
-										<li>' . $values[2]. '</li>
-										<li>' . $values[3]. '</li>
+										<li>' . $values[2] . '</li>
+										<li>' . $values[3] . '</li>
 									</ul>
 								</li>
 								<li>' . $values[4] . '</li>

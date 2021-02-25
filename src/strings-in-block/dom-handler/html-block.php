@@ -2,6 +2,8 @@
 
 namespace WPML\PB\Gutenberg\StringsInBlock\DOMHandler;
 
+use function WPML\FP\pipe;
+
 class HtmlBlock extends StandardBlock {
 
 	/**
@@ -15,8 +17,14 @@ class HtmlBlock extends StandardBlock {
 			? $element->nodeValue
 			: $this->getInnerHTMLFromChildNodes( $element, $context );
 
+		$cleanUp = pipe(
+			'html_entity_decode',
+			[ $this, 'removeCdataFromStyleTag' ],
+			[ $this, 'removeCdataFromScriptTag' ]
+		);
+
 		return [
-			$this->removeCdataFromStyleTag( html_entity_decode( $innerHTML ) ),
+			$cleanUp( $innerHTML ),
 			'AREA'
 		];
 	}
