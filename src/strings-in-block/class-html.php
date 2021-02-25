@@ -2,7 +2,7 @@
 
 namespace WPML\PB\Gutenberg\StringsInBlock;
 
-use WPML\FP\Maybe;
+use WPML\FP\Str;
 use WPML\FP\Obj;
 use WPML\PB\Gutenberg\StringsInBlock\DOMHandler\HtmlBlock;
 use WPML\PB\Gutenberg\StringsInBlock\DOMHandler\StandardBlock;
@@ -211,12 +211,28 @@ class HTML extends Base {
 		if ( $translationFromPageBuilder === $text ) {
 			$string_id = $this->get_string_id( $block->blockName, $text );
 			if ( Obj::path( [ $string_id, $lang, 'status' ], $string_translations ) == ICL_TM_COMPLETE ) {
-				return $string_translations[ $string_id ][ $lang ]['value'];
+				return self::preserveNewLines( $text, $string_translations[ $string_id ][ $lang ]['value'] );
 			} else {
 				return null;
 			}
 		} else {
 			return $translationFromPageBuilder;
 		}
+	}
+
+	private static function preserveNewLines( $original, $translation ) {
+		$endsWith = function ( $find, $s ) {
+			return Str::sub( - Str::len( $find ), $s ) === $find;
+		};
+
+		if ( Str::startsWith( "\n", $original ) && ! Str::startsWith( "\n", $translation ) ) {
+			$translation = "\n" . $translation;
+		}
+
+		if ( $endsWith( "\n", $original ) && ! $endsWith( "\n", $translation ) ) {
+			$translation .= "\n";
+		}
+
+		return $translation;
 	}
 }
