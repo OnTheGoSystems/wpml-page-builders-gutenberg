@@ -3,6 +3,7 @@
 namespace WPML\PB\Gutenberg\StringsInBlock\DOMHandler;
 
 use WPML\PB\Gutenberg\StringsInBlock\Base;
+use function WPML\FP\pipe;
 
 abstract class DOMHandle {
 
@@ -60,9 +61,12 @@ abstract class DOMHandle {
 			$innerHTML = html_entity_decode( $innerHTML );
 		}
 
-		$innerHTML = $this->removeCdataFromStyleTag( $innerHTML );
+		$removeCdata = pipe(
+			[ $this, 'removeCdataFromStyleTag' ],
+			[ $this, 'removeCdataFromScriptTag' ]
+		);
 
-		return array( $innerHTML, $type );
+		return [ $removeCdata($innerHTML), $type ];
 	}
 
 	/**
@@ -151,8 +155,12 @@ abstract class DOMHandle {
 			] ) );
 	}
 
-	protected function removeCdataFromStyleTag( $innerHTML ) {
-		return preg_replace( '/<style(.*?)><!\\[CDATA\\[(.*?)\\]\\]><\\/style>/', '<style$1>$2</style>', $innerHTML );
+	public static function removeCdataFromStyleTag( $innerHTML ) {
+		return preg_replace( '/<style(.*?)><!\\[CDATA\\[(.*?)\\]\\]><\\/style>/s', '<style$1>$2</style>', $innerHTML );
+	}
+
+	public static function removeCdataFromScriptTag( $innerHTML ) {
+		return preg_replace( '/<script(.*?)><!\\[CDATA\\[(.*?)\\]\\]><\\/script>/s', '<script$1>$2</script>', $innerHTML );
 	}
 
 }
