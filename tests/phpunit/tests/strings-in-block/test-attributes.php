@@ -172,6 +172,7 @@ class TestAttributes extends \OTGS_TestCase {
 		$block->attrs = [
 			'foo' => 'String for foo',
 			'bar' => 'String for bar',
+			'foobar' => 'String for foobar',
 		];
 
 		$config  = $this->getConfig( $config_array );

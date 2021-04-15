@@ -107,7 +107,7 @@ class Attributes extends Base {
 			return $config_key;
 		}
 
-		return '/' . str_replace( '*', 'S+', preg_quote( $config_key, '/' ) ) . '/';
+		return '/^' . str_replace( '*', 'S+', preg_quote( $config_key, '/' ) ) . '$/';
 	}
 
 	/**
