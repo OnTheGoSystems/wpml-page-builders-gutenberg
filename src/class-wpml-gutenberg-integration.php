@@ -1,5 +1,8 @@
 <?php
 
+use WPML\FP\Fns;
+use WPML\FP\Str;
+
 /**
  * Class WPML_Gutenberg_Integration
  */
@@ -66,6 +69,10 @@ class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 		}
 	}
 
+	public function register_strings_from_widget( array $blocks, array $package_data ) {
+		$this->strings_registration->register_strings_from_widget( $blocks, $package_data );
+	}
+
 	/**
 	 * @param WP_Block_Parser_Block|array $block
 	 *
@@ -100,18 +107,24 @@ class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 	) {
 
 		if ( self::PACKAGE_ID === $package_kind ) {
-			$blocks = self::parse_blocks( $original_post->post_content );
-
-			$blocks = $this->update_block_translations( $blocks, $string_translations, $lang );
-
-			$content = '';
-			foreach ( $blocks as $block ) {
-				$content .= $this->render_block( $block );
-			}
-
+			$content = $this->replace_strings_in_blocks( $original_post->post_content, $string_translations, $lang );
 			wpml_update_escaped_post( [ 'ID' => $translated_post_id, 'post_content' => $content ], $lang );
 		}
 
+	}
+
+	/**
+	 * @param string $content
+	 * @param array  $string_translations
+	 * @param string $lang
+	 *
+	 * @return string
+	 */
+	public function replace_strings_in_blocks( $content, $string_translations, $lang ) {
+		$blocks = self::parse_blocks( $content );
+		$blocks = $this->update_block_translations( $blocks, $string_translations, $lang );
+
+		return Fns::reduce( Str::concat(), '', Fns::map( [ $this, 'render_block' ], $blocks ) );
 	}
 
 	/**
