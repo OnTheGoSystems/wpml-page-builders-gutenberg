@@ -40,3 +40,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../../vendor/otgs/unit-tests-framework/phpunit/bootstrap.php';
 require_once __DIR__ . '/stubs/wp-block-parser-block.php';
+require_once __DIR__ . '/../../vendor/wpml/wp/tests/mocks/WPDBMock.php';
+require_once __DIR__ . '/../../vendor/wpml/wp/tests/mocks/OnActionMock.php';
+require_once __DIR__ . '/../../vendor/wpml/core-api/tests/mocks/MakeMock.php';
+require_once __DIR__ . '/../../vendor/wpml/core-api/tests/mocks/LanguagesMock.php';
+require_once __DIR__ . '/mocks/Widgets/Block/WidgetMock.php';
