@@ -67,7 +67,7 @@ class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 	}
 
 	public function register_strings_from_widget( array $blocks, array $package_data ) {
-		$this->strings_registration->register_blocks_from_widget( $blocks, $package_data );
+		$this->strings_registration->register_strings_from_widget( $blocks, $package_data );
 	}
 
 	/**
