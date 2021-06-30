@@ -104,18 +104,23 @@ class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 	) {
 
 		if ( self::PACKAGE_ID === $package_kind ) {
-			$blocks = self::parse_blocks( $original_post->post_content );
-
-			$blocks = $this->update_block_translations( $blocks, $string_translations, $lang );
-
-			$content = '';
-			foreach ( $blocks as $block ) {
-				$content .= $this->render_block( $block );
-			}
-
+			$content = $this->replace_strings_in_blocks( $original_post->post_content, $string_translations, $lang );
 			wpml_update_escaped_post( [ 'ID' => $translated_post_id, 'post_content' => $content ], $lang );
 		}
 
+	}
+
+	public function replace_strings_in_blocks( $content, $string_translations, $lang ) {
+		$blocks = self::parse_blocks( $content );
+
+		$blocks = $this->update_block_translations( $blocks, $string_translations, $lang );
+
+		$newContent = '';
+		foreach ( $blocks as $block ) {
+			$newContent .= $this->render_block( $block );
+		}
+
+		return $newContent;
 	}
 
 	/**

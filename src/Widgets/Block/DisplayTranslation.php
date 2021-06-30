@@ -3,17 +3,21 @@
 namespace WPML\PB\Gutenberg\Widgets\Block;
 
 use WPML\LIB\WP\Hooks;
-use WPML\LIB\WP\Option;
+use function WPML\Container\make;
 use function WPML\FP\spreadArgs;
 
 class DisplayTranslation implements \IWPML_Frontend_Action, \WPML\PB\Gutenberg\Integration {
 
 	public function add_hooks() {
-
-		Hooks::onFilter( 'option_widget_block', 10, 1 )
-		     ->then( spreadArgs( function ( $content ) {
+		Hooks::onFilter( 'widget_block_content', 0 )
+			->then( spreadArgs( function( $content ) {
 				global $sitepress;
-			     return Option::getOr( 'widget_block_' . $sitepress->get_current_language(), $content );
-		     } ) );
+
+				$strings = Strings::fromMo( get_locale() );
+
+				return make( \WPML_Gutenberg_Integration_Factory::class )
+					->create_gutenberg_integration()
+					->replace_strings_in_blocks( $content, $strings, $sitepress->get_current_language() );
+			} ) );
 	}
 }

@@ -30,10 +30,6 @@ class WPML_Gutenberg_Integration_Factory {
 			$integrations->add(
 				make( \WPML\PB\Gutenberg\Widgets\Block\RegisterStrings::class )
 			);
-
-			$integrations->add(
-				make( \WPML\PB\Gutenberg\Widgets\Block\SaveTranslations::class )
-			);
 		}
 
 		return $integrations;

@@ -85,7 +85,7 @@ class RegisterStringsTest extends \OTGS_TestCase {
 		] );
 
 		$this->gutenbergIntegration->shouldReceive( 'register_strings_from_widget' )
-		                           ->with( [ $blocks[2], $blocks[3] ], $subject->createPackage() );
+		                           ->with( [ $blocks[2], $blocks[3] ], Strings::createPackage() );
 
 		$saveTranslations = $this->mockMake( SaveTranslations::class );
 		$saveTranslations->shouldReceive( 'generateOptionForLanguage' )->with( Obj::values( $blocks ), 'de', $this->blockWidgetStrings, 0 )->times( 1 );
