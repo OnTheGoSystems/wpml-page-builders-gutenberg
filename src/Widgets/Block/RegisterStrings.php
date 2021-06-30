@@ -14,7 +14,7 @@ use function WPML\FP\curryN;
 use function WPML\FP\pipe;
 use function WPML\FP\spreadArgs;
 
-class RegisterStrings implements \IWPML_REST_Action {
+class RegisterStrings implements \IWPML_REST_Action, \WPML\PB\Gutenberg\Integration {
 	public function add_hooks() {
 		$registerStrings = Fns::memorize( function ( $oldValue, $newValue ) {
 			$gutenbergIntegration = make( 'WPML_Gutenberg_Integration_Factory' )->create_gutenberg_integration();

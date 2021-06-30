@@ -6,7 +6,7 @@ use WPML\LIB\WP\Hooks;
 use WPML\LIB\WP\Option;
 use function WPML\FP\spreadArgs;
 
-class DisplayTranslation implements \IWPML_Frontend_Action {
+class DisplayTranslation implements \IWPML_Frontend_Action, \WPML\PB\Gutenberg\Integration {
 
 	public function add_hooks() {
 

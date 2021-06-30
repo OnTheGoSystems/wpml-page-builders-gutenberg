@@ -16,7 +16,7 @@ use function WPML\Container\make;
 use function WPML\FP\pipe;
 use function WPML\FP\spreadArgs;
 
-class SaveTranslations implements \IWPML_AJAX_Action, \IWPML_Backend_Action {
+class SaveTranslations implements \IWPML_AJAX_Action, \IWPML_Backend_Action, \WPML\PB\Gutenberg\Integration {
 
 	public function add_hooks() {
 		Hooks::onAction( 'icl_st_add_string_translation', 10, 1 )
