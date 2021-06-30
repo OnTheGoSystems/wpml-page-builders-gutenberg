@@ -1,6 +1,7 @@
 <?php
 
 use function WPML\Container\make;
+use function WPML\Container\share;
 
 class WPML_Gutenberg_Integration_Factory {
 
@@ -8,9 +9,10 @@ class WPML_Gutenberg_Integration_Factory {
 	public function create() {
 		$integrations = new WPML\PB\Gutenberg\Integration_Composite();
 
-		$integrations->add(
-			$this->create_gutenberg_integration()
-		);
+		$mainIntegration = $this->create_gutenberg_integration();
+		share( $mainIntegration );
+
+		$integrations->add( $mainIntegration );
 
 		if ( $this->should_translate_reusable_blocks() ) {
 			$integrations->add(

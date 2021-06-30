@@ -39,6 +39,8 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 		$translateLinks = \Mockery::mock( 'alias:WPML\PB\TranslateLinks' );
 		$translateLinks->shouldReceive( 'getTranslatorForString' )->andReturn( function() {} );
 
+		$this->expect_share_main_integration();
+
 		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\Integration', '\WPML\PB\Gutenberg\Integration' );
 		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration', '\WPML\PB\Gutenberg\Integration' );
 
@@ -108,6 +110,8 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 		$translateLinks = \Mockery::mock( 'alias:WPML\PB\TranslateLinks' );
 		$translateLinks->shouldReceive( 'getTranslatorForString' )->andReturn( function() {} );
 
+		$this->expect_share_main_integration();
+
 		$this->expect_container_make( 1, '\WPML\PB\Gutenberg\ReusableBlocks\Integration', 'WPML\PB\Gutenberg\Integration' );
 		$this->expect_container_make( (int) $is_admin, '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration', '\WPML\PB\Gutenberg\Integration' );
 		$this->expect_container_make( (int) ! $is_admin, \WPML\PB\Gutenberg\Widgets\Block\DisplayTranslation::class, '\WPML\PB\Gutenberg\Integration' );
@@ -138,6 +142,13 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 			'times'  => $times,
 			'args'   => [ $class ],
 			'return' => $mock,
+		] );
+	}
+
+	private function expect_share_main_integration() {
+		\WP_Mock::userFunction( 'WPML\Container\share', [
+			'times'  => 1,
+			'args'   => [ \WP_Mock\Functions::type( WPML_Gutenberg_Integration::class ) ],
 		] );
 	}
 }
