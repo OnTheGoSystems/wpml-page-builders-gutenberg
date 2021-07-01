@@ -46,8 +46,13 @@ class Strings {
 	public static function loadStringsFromMOFile( $domain, $locale ) {
 		return Maybe::of( Manager::getSubdir() . '/' . $domain . "-$locale.mo" )
 		            ->filter( 'file_exists' )
-		            ->map( [ make( \MO::class ), 'import_from_file' ] )
-		            ->map( Obj::prop( 'entities' ) )
+		            ->map( function ( $file ) {
+			            $mo = make( \MO::class );
+			            $mo->import_from_file( $file );
+
+			            return $mo;
+		            } )
+		            ->map( Obj::prop( 'entries' ) )
 		            ->getOrElse( [] );
 	}
 
