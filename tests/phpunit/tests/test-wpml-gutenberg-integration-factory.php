@@ -43,6 +43,8 @@ class Test_WPML_Gutenberg_Integration_Factory extends OTGS_TestCase {
 
 		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\Integration', '\WPML\PB\Gutenberg\Integration' );
 		$this->expect_container_make( 0, '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration', '\WPML\PB\Gutenberg\Integration' );
+		$this->expect_container_make( (int) ! $is_admin, \WPML\PB\Gutenberg\Widgets\Block\DisplayTranslation::class, '\WPML\PB\Gutenberg\Integration' );
+		$this->expect_container_make( 1, \WPML\PB\Gutenberg\Widgets\Block\RegisterStrings::class, '\WPML\PB\Gutenberg\Integration' );
 
 		$factory = new WPML_Gutenberg_Integration_Factory();
 
