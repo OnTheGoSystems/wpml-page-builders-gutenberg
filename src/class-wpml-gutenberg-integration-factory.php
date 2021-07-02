@@ -23,16 +23,18 @@ class WPML_Gutenberg_Integration_Factory {
 				$integrations->add(
 					make( '\WPML\PB\Gutenberg\ReusableBlocks\AdminIntegration' )
 				);
-			} else {
-				$integrations->add(
-					make( \WPML\PB\Gutenberg\Widgets\Block\DisplayTranslation::class )
-				);
 			}
+		}
 
+		if ( ! is_admin() ) {
 			$integrations->add(
-				make( \WPML\PB\Gutenberg\Widgets\Block\RegisterStrings::class )
+				make( \WPML\PB\Gutenberg\Widgets\Block\DisplayTranslation::class )
 			);
 		}
+
+		$integrations->add(
+			make( \WPML\PB\Gutenberg\Widgets\Block\RegisterStrings::class )
+		);
 
 		return $integrations;
 	}
