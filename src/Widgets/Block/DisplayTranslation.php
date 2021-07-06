@@ -19,6 +19,12 @@ class DisplayTranslation implements \IWPML_Frontend_Action, \WPML\PB\Gutenberg\I
 		     ->then( spreadArgs( function ( $content ) use ( $getStringsFromMOFile ) {
 			     $strings = $getStringsFromMOFile( \get_locale() );
 
+			     $imageTranslator = make( \WPML_Media_Translated_Images_Update::class );
+
+			     if ( $imageTranslator ) {
+				     $content = $imageTranslator->replace_images_with_translations( $content, Languages::getCurrentCode() );
+			     }
+
 			     return make( \WPML_Gutenberg_Integration::class )
 				     ->replace_strings_in_blocks( $content, $strings, Languages::getCurrentCode() );
 		     } ) );
