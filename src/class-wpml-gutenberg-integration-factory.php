@@ -30,6 +30,9 @@ class WPML_Gutenberg_Integration_Factory {
 			$integrations->add(
 				make( \WPML\PB\Gutenberg\Widgets\Block\DisplayTranslation::class )
 			);
+			$integrations->add(
+				make( \WPML\PB\Gutenberg\Widgets\Block\Search::class )
+			);
 		}
 
 		$integrations->add(
