@@ -454,7 +454,8 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 				"<div class=\"wp-block-column\">\r\n\r\n</div>",
 				"<div class=\"wp-block-column\">\r\n",
 				"\r\n</div>"
-			)
+			),
+			array( '<div class="wp-block-column"><b><span></span></b></div>', '<div class="wp-block-column"><b><span>', '</span></b></div>' )
 		);
 	}
 
