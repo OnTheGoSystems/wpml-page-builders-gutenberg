@@ -299,7 +299,7 @@ class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 
 						$parts = array(
 							$parts[0] . mb_substr( $matches[0], 0, $match_mid_point ),
-							mb_substr( $matches[0], $match_mid_point ) . implode( '></', $partsRight ),
+							mb_substr( $matches[0], $match_mid_point ) . implode( $matches[0], $partsRight ),
 						);
 					}
 				}
