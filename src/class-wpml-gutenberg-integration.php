@@ -291,16 +291,13 @@ class WPML_Gutenberg_Integration implements \WPML\PB\Gutenberg\Integration {
 				preg_match( '#>\s*</#', $inner_HTML, $matches );
 
 				if ( count( $matches ) === 1 ) {
-					$parts = explode( $matches[0], $inner_HTML );
-					if ( count( $parts ) >= 2 ) {
-						$partsRight = array_slice( $parts, 1 );
+					$parts = explode( $matches[0], $inner_HTML, 2 );
+					if ( count( $parts ) === 2 ) {
 						$match_mid_point = 1 + ( mb_strlen( $matches[0] ) - 3 ) / 2;
 						// This is the first ">" char plus half the remaining between the tags
 
-						$parts = array(
-							$parts[0] . mb_substr( $matches[0], 0, $match_mid_point ),
-							mb_substr( $matches[0], $match_mid_point ) . implode( $matches[0], $partsRight ),
-						);
+						$parts[0] .= mb_substr( $matches[0], 0, $match_mid_point );
+						$parts[1] = mb_substr( $matches[0], $match_mid_point ) . $parts[1];
 					}
 				}
 				break;
