@@ -133,11 +133,12 @@ class HTML extends Base {
 			return $block;
 		}
 
-		$search_value = preg_quote( $element->nodeValue, '/' );
-
 		if ( $element instanceof \DOMAttr ) {
+			$search_value = preg_quote( htmlspecialchars( $element->nodeValue ), '/' );
 			$search = '/(")(' . $search_value . ')(")/';
+			$translation = htmlspecialchars( $translation );
 		} else {
+			$search_value = preg_quote( $element->nodeValue, '/' );
 			$search = '/(>)(' . $search_value . ')(<)/';
 		}
 
