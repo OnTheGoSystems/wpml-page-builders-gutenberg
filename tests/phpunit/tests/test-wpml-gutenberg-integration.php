@@ -580,8 +580,8 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$title             = 'My title';
 		$title_translation = 'DE My title';
 
-		$attr             = 'My Attribute';
-		$attr_translation = 'DE My Attribute';
+		$attr             = 'My Attribute with "quotes".';
+		$attr_translation = 'DE My Attribute with "quotes".';
 
 		$paragraph_text             = 'My paragraph.';
 		$paragraph_text_translation = 'DE My paragraph.';
@@ -613,7 +613,13 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		$block_paragraph->innerHTML    = '<p>' . $paragraph_text . '</p>';
 		$block_paragraph->innerContent = [ $block_paragraph->innerHTML ];
 
-		$parent_contents = $this->get_parent_block_contents( $title, $attr );
+		$esc_attr = function( $value ) {
+			return htmlspecialchars( $value );
+		};
+
+		\WP_Mock::userFunction( 'esc_attr', [ 'return' => $esc_attr ] );
+
+		$parent_contents = $this->get_parent_block_contents( $title, $esc_attr( $attr ) );
 
 		$parent_block               = \Mockery::mock( 'WP_Block_Parser_Block' );
 		$parent_block->blockName    = $core_parent_block_name;
@@ -634,7 +640,7 @@ class Test_WPML_Gutenberg_Integration extends OTGS_TestCase {
 		);
 
 		$rendered_paragraph          = $this->get_content_with_block_meta_data( $p_block_name, '<p>' . $paragraph_text_translation . '</p>', true );
-		$translated_parent_contents  = $this->get_parent_block_contents( $title_translation, $attr_translation );
+		$translated_parent_contents  = $this->get_parent_block_contents( $title_translation, $esc_attr( $attr_translation ) );
 		$translated_inner_content    = $translated_parent_contents[0] . $rendered_paragraph . $translated_parent_contents[1];
 		$rendered_translated_content = $this->get_content_with_block_meta_data( $parent_block_name, $translated_inner_content, true);
 
