@@ -134,9 +134,9 @@ class HTML extends Base {
 		}
 
 		if ( $element instanceof \DOMAttr ) {
-			$search_value = preg_quote( htmlspecialchars( $element->nodeValue ), '/' );
+			$search_value = preg_quote( esc_attr( $element->nodeValue ), '/' );
 			$search       = '/(")(' . $search_value . ')(")/';
-			$translation  = htmlspecialchars( $translation );
+			$translation  = esc_attr( $translation );
 		} else {
 			$search_value = preg_quote( $element->nodeValue, '/' );
 			$search       = '/(>)(' . $search_value . ')(<)/';
